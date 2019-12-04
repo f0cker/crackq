@@ -1,0 +1,51 @@
+###***add in args here and update to version 3
+
+version: '2.1'
+services:
+    redis:
+        image: "redis:latest"
+        container_name: "redis"
+        networks:
+            - crackq_net
+        ports:
+            - "127.0.0.1:6379:6379"
+        #volumes:
+        #    - /var/crackq/:/var/crackq
+    crackq:
+        image: "opencl-ubuntu"
+        ports:
+                - "127.0.0.1:8080:8080"
+        depends_on:
+                - redis
+        networks:
+            - crackq_net
+        container_name: "crackq"
+        volumes:
+            - /var/crackq/:/var/crackq
+            - ./crackq:/opt/crackq/build/crackq/
+        stdin_open: true
+        user: crackq
+        tty: true        
+        command:
+                sh -c "cd ../ && ../build/benchmark.sh &&
+                pip3 install -e . --user &&
+                /usr/local/bin/circusd /opt/crackq/build/circus.ini"
+
+    nginx:
+        build:
+            context: .
+            dockerfile: Dockerfile.nginx
+        image: "nginx-crackq"
+        restart: always
+        depends_on:
+                - crackq 
+        container_name: "nginx"
+        ports:
+             - "443:443"
+        volumes:
+             - /var/crackq/files/nginx/conf.d:/etc/nginx/conf.d
+        networks:
+            - crackq_net
+
+networks:
+    crackq_net:
