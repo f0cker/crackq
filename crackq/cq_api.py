@@ -161,9 +161,11 @@ def get_jobdetails(job_details):
         if deet in deet_match_list:
             deets_dict[deet] = deets.strip().split('=')[1].strip().rstrip("'").lstrip("'")
     if rules_list and rules_list != '':
-        ###***move to multi-line?
-        deets_dict['rules'] = [list(
-            CRACK_CONF['rules'].keys())[rules_list.index(rule)] for rule in rules_list]
+        rule_names = []
+        for key, rule in dict(CRACK_CONF['rules']).items():
+            if rule in rules_list:
+                rule_names.append(key)
+        deets_dict['rules'] = rule_names
     else:
         deets_dict['rules'] = None
     if deets_dict['mask'] and deets_dict['mask'] != '':
@@ -344,11 +346,8 @@ class Sso(Resource):
             else:
                 logging.error('No user object loaded')
                 return json.dumps({"msg": "Bad username or password"}), 401
-            #return 'OK', 200
             #return redirect(request.url_root)
-            ###*** temp fix, set the host url dynamically
-            #return redirect('https://crackq.xxx.com/')
-            return redirect('/', _external=True)
+            return redirect('/')
         else:
             logger.info('Login error: {}'.format(authn))
             return json.dumps({"msg": "Bad username or password"}), 401

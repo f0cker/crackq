@@ -9,6 +9,7 @@ Author: Daniel Turner @ Trustwave
 
 Python 3 REST API & JS GUI for managing hashcat crack jobs in a queuing system.
 
+![CrackQ Dashboard](docs/crackq_dash.jpg)
 
 **Install**
 ----------------
