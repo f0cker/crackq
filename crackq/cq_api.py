@@ -177,11 +177,11 @@ def get_jobdetails(job_details):
                 deets_dict['masks'] = None
     if deets_dict['wordlist'] != 'None' and deets_dict['wordlist'] != '':
         wordlist = deets_dict['wordlist']
-        deets_dict['wordlist'] = list(
-            CRACK_CONF['wordlists'].keys())[list(
-                CRACK_CONF['wordlists'].values()
-                ).index(wordlist)]
-
+        for key, word in dict(CRACK_CONF['wordlists']).items():
+            if wordlist in word:
+                deets_dict['wordlist'] = key
+            else:
+                deets_dict['wordlist'] = None
     return deets_dict
 
 
@@ -1413,9 +1413,9 @@ class Reports(Resource):
                     #job_deets = self.get_restore(self.log_dir, job_id)
                     job = self.q.fetch_job(job_id)
                     if job.meta['HC State']['Cracked Hashes'] < 100:
-                        return json.dumps({'msg': 'Cracked password list too '
+                        return {'msg': 'Cracked password list too '
                                                   'small for meaningful '
-                                                  'analysis'}), 500
+                                                  'analysis'}, 500
                     try:
                         logger.debug('Generating report: {}'
                                      .format(cracked_path))

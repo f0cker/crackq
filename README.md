@@ -36,16 +36,20 @@ See INSTALL.md for full installation guide.
 ---------
 **Admin Guide**
 
+![Docker Diagram](docs/docker_diagram.jpg)
+
 To start the application use the following
-*docker-compose -f docker-compose.nvidia.yml up --build*
+
+```docker-compose -f docker-compose.nvidia.yml up --build```
 
 To wipe all images/containers and start fresh build use:
-*docker system prune -a*
+
+```docker system prune -a```
 
 Some admin scripts are included under /utils, these are very rough small scripts which I am adding to as the need arises.
 
 ---------
-**USER GUIDE**
+**User Guide**
 
 To use the queue a JavaScript GUI is available by browsing to the web server root: https://crackq.xxx.com
 
@@ -76,7 +80,7 @@ John Anderson
 
 Jose Plascencia
 
-@SpliderLabs
+@SpiderLabs
 
 ...and of course:
 

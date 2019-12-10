@@ -163,7 +163,7 @@ If you don't need the OpenLDAP container comment that out of the docker-compose.
 
 **Benchmark**
 
-Finally, you will need to run a system benchmark, which unfortunately take up to an hour. The good news is you only need to do this once per system. CrackQ uses this information when chosing to enable the brain. In a separate window execute the benchmark script from within the crackq container:
+Finally, you will need to run a system benchmark, which unfortunately takes up to an hour. The good news is you only need to do this once per system. CrackQ uses this information when chosing to enable the brain. In a separate window execute the benchmark script from within the crackq container:
 
 ```
 sudo docker exec -it crackq /opt/crackq/build/benchmark.sh
