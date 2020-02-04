@@ -5,8 +5,9 @@ services:
 #image: docker
 image: tmaier/docker-compose:latest
 before_script:
+  - chmod +x install.sh
+  - mkdir /var/crackq/
   #- chown -R 1111:1111 ./
-  #- chmod +x install.sh
   - ./install.sh docker/opencl/ubuntu
   - docker-compose -f docker-compose.test.yml build
   - docker-compose -f docker-compose.test.yml up -d
