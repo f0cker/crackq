@@ -18,7 +18,7 @@ job1:
         - docker exec -t crackq sh -c 'pytest --cache-clear --cov=./'
 
     tags:
-        - test
+        - docker
 
 after_script:
   - docker-compose -f docker-compose.test.yml down
