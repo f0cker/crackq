@@ -34,6 +34,7 @@ cp ./masks/* /var/crackq/files/masks/
 cp -r ./rules/ /var/crackq/files/
 # check os is alpine for running CI tests
 source /etc/os-release
+ls -althR /var/
 if [ $ID = 'alpine' ]
 	then
 		addgroup --gid 1111 -S crackq && adduser --uid 1111 -S -G crackq crackq
