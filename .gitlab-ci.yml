@@ -8,10 +8,10 @@ before_script:
   - chmod +x install.sh
   - whoami
   - id 
-  - adduser
+  - addgroup --gid 1111 -S crackq && adduser --uid 1111 -S -G crackq crackq
   - mkdir /var/crackq/
   - touch /var/crackq/crackq.log
-  #- chown -R 1111:1111 ./
+  - chown -R 1111:1111 /var/crackq/
   - ./install.sh docker/opencl/ubuntu
   - docker-compose -f docker-compose.test.yml build
   - docker-compose -f docker-compose.test.yml up -d
