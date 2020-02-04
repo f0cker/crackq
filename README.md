@@ -66,6 +66,22 @@ The following files are used during operation for logging and state management:
 
 Detailed application logs can be found in the above log file for debugging any issues.
 
+To update an existing installation without rebuilding the images fully you can use the following commands. This will just update hashcat and the crackq backend, not the GUI, but it will give you the all the latest hashcat algorithms if you're using the bleeding edge version of hashcat in the config (default until Hashcat 6 is released):
+
+```$docker-compose -f docker-compose.xxx.yml up --build --force-recreate```
+
+Then drop to a shell in the crackq container:
+
+```$sudo docker exec -it crackq /bin/bash```
+
+and run the benchmark script to include any new algorithms:
+
+```$cd ../ && ./benchmark.sh --force && python3 ./crackq/update_hashtypes.py```
+
+and don't forget to update your config files if you need to.
+
+Otherwise you can just run a complete installation from scratch. Either way, it
+should'nt take any longer than an hour or so.
 
 -----
 **Acknowledgements**

@@ -51,7 +51,7 @@ class Queuer(object):
         logger.info('Adding task to job queue: '
                     '{:s}'.format(arg_dict['job_id']))
         q_obj.enqueue_call(func=arg_dict['func'], job_id=arg_dict['job_id'],
-                           kwargs=arg_dict['kwargs'], ttl=-1, timeout=259200,
+                           kwargs=arg_dict['kwargs'], ttl=-1, timeout=1209600,
                            result_ttl=-1)
         return
 
@@ -109,7 +109,7 @@ class Queuer(object):
         #status_dict = 'None'
         job_dict = {
                     'Status': job.get_status(),
-                    'Time started:': str(job.started_at),
+                    'Time started': str(job.started_at),
                     'Time finished': str(job.ended_at),
                     #'State': status_dict,
                     'Result': job.result,

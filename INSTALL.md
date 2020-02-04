@@ -58,6 +58,29 @@ Or
 For Nvidia you will need the nvidia container runtime package installed. Follow the steps here:
 https://github.com/NVIDIA/nvidia-docker
 
+**Ubuntu**
+
+```
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+
+sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
+sudo systemctl restart docker
+sudo apt-get install nvidia-container-runtime
+```
+
+**CentOS**
+
+```
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.repo | sudo tee /etc/yum.repos.d/nvidia-docker.repo
+
+sudo yum install -y nvidia-container-toolkit
+sudo systemctl restart docker
+sudo yum install nvidia-container-runtime
+```
+
 Or
 
 **ADD AMD GUIDE HERE**
@@ -200,13 +223,15 @@ group: domain\Domain Users
 
 **SAML2 Configuration**
 
-Specify the manifest XML file location for your SAML2 IDP service within the config file and add the entity ID which is usually the server URL. Optionally set the certificaate files. These can be reused form the NGinx certs and will be used to sign requests, though most setups don't sign requests, just the response from the IDP service.
+Specify the manifest XML file location for your SAML2 IDP service within the config file and add the entity ID which is usually the server URL. Additionally, set the certificaate files. These can be reused form the NGinx certs and will be used to sign requests, though most setups don't sign requests, just the response from the IDP service.
+
+The SAML manifest is a URL pointing to the IDP server manifest xml. For MS this is usually located at /FederationMetadata/2007-06/FederationMetadata.xml. The file 'meta_file' is a location to store this locally.
 
 ```
 [auth]
 type: saml2
 saml_manifest: https://sso.xxx.com/FederationMetadata/2007-06/FederationMetadata.xml
-meta_file = /var/crackq/files/saml/saml_meta_file.xml
+meta_file = /var/crackq/files/saml/idp_meta_file.xml
 entity_id = https://crackq.xxx.com
 group = domain\Domain Users
 sp_cert_file = /var/crackq/files/saml/certificate.pem
@@ -217,8 +242,10 @@ sp_key_file = /var/crackq/files/saml/private.key
 Generate a metadata file for our side by using the following command:
 
 ```
-docker exec -it crackq make_metadata.py ./crackq/sp_conf.py > /var/crackq/files/saml/saml_meta_file.xml
+sudo docker exec -it crackq make_metadata.py ./crackq/sp_conf.py > /<insert-accessible-path>/sp_meta_file.xml
 ```
+
+This can be used to import on the authenticating IDP server to allow the CrackQ server to act as the SP. So the next step should be to import this to the authenticating IDP server.
 
 Specify the group to use for authorization requests, this is the domain group in the case of MS ADFS. This file can be provided to the IDP administrators to permit authentication form this SP (CrackQ).
 
@@ -282,12 +309,20 @@ Unsupported config option for services.crackq: 'runtime'
 ```
 This is due to the version of docker installed, you probably skipped step 1 and installed from the OS repo ;)
 
+```
+ERROR: for crackq  Cannot create container for service crackq: Unknown runtime specified nvidia
+```
+Install the NVidia container toolkit and runtime: https://github.com/NVIDIA/nvidia-docker
+
 
 ```
 crackq      | FileNotFoundError: [Errno 2] No such file or directory: '/var/crackq/files/hashm_dict.json'
 ```
 
 This is because you haven't run the benchmark script (see above), the benchmark creates a file listing all supported hashtypes and their benchmark speed into a file, which is needed by CrackQ. In a pinch you can ask it to copy the default benchmark file, but this is obviously not a good choice as all the brain callibration will be off.
+
+
+
 
 
 If you have any issues and need to debug from within one of the containers, the container names are:

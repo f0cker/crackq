@@ -23,7 +23,7 @@ from rq import use_connection, Queue
 from saml2 import BINDING_HTTP_POST
 from saml2 import BINDING_HTTP_REDIRECT
 from saml2 import sigver
-
+from flask_seasurf import SeaSurf
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_required, login_user, logout_user, UserMixin, current_user
 from flask_session import Session
@@ -44,6 +44,7 @@ from sqlalchemy.ext.declarative import declarative_base
 #from crackq import create_app
 from crackq.db import db
 import crackq
+import saml2
 #from crackq import app
 #from wsgi import db, app
 #import crackq
@@ -52,17 +53,15 @@ import crackq
 # set perms
 os.umask(0o077)
 
-#Setup logging
+# Setup logging
 fileConfig('log_config.ini')
 logger = logging.getLogger()
 login_manager = LoginManager()
 
 app = Flask(__name__)
-
-#session = Session(app)
-#session.app.session_interface.db.create_all()
-#db.create_all()
-
+###***is it possible to move this to __init__?
+csrf = SeaSurf()
+csrf.init_app(app)
 
 CRACK_CONF = hc_conf()
 
@@ -77,7 +76,7 @@ class StringContains(validate.Regexp):
     def __call__(self, value):
         if len(self.regex.findall(value)) > 0:
             raise ValidationError(self._format_error(value))
-            return value
+        return value
 
 
 class parse_json_schema(Schema):
@@ -114,7 +113,7 @@ class parse_json_schema(Schema):
     mask_file = fields.List(fields.String(validate=[StringContains(r'[\W]\-'),
                                                 Length(min=1, max=60)]),
                         allow_none=True)
-    name = fields.Str(allow_none=True, validate=StringContains('[\W]'), error_messages=error_messages)
+    name = fields.Str(allow_none=True, validate=StringContains(r'[\W]'), error_messages=error_messages)
     hash_mode = fields.Int(allow_none=False, validate=Range(min=0, max=65535))
     restore = fields.Int(validate=Range(min=0, max=1000000000000))
     user = fields.Str(allow_none=False, validate=StringContains(r'[\W]'))
@@ -148,6 +147,7 @@ def get_jobdetails(job_details):
     ###***make this less ugly
     ###***review stripping here for improvement
     #review rules processing
+    logger.debug('Parsing job details:\n{}'.format(job_details))
     # Process rules list separately as workaround for splitting on comma
     if '[' in job_details:
         ###***add mask_file here when updating to allow list of files
@@ -172,17 +172,20 @@ def get_jobdetails(job_details):
         mask = deets_dict['mask']
         for key, mask_file in dict(CRACK_CONF['masks']).items():
             if mask in mask_file:
+
                 deets_dict['mask'] = key
-            else:
-                deets_dict['masks'] = None
     if deets_dict['wordlist'] != 'None' and deets_dict['wordlist'] != '':
         wordlist = deets_dict['wordlist']
         for key, word in dict(CRACK_CONF['wordlists']).items():
             if wordlist in word:
                 deets_dict['wordlist'] = key
+                break
             else:
                 deets_dict['wordlist'] = None
     return deets_dict
+
+
+
 
 
 def add_jobid(job_id):
@@ -245,6 +248,74 @@ def check_jobid(job_id):
         return False
 
 
+def check_rules(orig_rules):
+    """
+    Check provided rules list is sane
+
+    Arguments
+    ---------
+    orig_rules: list
+        List of rules to check
+
+    Returns
+    -------
+    rules: list
+        List of rules or False if any are invalid
+    """
+    logger.debug('Checking rules valid')
+    try:
+        if orig_rules is None:
+            rules = None
+        elif isinstance(orig_rules, list):
+            rules = []
+            for rule in orig_rules:
+                if rule in CRACK_CONF['rules']:
+                    logger.debug('Using rules file: {}'.format(CRACK_CONF['rules'][rule]))
+                    rules.append(CRACK_CONF['rules'][rule])
+            return rules
+        else:
+            logger.debug('Invalid rules provided')
+            return False
+    except KeyError:
+        logger.debug('Invalid rules provided')
+        return False
+
+
+def check_mask(orig_masks):
+    """
+    Check provided mask file list is sane
+
+    Arguments
+    ---------
+    orig_masks: list
+        List of mask files to check
+
+    Returns
+    -------
+    mask_files: list
+        List of mask files or False if any are invalid
+    """
+    logger.debug('Checking mask files are valid')
+    try:
+        if orig_masks is None:
+            mask_file = None
+        elif isinstance(orig_masks, list):
+            mask_file = []
+            for mask in orig_masks:
+                if mask in CRACK_CONF['masks']:
+                    #mask_name = CRACK_CONF['masks'][mask]
+                    logger.debug('Using mask file: {}'.format(mask))
+                    mask_file.append(CRACK_CONF['masks'][mask])
+            return mask_file if len(mask_file) > 0 else None
+        else:
+            logger.debug('Invalid mask file provided')
+            return False
+    except KeyError:
+        logger.debug('Invalid mask file provided')
+        return False
+    # this is just set to use the first mask file in the list for now
+    #mask = mask_file[0] if mask_file else mask
+
 def create_user(username):
     if User.query.filter_by(username=username).first():
         logger.debug('User already exists')
@@ -273,7 +344,8 @@ class Sso(Resource):
             self.meta_file = CRACK_CONF['auth']['meta_file']
             self.entity_id = CRACK_CONF['auth']['entity_id']
             self.group = CRACK_CONF['auth']['group']
-            self.saml_auth = auth.Saml2(self.meta_url, self.meta_file, self.entity_id)
+            self.saml_auth = auth.Saml2(self.meta_url,
+                                        self.meta_file, self.entity_id)
             self.saml_client = self.saml_auth.s_client()
             #self.reqid = None
 
@@ -293,6 +365,7 @@ class Sso(Resource):
         else:
             return 'Method not supported', 405
 
+    @csrf.exempt
     def post(self):
         """
         Handle returned SAML reponse
@@ -482,6 +555,59 @@ class Queuing(Resource):
                         except KeyError:
                             job.meta['Requeue Count'] = 0
 
+    def get_comp_dict(self, comp_list, session=False):
+        """
+        Function to get comlete queue information
+
+        Arguments
+        ---------
+        comp_list: list
+            list of job IDs in complete queue
+        session: string
+            session ID to reduce returned dictionary to jobs owned by user.
+
+        Returns
+        -------
+        comp_dict: dictionary
+            dict containing high-level info for jobs in complete queue
+        """
+        comp_dict = {}
+        for job_id in comp_list:
+            if session:
+                if check_jobid(job_id):
+                    job = self.q.fetch_job(job_id)
+                else:
+                    job = None
+            else:
+                job = self.q.fetch_job(job_id)
+            if job:
+                comp_dict[job_id] = {}
+                job_deets = get_jobdetails(job.description)
+                if job.meta and 'HC State' in job.meta.keys():
+                    if isinstance(job.meta['HC State'], dict):
+                        cracked = str(job.meta['HC State']['Cracked Hashes'])
+                        total = str(job.meta['HC State']['Total Hashes'])
+                        comp_dict[job_id]['Cracked'] = '{}/{}'.format(cracked, total)
+                        comp_dict[job_id]['Running Time'] = job.meta['HC State']['Running Time']
+                        try:
+                            comp_dict[job_id]['Name'] = get_jobdetails(job.description)['name']
+                        except KeyError:
+                            comp_dict[job_id]['Name'] = 'No name'
+                        except AttributeError:
+                            comp_dict[job_id]['Name'] = 'No name'
+                    else:
+                        comp_dict[job_id]['Name'] = job_deets['name']
+                        comp_dict[job_id]['Cracked'] = 'All'
+                        ###**update to redis job time?
+                        comp_dict[job_id]['Running Time'] = '0'
+                else:
+                    comp_dict[job_id]['Name'] = job_deets['name']
+                    comp_dict[job_id]['Cracked'] = None
+                    comp_dict[job_id]['Running Time'] = None
+            else:
+                logger.error('job.meta is missing for job: {}'.format(job_id))
+        return comp_dict
+
     @login_required
     def get(self, job_id):
         """
@@ -510,62 +636,58 @@ class Queuing(Resource):
         failed_dict = self.crack_q.check_failed()
         comp_list = self.crack_q.check_complete()
         last_comp = []
-
+        end_times = {}
         if len(comp_list) > 0:
+            ###***make this a function/method
             for j in comp_list:
                 if check_jobid(j):
                     job = self.q.fetch_job(j)
-                    try:
-                        job_name = get_jobdetails(job.description)['name']
-                    except KeyError:
-                        job_name = 'No name'
-                    except AttributeError:
-                        job_name = 'No name'
-                    last_comp = [{ 'job_name': job_name, 'job_id': j}]
+                    if job:
+                        ended = job.ended_at
+                        if ended:
+                            end_times[j] = ended
+            if len(end_times) > 0:
+                latest = max(end_times, key=end_times.get)
+            else:
+                latest = None
+            if latest:
+                job = self.q.fetch_job(latest)
+            else:
+                job = None
+            if job:
+                try:
+                    job_name = get_jobdetails(job.description)['name']
+                except KeyError:
+                    job_name = 'No name'
+                except AttributeError:
+                    job_name = 'No name'
+                # just a single job for now
+                last_comp = [{'job_name': job_name,
+                             'job_id': latest}]
         else:
-            q_dict['Last Complete'] = []
+            last_comp = [{'job_name': 'None'}]
         q_dict['Last Complete'] = last_comp
         logger.debug('Completed jobs: {}'.format(comp_list))
         logger.debug('q_dict: {}'.format(q_dict))
         ###***check for race conditions here!!
         ###***apply validation here
-        ###***fix this shit up, it's messy
         if job_id == 'all':
             ###***definitely make these a function
             if len(cur_list) > 0:
-                try:
-                    job = self.q.fetch_job(cur_list[0])
-                    if job:
+                job = self.q.fetch_job(cur_list[0])
+                if job:
+                    if 'HC State' in job.meta:
+                        ###***small issue here when job is added initially?
                         if isinstance(job.meta['HC State'], dict):
                             job_details = get_jobdetails(job.description)
                             q_dict['Current Job'][cur_list[0]]['Job Details'] = job_details
-                    if isinstance(q_dict, dict):
-                        if isinstance(q_dict['Current Job'][cur_list[0]]['State']['HC State'], dict):
-                            del q_dict['Current Job'][cur_list[0]]['State']['HC State']['Cracked']
-                        else:
-                            logger.debug('Still initializing')
-                    else:
-                        logger.error('No Queue')
-                except KeyError as err:
-                    logger.error('Cant clear cracked yet1: {}'.format(err))
-                if len(q_dict) > 0:
-                    for qjob_id in q_dict['Queued Jobs']:
-                        job = self.q.fetch_job(qjob_id)
-                        job_details = get_jobdetails(job.description)
-                        q_dict['Queued Jobs'][qjob_id]['Job Details'] = job_details
-                        try:
-                            if isinstance(q_dict, dict):
-                                if isinstance(q_dict['Queued Jobs'][qjob_id]['State']['HC State'], dict):
-                                    if 'Cracked' in q_dict['Queued Jobs'][qjob_id]['State']['HC State']:
-                                        del q_dict['Queued Jobs'][qjob_id]['State']['HC State']['Cracked']
-                                else:
-                                    logger.debug('Still initializing')
-                            else:
-                                logger.error('No Queue')
-                            #if 'Cracked' in q_dict['Queued Jobs'][qjob_id]['HC State']['HC State']:
-                            #    del q_dict['Queued Jobs'][qjob_id]['HC State']['HC State']['Cracked']
-                        except KeyError as err:
-                            logger.debug('Cant clear cracked yet2: {}'.format(err))
+                else:
+                    logger.error('No Queue')
+            if len(q_dict) > 0:
+                for qjob_id in q_dict['Queued Jobs']:
+                    job = self.q.fetch_job(qjob_id)
+                    job_details = get_jobdetails(job.description)
+                    q_dict['Queued Jobs'][qjob_id]['Job Details'] = job_details
             return q_dict, 200
         ###***apply validation here
         elif job_id == 'failed':
@@ -577,55 +699,13 @@ class Queuing(Resource):
                     failess_dict[job_id] = failed_dict[job_id]
             return failess_dict, 200
         ###***apply validation here
-        ###***move to function in crackqueue
         elif job_id == 'complete':
             comp_dict = {}
-            ###***add try/except here?
-            for job_id in comp_list:
-                comp_dict[job_id] = {}
-                job = self.q.fetch_job(job_id)
-                if job:
-                    if job.meta and 'HC State' in job.meta.keys():
-                        if isinstance(job.meta['HC State'], dict):
-                            cracked = str(job.meta['HC State']['Cracked Hashes'])
-                            total = str(job.meta['HC State']['Total Hashes'])
-                            comp_dict[job_id]['Cracked'] = '{}/{}'.format(cracked, total)
-                            comp_dict[job_id]['Running Time'] = job.meta['HC State']['Running Time']
-                            ###***duplicated, make method?
-                            try:
-                                comp_dict[job_id]['Name'] = get_jobdetails(job.description)['name']
-                            except KeyError:
-                                comp_dict[job_id]['Name'] = 'No name'
-                            except AttributeError:
-                                comp_dict[job_id]['Name'] = 'No name'
-                else:
-                    logger.error('job.meta is missing for job: {}'.format(job_id))
-
+            comp_dict = self.get_comp_dict(comp_list, session=False)
             return comp_dict, 200
         elif job_id == 'completeless':
             comp_dict = {}
-            ###***add try/except here?
-            for job_id in comp_list:
-                if check_jobid(job_id):
-                    comp_dict[job_id] = {}
-                    job = self.q.fetch_job(job_id)
-                    if job:
-                        if job.meta and 'HC State' in job.meta.keys():
-                            if isinstance(job.meta['HC State'], dict):
-                                cracked = str(job.meta['HC State']['Cracked Hashes'])
-                                total = str(job.meta['HC State']['Total Hashes'])
-                                comp_dict[job_id]['Cracked'] = '{}/{}'.format(cracked, total)
-                                comp_dict[job_id]['Running Time'] = job.meta['HC State']['Running Time']
-                                ###***duplicated, make method?
-                                try:
-                                    comp_dict[job_id]['Name'] = get_jobdetails(job.description)['name']
-                                except KeyError:
-                                    comp_dict[job_id]['Name'] = 'No name'
-                                except AttributeError:
-                                    comp_dict[job_id]['Name'] = 'No name'
-                    else:
-                        logger.error('job.meta is missing for job: {}'.format(job_id))
-
+            comp_dict = self.get_comp_dict(comp_list, session=True)
             return comp_dict, 200
         else:
             marsh_schema = parse_json_schema().load({'job_id': job_id})
@@ -644,6 +724,7 @@ class Queuing(Resource):
                 if job is not None:
                     job_details = get_jobdetails(job.description)
                     q_dict['Queued Jobs'][job_id]['Job Details'] = job_details
+                    ###***add cracked passwords key/value here from file
                     ###***add place in queue info
                     return q_dict['Queued Jobs'][job_id], 200
             elif job_id in q_dict['Current Job']:
@@ -659,20 +740,26 @@ class Queuing(Resource):
                     job_details = get_jobdetails(job.description)
                     job_dict = {
                         'Status': job.get_status(),
-                        'Time started:': str(job.started_at),
+                        'Time started': str(job.started_at),
                         'Time finished': str(job.ended_at),
                         'Job Details': job_details,
                         'Result': job.result,
                         'HC State': job.meta,
                         }
+                    cracked_file = '{}{}.cracked'.format(self.log_dir, job_id)
+                    try:
+                        with open(cracked_file, 'r') as cracked_fh:
+                            job_dict['Cracked'] = [crack.strip() for crack in cracked_fh]
+                    except IOError as err:
+                        logger.debug('Cracked file does not exist: {}'.format(err))
                     return job_dict, 200
+                else:
+                    return 'Not Found', 404
                 ###***dead code??
+                print('TEST***')
                 result_file = '{}.json'.format(cur_list[0])
                 with open(result_file, 'r') as status_json:
                     return (status_json.read(), q_dict['Current Job']), 200
-                #with open('state.json', 'r') as status_json:
-                #    return (status_json.read(), q_dict['Current Job']), 201
-                    #@0return json.dumps(status_json.read()), 200
             elif job_id in comp_list:
                 if not check_job:
                     ###***modify this to give better response?
@@ -683,12 +770,18 @@ class Queuing(Resource):
                     job_details = get_jobdetails(job.description)
                     job_dict = {
                         'Status': job.get_status(),
-                        'Time started:': str(job.started_at),
+                        'Time started': str(job.started_at),
                         'Time finished': str(job.ended_at),
                         'Job Details': job_details,
                         'Result': job.result,
                         'HC State': job.meta,
                         }
+                    cracked_file = '{}{}.cracked'.format(self.log_dir, job_id)
+                    try:
+                        with open(cracked_file, 'r') as cracked_fh:
+                            job_dict['Cracked'] = [crack.strip() for crack in cracked_fh]
+                    except IOError as err:
+                        logger.debug('Cracked file does not exist: {}'.format(err))
                     return job_dict, 200
             elif job_id in failed_dict:
                 if not check_job:
@@ -699,16 +792,17 @@ class Queuing(Resource):
                     job_details = get_jobdetails(job.description)
                     job_dict = {
                         'Status': job.get_status(),
-                        'Time started:': str(job.started_at),
+                        'Time started': str(job.started_at),
                         'Time finished': str(job.ended_at),
                         'Job Details': job_details,
                         'Result': job.result,
                         'HC State': job.meta,
                         }
-                ###***change http code?
-                return job_dict, 200
+                    #if job_dict:
+                    return job_dict, 200
+                else:
+                    return 'Not Found', 404
             else:
-                ###***update to handle 404 etc better
                 return 'Not Found', 404
 
     @login_required
@@ -756,8 +850,8 @@ class Queuing(Resource):
                     job.save()
                     comp.add(job, -1)
                     job.cleanup(-1)
-                Queue.dequeue_any(self.q, None, connection=self.redis_con)
                 for job in marsh_schema.data['batch_job']:
+                    Queue.dequeue_any(self.q, None, connection=self.redis_con)
                     #adder.post(job_id=job['job_id'])
                     #adder.post(job_id=job['job_id'])
                     j = self.q.fetch_job(job['job_id'])
@@ -817,7 +911,7 @@ class Queuing(Resource):
                 Queue.dequeue_any(self.q, None, connection=self.redis_con)
                 return 'Stopped Job', 200
         except AttributeError as err:
-            logger.error('Failed to stop job: {}'.format(err))
+            logger.debug('Failed to stop job: {}'.format(err))
             return 'Invalid Job ID', 404
 
     @login_required
@@ -975,20 +1069,20 @@ class Adder(Resource):
                         return status_json
                     except IOError as err:
                         logger.warning('Invalid job ID: {}'.format(err))
-                        return 0
+                        return False
 
                     except TypeError as err:
                         logger.warning('Invalid job ID: {}'.format(err))
-                        return 0
+                        return False
             except IOError as err:
                 logger.warning('Restore file Error: {}'.format(err))
-                return 0
+                return False
             except json.decoder.JSONDecodeError as err:
                 logger.warning('Restore file Error: {}'.format(err))
-                return 0
+                return False
         else:
             logger.warning('Invalid job ID')
-            return 0
+            return False
 
     def session_check(self, log_dir, job_id):
         """
@@ -1062,6 +1156,7 @@ class Adder(Resource):
             logger.debug('No job ID provided')
             job_id = None
         # Check for existing session info
+        ###***make this a method
         if job_id:
             if job_id.isalnum():
                 if self.session_check(self.log_dir, job_id):
@@ -1069,9 +1164,13 @@ class Adder(Resource):
                     started = rq.registry.StartedJobRegistry('default',
                                                              connection=self.redis_con)
                     cur_list = started.get_job_ids()
+                    q_dict = self.crack_q.q_monitor(self.q)
                     if job_id in cur_list:
                         logger.error('Job is already running')
                         return json.dumps({'msg': 'Job is already running'}), 500
+                    if job_id in q_dict['Queued Jobs'].keys():
+                        logger.error('Job is already queued')
+                        return json.dumps({'msg': 'Job is already queued'}), 500
                     ###***SET THIS TO CHECK MATCHES IN A DICT RATHER THAN DIRECT
                     ###***REVIEW ALL CONCATINATION
                     ###***taking input here, review
@@ -1080,31 +1179,45 @@ class Adder(Resource):
                     pot_path = '{}crackq.pot'.format(self.log_dir)
                     job_deets = self.get_restore(self.log_dir, job_id)
                     job = self.q.fetch_job(job_id)
-                    if job_deets == 0:
-                        logger.debug('Job not previously started, restore = 0')
-                        self.q.enqueue_job(job)
-                        return json.dumps({'msg': 'Invalid Job ID'}), 202
+                    if not job_deets:
+                        logger.debug('Job restor error. Never started')
+                        return json.dumps({'msg': 'Error restoring job'}), 500
                         #return json.dumps({'msg': 'Job restore error.'}), 500
+                    elif not job_deets['restore']:
+                        logger.debug('Job not previously started, restore = 0')
+                        job_deets['restore'] == 0
+                    elif job_deets['restore'] == 0:
+                        logger.debug('Job not previously started, restore = 0')
+                    if job_deets['wordlist'] in CRACK_CONF['wordlists']:
+                        wordlist = CRACK_CONF['wordlists'][job_deets['wordlist']]
+                    else:
+                        wordlist = None
+                    rules = check_rules(job_deets['rules'])
+                    if rules is False:
+                        return json.dumps({'msg': 'Invalid rules selected'}), 500
+                    mask_file = check_mask(job_deets['mask'])
+                    # this is just set to use the first mask file in the list for now
+                    mask = mask_file if mask_file else job_deets['mask']
                     hc_args = {
                         'crack': self.crack,
                         'hash_file': hash_file,
                         'session': job_id,
-                        'wordlist': job_deets['wordlist'] if 'wordlist' in job_deets else None,
-                        'mask': job_deets['mask'] if 'mask' in job_deets else None,
-                        'mask_file': True if job_deets['mask'] in CRACK_CONF['masks'] else False,
+                        'wordlist': wordlist,
+                        'mask': mask,
+                        #'mask': job_deets['mask'] if 'mask' in job_deets else None,
+                        'mask_file': True if mask_file else False,
                         'attack_mode': int(job_deets['attack_mode']),
                         'hash_mode': int(job_deets['hash_mode']),
                         'outfile': outfile,
-                        'rules': job_deets['rules'] if 'rules' in job_deets else None,
+                        'rules': rules,
                         'restore': job_deets['restore'],
                         'username': job_deets['username'] if 'user' in job_deets else None,
                         'brain': False if 'disable_brain' in job_deets else True,
                         'name': job_deets['name'] if 'name' in job_deets else None,
                         'pot_path': pot_path,
                         }
+                    #self.q.enqueue_job(job)
                     job = self.q.fetch_job(job_id)
-                    #job.result = 'Run/Restored' #Restored/Run'
-                    #job.result = None
                     job.meta['CrackQ State'] = 'Run/Restored'
                     job.save_meta()
                 else:
@@ -1136,7 +1249,12 @@ class Adder(Resource):
             except KeyError as err:
                 logger.debug('No hash list provided: {}'.format(err))
                 return json.dumps({'msg': 'No hashes provided'}), 500
-            check_m = self.mode_check(args['hash_mode'])
+            try:
+                args['hash_mode']
+                check_m = self.mode_check(args['hash_mode'])
+            except KeyError:
+                check_m = False
+
             logger.debug('Hash mode check: {}'.format(check_m))
             ###***change to if check_m
             if check_m is not False:
@@ -1155,46 +1273,18 @@ class Adder(Resource):
                 else:
                     return json.dumps({'msg': 'Invalid wordlist selected'}), 500
             try:
-                mask = args['mask']
-            except KeyError as err:
-                logger.debug('Mask value not provided')
-                mask = False
-            ###***review this
+                mask_file = check_mask(args['mask_file'])
+            except KeyError:
+                mask_file = None
             try:
-                logger.debug('Checking mask_file valid: {}'.format(args['mask_file']))
-                if args['mask_file'] is None:
-                    mask_file = None
-                elif isinstance(args['mask_file'], list):
-                    mask_file = []
-                    for mask in args['mask_file']:
-                        if mask in CRACK_CONF['masks']:
-                            #mask_name = CRACK_CONF['masks'][mask]
-                            logger.debug('Using mask file: {}'.format(mask))
-                            mask_file.append(CRACK_CONF['masks'][mask])
-                else:
-                    return json.dumps({'msg': 'Invalid mask file selected'}), 500
-            except KeyError as err:
-                rules = None
-                logger.debug('No mask file provided: {}'.format(err))
+                mask = args['mask']
+            except KeyError:
+                mask = None
             # this is just set to use the first mask file in the list for now
             mask = mask_file[0] if mask_file else mask
-            ###***review this
-            try:
-                logger.debug('Checking rules valid: {}'.format(args['rules']))
-                if args['rules'] is None:
-                    rules = None
-                elif isinstance(args['rules'], list):
-                    rules = []
-                    for rule in args['rules']:
-                        if rule in CRACK_CONF['rules']:
-                            logger.debug('Using rules file: {}'.format(CRACK_CONF['rules'][rule]))
-                            rules.append(CRACK_CONF['rules'][rule])
-                    #rules = [rule for rule in CRACK_CONF['rules'][args['rules']]]
-                else:
-                    return json.dumps({'msg': 'Invalid rules selected'}), 500
-            except KeyError as err:
-                rules = None
-                logger.debug('No rules provided: {}'.format(err))
+            rules = check_rules(args['rules'])
+            if rules is False:
+                return json.dumps({'msg': 'Invalid rules selected'}), 500
             try:
                 username = args['username']
             except KeyError as err:
@@ -1412,7 +1502,8 @@ class Reports(Resource):
                     #hash_file = '{}{}.hashes'.format(self.log_dir, job_id)
                     #job_deets = self.get_restore(self.log_dir, job_id)
                     job = self.q.fetch_job(job_id)
-                    if job.meta['HC State']['Cracked Hashes'] < 100:
+                    min_report = CRACK_CONF['misc']['min_report']
+                    if job.meta['HC State']['Cracked Hashes'] < int(min_report):
                         return {'msg': 'Cracked password list too '
                                                   'small for meaningful '
                                                   'analysis'}, 500

@@ -4,6 +4,7 @@ if [ '$1' == '--force' ]
         then
                 echo '[+] Force enabled - creating system benchmark report'
                 python3 pyhashcat/pyhashcat/benchmark.py /var/crackq/files/sys_benchmark.txt;
+		exit;
         else
             echo '[+] Checking for system benchmark report. This is used for tuning' \
                  'CrackQ and the Hashcat Brain.'

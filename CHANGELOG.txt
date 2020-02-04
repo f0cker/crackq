@@ -1,0 +1,40 @@
+Changelog
+=========
+
+
+v0.0.1b
+------------
+
+
+------------
+- Fixing mask file name display. 
+- Fixed queues table overflow.
+- Updated wordlist regex.
+- Updated queue tests.
+- Updated docs and improved saml auth.
+- Added additional checks for add job.
+- Fixed complete queue bug.
+- Updated job timeout value.
+- set addjob modal to show hash mode number once selected
+- Fixed install.sh.
+- Updated benchmark.sh.
+- Updated flask included example ldif file added csrf tokens code
+- fixed complete job queue display when job hit all cracked from potfile
+- modified cracked hashes returned in gui to use carriage return as separator.
+- Fixed bug in failed (all) gui page.
+- Changed last complete to last complete for user. 
+- Updated last completed in gui. 
+- Fixed superflous colon in time started, improved last completed to be user
+specific
+- Removed scrollbar and Updated gui last completed window to truncate long names. 
+- Updated readme. 
+-  fixed text style in job_details fix text style/colour in complete /failed queue tabs
+- added link to job details from dashboard for complete and current
+- fixed queue reorder duplicate jobs
+- added better error reporting from hashcat events
+- fix broken job restore add/fix username check against valid algorithms
+- added check to test job is not already queued before restoring
+- add config setting for report min count. fixes #2 
+- Requirements.txt update. 
+- Added latest hash modes
+- Added CI/CD file for gilab runner

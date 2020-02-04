@@ -1,12 +1,12 @@
 configparser==3.5.0
-Flask==1.0.2
+Flask==1.1.1
 Flask-RESTful==0.3.6
 redis==3.0.1
 rq==1.0
 marshmallow==2.19.2
-pytest==4.0.2
-pytest-cov==2.7.1
-flake8==3.7.7
+pytest==5.3.4
+pytest-cov==2.8.1
+flake8==3.7.9
 python-ldap==3.2.0
 Flask-JWT-Extended==3.20.0
 #Flask-Sessions==0.1.5
@@ -16,3 +16,4 @@ flask-talisman==0.7.0
 pysaml2==4.8.0
 flask-Login==0.4.1
 Flask-Cors==3.0.8
+Flask-SeaSurf==0.2.2

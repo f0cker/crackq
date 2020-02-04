@@ -1,7 +1,6 @@
 ###***add in args here and update to version 3 if it's possible with nvidia runtime
 
-version: '2.3'
-#version: '3'
+version: '2.0'
 services:
     redis:
         image: "redis:latest"
@@ -10,52 +9,45 @@ services:
             - crackq_net
         ports:
             - "127.0.0.1:6379:6379"
+        #volumes:
+        #    - /var/crackq/:/var/crackq
     crackq:
-        build:
-            context: ./build
-            dockerfile: Dockerfile
-        image: "nvidia-centos"
+        image: "opencl-ubuntu"
         ports:
-            - "127.0.0.1:8080:8080"
+                - "127.0.0.1:8080:8080"
         depends_on:
-            - redis
+                - redis
         networks:
             - crackq_net
         container_name: "crackq"
         volumes:
             - /var/crackq/:/var/crackq
-            - ./crackq:/opt/crackq/build/crackq/
+            #- ./crackq:/opt/crackq/build/crackq/
         stdin_open: true
-        runtime: nvidia
         user: crackq
-        tty: true
-            
+        tty: true        
         command:
-            #sh -c "/bin/bash"
-            sh -c "./benchmark.sh &&
-            pip3 install . --user && cd ./crackq &&
-            /usr/local/bin/circusd /opt/crackq/build/circus.ini"
-            
-    nginx:
-        build:
-            context: .
-            dockerfile: Dockerfile.nginx
-        image: "nginx-crackq"
-        restart: always
-        depends_on:
-                - crackq 
-        container_name: "nginx"
-        ports:
-             - "443:443"
-        volumes:
-             - /var/crackq/files/nginx/conf.d:/etc/nginx/conf.d
-        #     - /var/crackq/files/nginx/:/etc/nginx/
-        stdin_open: true
-        tty: true
-        #command:
-        #    sh -c "/bin/bash"
-        networks:
-            - crackq_net
+                sh -c "cd ../ &&
+                pip3 install . --user &&
+                cd ./crackq/ &&
+                python3 update_hashtypes.py &&
+                /usr/local/bin/circusd /opt/crackq/build/circus.ini"
+
+#nginx:
+#    build:
+#            context: .
+#            dockerfile: Dockerfile.nginx
+#        image: "nginx-crackq"
+#        restart: always
+#        depends_on:
+#                - crackq 
+#        container_name: "nginx"
+#        ports:
+#             - "443:443"
+#        volumes:
+#             - /var/crackq/files/nginx/conf.d:/etc/nginx/conf.d
+#        networks:
+#            - crackq_net
 
     openldap:
         image: osixia/openldap:1.2.4 
@@ -67,6 +59,8 @@ services:
                 LDAP_ADMIN_PASSWORD: "chu437hnjdG8LmsEchsdfu7u4283915fdJ"
                 LDAP_CONFIG_PASSWORD: "config"
                 LDAP_READONLY_USER: "false"
+                #LDAP_READONLY_USER_USERNAME: "readonly"
+                #LDAP_READONLY_USER_PASSWORD: "readonly"
                 LDAP_RFC2307BIS_SCHEMA: "false"
                 LDAP_BACKEND: "mdb"
                 LDAP_TLS: "true"
@@ -79,7 +73,7 @@ services:
                 LDAP_TLS_PROTOCOL_MIN: "3.1"
                 LDAP_TLS_VERIFY_CLIENT: "try"
                 LDAP_REPLICATION: "false"
-                KEEP_EXISTING_CONFIG: "True"
+                KEEP_EXISTING_CONFIG: "false"
                 LDAP_REMOVE_CONFIG_AFTER_SETUP: "true"
                 LDAP_SSL_HELPER_PREFIX: "ldap"
         tty: true
@@ -96,6 +90,8 @@ services:
         ports:
              - "127.0.0.1:389:389"
              - "127.0.0.1:636:636"
+        #command:
+        #        sh -c "/tmp/wait.sh"
         networks:
             - crackq_net
 

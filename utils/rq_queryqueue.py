@@ -23,7 +23,9 @@ comp = rq.registry.FinishedJobRegistry(sys.argv[1],
 comp_list = comp.get_job_ids()
 cur_list = started.get_job_ids()
 failed_list = failed.get_job_ids()
+queue = redis_q.job_ids
 
 print('Complete: {}'.format(comp_list))
 print('Failed: {}'.format(failed_list))
 print('Current: {}'.format(cur_list))
+print('Queued: {}'.format(queue))

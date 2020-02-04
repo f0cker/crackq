@@ -11,7 +11,7 @@ from flask_login import LoginManager, login_required, login_user, logout_user, U
 #from flask_login import LoginManager
 from flask_session import Session
 from crackq.models import User
-
+from flask_seasurf import SeaSurf
 
 CRACK_CONF = hc_conf()
 
@@ -19,9 +19,9 @@ def create_app(test_config=None):
     """Create and configure an instance of the Flask application."""
     app = Flask(__name__)
     aconf = CRACK_CONF['app']
-    #CORS(app, resources={r'/*': {'origins': 'http://127.0.0.1:8081',
+    #CORS(app, resources={r'/*': {'origins': 'http://localhost:8081',
     #                            'supports_credentials': True},
-    #                    })
+    #                   })
     app.config['SESSION_TYPE'] = aconf['SESSION_TYPE']
     app.config['SQLALCHEMY_DATABASE_URI'] = aconf['SQLALCHEMY_DATABASE_URI']
     app.config['SESSION_COOKIE_HTTPONLY'] = aconf['SESSION_COOKIE_HTTPONLY']
@@ -31,6 +31,9 @@ def create_app(test_config=None):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     #Talisman(app, strict_transport_security=False)
+    #csrf = SeaSurf()
+    app.config['CSRF_COOKIE_NAME'] = 'csrftoken'
+    #csrf.init_app(app)
     db.init_app(app)
     with app.app_context():
         db.create_all()

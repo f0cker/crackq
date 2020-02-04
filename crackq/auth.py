@@ -18,6 +18,18 @@ logger = logging.getLogger()
 class Saml2():
     """
     SAML2 authentication class
+
+    Arguments
+    --------
+    meta_url: str
+        Location of SAML metadata URL
+    meta_file: str
+        Location to store metadata locally
+    entity_id: str
+        SAML entity ID (usually hostname/URL)
+
+    Returns
+    ------
     """
     def __init__(self, meta_url, meta_file, entity_id):
         self.meta_url = meta_url
@@ -37,12 +49,21 @@ class Saml2():
                              _external=True)
         try:
             with open(self.meta_file, 'r') as meta_fh:
-                if len(meta_fh.read()) > 0:
-                    pass
-        except FileError as err:
+                meta_len = len(meta_fh.read())
+            if meta_len < 1:
+                try:
+                    res = requests.get(self.meta_url)
+                    with open(self.meta_file, 'w') as meta_fh:
+                              meta_fh.write(res.text)
+                ###***fix
+                except Exception as err:
+                    print(err)
+                    logger.error('Invalid SAML metadata file/s provided')
+        except FileNotFoundError as err:
             res = requests.get(self.meta_url)
             with open(self.meta_file, 'w') as meta_fh:
-                meta_fh.write(res.text)
+                      meta_fh.write(res.text)
+            #logger.error('Invalid SAML metadata file provided')
         ###***review all of these settings
         settings = {
             'metadata': {

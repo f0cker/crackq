@@ -4,6 +4,7 @@ import logging
 import json
 import os
 import time
+import rq
 #import uuid
 
 from crackq.conf import hc_conf
@@ -38,7 +39,9 @@ class Crack(object):
         status_data = sender.hashcat_status_get_status()
         if status_data == -1:
             status_data = 'Waiting'
-        #status_data['Requeue Count'] = 0
+        # hide cracked passwords
+        #elif isinstance(status_data, dict):
+        #    del status_data['Cracked']
         return status_data
 
     def runner(self, hash_file=None, hash_mode=1000,
@@ -112,11 +115,53 @@ class Crack(object):
         """
         logger.debug('Callback Triggered: Cracking Finished')
         status_dict = self.status(sender)
-        logger.debug(status_dict)
-        self.write_result(status_dict)
+        if isinstance(status_dict, dict):
+            self.write_result(status_dict)
+        else:
+            self.write_result('Hashcat: {}'.format(status_dict))
         #self.set_rq_state(sender.session, 'finished')
         #time.sleep(6)
         #sender.reset()
+
+    def warning_callback(self, sender):
+        """
+        Callback function to take action on hashcat warning event
+        """
+        logger.warning('Callback Triggered: WARNING')
+        msg_buf = sender.hashcat_status_get_log()
+        logger.warning('{}'.format(msg_buf))
+        rconf = CRACK_CONF['redis']
+        redis_con = Redis(rconf['host'], rconf['port'])
+        redis_q = Queue(connection=redis_con)
+        started = rq.registry.StartedJobRegistry('default',
+                                                 connection=redis_con)
+        session = started.get_job_ids()[0]
+        logger.warning('{}: {}'.format(session, msg_buf))
+        job = redis_q.fetch_job(session)
+        if sender.username and 'Separator unmatched' in msg_buf:
+            job.meta['TIP'] = 'This algorithm probably doesn\'t' \
+                              ' support the username flag'
+        if CRACK_CONF['misc']['user_warnings'] is True:
+            job.meta['WARNING'] = msg_buf
+        job.save_meta()
+
+    def error_callback(self, sender):
+        """
+        Callback function to take action on hashcat error event
+        """
+        logger.debug('Callback Triggered: ERROR')
+        msg_buf = sender.hashcat_status_get_log()
+        logger.debug('{}'.format(msg_buf))
+        rconf = CRACK_CONF['redis']
+        redis_con = Redis(rconf['host'], rconf['port'])
+        redis_q = Queue(connection=redis_con)
+        started = rq.registry.StartedJobRegistry('default',
+                                                 connection=redis_con)
+        session = started.get_job_ids()[0]
+        job = redis_q.fetch_job(session)
+        job.meta['ERROR'] = msg_buf
+        job.save_meta()
+
 
     ###***remove this??
     def set_rq_state(self, job_id, value):
@@ -128,14 +173,14 @@ class Crack(object):
 
         """
         logger.debug('Updating job state')
-        redis_con = Redis(self.rconf['host'], self.rconf['port'])
-        redis_q = Queue(connection=redis_con)
-        job = redis_q.fetch_job(job_id)
-        job.set_status(value)
-        try:
-            job.is_finished = True
-        except AttributeError as err:
-            logger.debug('Redis job state update failed: {}'.format(err))
+        #redis_con = Redis(self.rconf['host'], self.rconf['port'])
+        #redis_q = Queue(connection=redis_con)
+        #job = redis_q.fetch_job(job_id)
+        #job.set_status(value)
+        #try:
+        #    job.is_finished = True
+        #except AttributeError as err:
+        #    logger.debug('Redis job state update failed: {}'.format(err))
 
     def circulator(self, circList, entry, limit):
         """
@@ -191,19 +236,19 @@ class Crack(object):
         elif 'Progress' in hcat_status:
             hcat_status['Progress'] = int(hcat_status['Progress'])
         logger.debug('Updating job metadata')
-        redis_con = Redis(self.rconf['host'], self.rconf['port'])
+        rconf = CRACK_CONF['redis']
+        redis_con = Redis(rconf['host'], rconf['port'])
         redis_q = Queue(connection=redis_con)
         logger.debug('Creating results file')
-        cracked_file = '{}{}.cracked'.format(self.log_dir, hcat_status['Session'])
+        #cracked_file = '{}{}.cracked'.format(self.log_dir, hcat_status['Session'])
         result_file = '{}{}.json'.format(self.log_dir, hcat_status['Session'])
-        try:
-            with open(cracked_file, 'r') as cracked_fh:
-                cracked_list = [cracked.rstrip() for cracked in cracked_fh]
-            hcat_status['Cracked'] = cracked_list
-        except IOError as err:
-            logger.debug('Cracked file does not exist: {}'.format(err))
+        #try:
+        #    with open(cracked_file, 'r') as cracked_fh:
+        #        cracked_list = [cracked.rstrip() for cracked in cracked_fh]
+        #    hcat_status['Cracked'] = cracked_list
+        #except IOError as err:
+        #    logger.debug('Cracked file does not exist: {}'.format(err))
         with open(result_file, 'w') as result_fh:
-            #result_fh.write(json.dumps(hcat_status))
             try:
                 job = redis_q.fetch_job(hcat_status['Session'])
                 job.meta['HC State'] = hcat_status
@@ -214,7 +259,7 @@ class Crack(object):
                 job_details = json.dumps(job_details)
                 result_fh.write(job_details)
             except AttributeError as err:
-                logger.warning('Status update failure: {}'.format(err))
+                logger.info('Status update failure: {}'.format(err))
 
     def hc_worker(self, crack=None, hash_file=None, session=None,
                   wordlist=None, outfile=None, hash_mode=1000,
@@ -238,9 +283,7 @@ class Crack(object):
         """
 
         if attack_mode:
-            if isinstance(attack_mode, int):
-                pass
-            else:
+            if not isinstance(attack_mode, int):
                 attack_mode = None
         if restore:
             show = False
@@ -254,8 +297,8 @@ class Crack(object):
                             restore=restore, show=show, brain=False)
         hcat.event_connect(callback=self.finished_callback,
                            signal="EVENT_CRACKER_FINISHED")
-        #hcat.event_connect(callback=self.cracked_callback,
-        #                   signal="EVENT_CRACKER_HASH_CRACKED")
+        hcat.event_connect(callback=self.cracked_callback,
+                           signal="EVENT_CRACKER_HASH_CRACKED")
         #print(dir(hcat.event_connect(callback=self.cracked_callback,
         #                   signal="ANY")))
         ###***EDITED HERE TESTING POLLING STATUS WHILE NULL
@@ -290,9 +333,16 @@ class Crack(object):
                                 restore=restore, brain=brain)
             hcat.event_connect(callback=self.finished_callback,
                                signal="EVENT_CRACKER_FINISHED")
+            hcat.event_connect(callback=self.cracked_callback,
+                               signal="EVENT_CRACKER_HASH_CRACKED")
+            hcat.event_connect(callback=self.error_callback,
+                               signal="EVENT_LOG_ERROR")
+            hcat.event_connect(callback=self.warning_callback,
+                               signal="EVENT_LOG_WARNING")
         try:
             counter = 0
-            redis_con = Redis(self.rconf['host'], self.rconf['port'])
+            rconf = CRACK_CONF['redis']
+            redis_con = Redis(rconf['host'], rconf['port'])
             redis_q = Queue(connection=redis_con)
             while True:
                 hc_state = hcat.status_get_status_string()
@@ -317,8 +367,11 @@ class Crack(object):
                     self.cracked_callback(hcat)
                     return 'Cracked'
                 elif hc_state == 'Aborted':
+                    # add error check from hc here
                     ###***this seems to hang - look into it
-                    raise ValueError('Aborted: Invalid Hashcat input')
+                    event_log = hcat.hashcat_status_get_log()
+                    #raise ValueError('Aborted: Invalid Hashcat input')
+                    raise ValueError('Aborted: {}'.format(event_log))
                 elif counter > 1200 and hc_state != 'Running' and mask_file == False:
                     #return 'Error: Hashcat hung - input error?'
                     logger.debug('Reseting job, seems to be hung')
@@ -349,8 +402,6 @@ class Crack(object):
                     #redis_con = Redis(self.rconf['host'], self.rconf['port'])
                     #redis_q = Queue(connection=redis_con)
                     job = redis_q.fetch_job(str(hcat.session))
-                    ###***print this better 
-                    ###***fix zombie? job here when Nonetype***
                     try:
                         job.meta['HC State'] = hc_state
                         job.meta['CrackQ State'] == 'Loading'

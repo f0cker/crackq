@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Installation script to get Docker setup. Provide single
 # argument: driver type and os (Ubuntu or Centos supported)
 # in the following format docker/nvidia/ubuntu
@@ -34,8 +32,20 @@ cp ./cfg/crackq_nginx.conf /var/crackq/files/nginx/conf.d/
 cp ./cfg/crackq.hcstat /var/crackq/files/crackq.hcstat
 cp ./masks/* /var/crackq/files/masks/
 cp -r ./rules/ /var/crackq/files/
-sudo groupadd -g 1111 -r crackq && useradd -u 1111 -r -g crackq crackq
-sudo chown -R 1111:1111 /var/crackq/
+# check os is alpine for running CI tests
+source /etc/os-release
+if [ $ID = 'alpine' ]
+	then
+		addgroup --gid 1111 -S crackq && adduser --uid 1111 -S -G crackq crackq
+		cp -r ./crackq/ ./build/
+		cp -r ./utils/ ./build/
+		cp ./cfg/sys_benchmark.txt /var/crackq/files/
+		rm /var/crackq/files/crackq.conf
+		cp crackq.conf /var/crackq/files/
+	else
+		groupadd -g 1111 -r crackq && useradd -u 1111 -r -g crackq crackq
+fi
+chown -R 1111:1111 /var/crackq/
 cp $1/* ./build
 cp docker/common/* ./build
 cp setup.py ./build/
@@ -44,7 +54,7 @@ cp ./crackq/log_config.ini ./build
 cd ./build/
 #docker build -t "$DRIVER-$OS" . --no-cache
 docker build -t "$DRIVER-$OS" . 
-#£echo 'To run the application now use:\n\
+#echo 'To run the application now use:\n\
 #docker network create crackq_net\n\
 #docker run --network crackq_net -d --name redis redis\n\
 #docker run --runtime=nvidia --name crackq -p8080:8080 -v /var/crackq/:/var/crackq --network crackq_net -it "$DRIVER-$OS"'
