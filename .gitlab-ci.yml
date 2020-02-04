@@ -6,7 +6,10 @@ services:
 image: tmaier/docker-compose:latest
 before_script:
   - chmod +x install.sh
+  - whoami
+  - id 
   - mkdir /var/crackq/
+  - touch /var/crackq/crackq.log
   #- chown -R 1111:1111 ./
   - ./install.sh docker/opencl/ubuntu
   - docker-compose -f docker-compose.test.yml build
