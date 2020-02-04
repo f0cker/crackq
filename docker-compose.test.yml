@@ -27,7 +27,7 @@ services:
         user: crackq
         tty: true        
         command:
-                sh -c "cd ../ &&
+                sh -c "cd ../ && id &&
                 pip3 install . --user &&
                 cd ./crackq/ &&
                 python3 update_hashtypes.py &&

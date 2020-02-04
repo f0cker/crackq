@@ -47,6 +47,7 @@ if [ $ID = 'alpine' ]
 		groupadd -g 1111 -r crackq && useradd -u 1111 -r -g crackq crackq
 fi
 chown -R 1111:1111 /var/crackq/
+ls -althR /var/
 cp $1/* ./build
 cp docker/common/* ./build
 cp setup.py ./build/
