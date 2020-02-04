@@ -26,7 +26,7 @@ if [ ! -d /var/crackq/files/masks ]
                 mkdir /var/crackq/files/rules/
                 mkdir /var/crackq/files/masks/
     fi
-
+touch /var/crackq/logs/crackq.log
 cp ./cfg/nginx.conf /var/crackq/files/nginx/
 cp ./cfg/crackq_nginx.conf /var/crackq/files/nginx/conf.d/
 cp ./cfg/crackq.hcstat /var/crackq/files/crackq.hcstat
