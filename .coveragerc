@@ -1,0 +1,9 @@
+[run]
+omit = 
+	crackq/tests/*
+	*__init__*
+	rq_settings.py
+	crackq/update_hashtypes.py
+	setup.py
+	crackq/hash_modes.py
+	

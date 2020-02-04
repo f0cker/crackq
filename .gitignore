@@ -1,0 +1,13 @@
+*.sw*
+*.pyc
+*__pycache__*
+*pyhashcat/
+crackq.log
+*.cracked
+.DS*
+crackq/brain*
+docker/build/
+*egg-info*
+*build*
+.pytest_cache
+crackq.egg-info

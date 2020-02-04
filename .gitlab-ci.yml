@@ -1,0 +1,27 @@
+stages:
+ - deploy
+services:
+  - docker:dind
+#image: docker
+image: tmaier/docker-compose:latest
+before_script:
+  #- chown -R 1111:1111 ./
+  #- chmod +x install.sh
+  - ./install.sh docker/opencl/ubuntu
+  - docker-compose -f docker-compose.test.yml build
+  - docker-compose -f docker-compose.test.yml up -d
+
+job1: 
+    stage: deploy
+
+    script:
+        - docker exec -t crackq sh -c 'pytest --cache-clear --cov=./'
+
+    tags:
+        - test
+
+after_script:
+  - docker-compose -f docker-compose.test.yml down
+  - docker rm crackq
+  - docker rm redis 
+
