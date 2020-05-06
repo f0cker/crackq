@@ -13,7 +13,7 @@ Flask-JWT-Extended==3.20.0
 Flask-Sessionstore==0.4.5
 Flask-SQLAlchemy==2.4.0
 flask-talisman==0.7.0
-pysaml2==4.8.0
+pysaml2==5.0.0
 flask-Login==0.4.1
 Flask-Cors==3.0.8
 Flask-SeaSurf==0.2.2
