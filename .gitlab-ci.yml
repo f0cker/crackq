@@ -22,6 +22,7 @@ job1:
 
 after_script:
     - docker-compose -f docker-compose.test.yml down
+    - sleep 30
     - docker rm crackq
     - docker rm ldap.crackq.org
     - docker rm redis
