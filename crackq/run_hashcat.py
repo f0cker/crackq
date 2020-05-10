@@ -1,13 +1,18 @@
 #!/usr/bin/env python
-from crackq import crackqueue, hash_modes, cq_api
+import email.utils
 import logging
 import json
 import os
 import time
 import rq
-#import uuid
+import smtplib
+import ssl
 
+from crackq import crackqueue, hash_modes, cq_api
 from crackq.conf import hc_conf
+from crackq.models import User
+from datetime import datetime, timedelta
+from email.mime.text import MIMEText
 from pathlib import Path
 from time import sleep
 from logging.config import fileConfig
@@ -34,6 +39,47 @@ class Crack(object):
         self.rconf = CRACK_CONF['redis']
         #self.redis_con = Redis(self.rconf['host'], self.rconf['port'])
         #self.redis_q = Queue(connection=self.redis_con)
+
+    def send_email(self, mail_server, port, src, dest, sub, tls):
+        """
+        Simple email notification
+
+        Arguments
+        --------
+        mail_server: str
+            email server hostname/ip
+        port: int
+            port to use
+        src: str
+            email from address
+        dest: str
+            email to address
+        tls: boolean
+            use encryption for SMTP
+
+        Returns
+        -------
+        """
+        msg = MIMEText('')
+        msg['To'] = email.utils.formataddr(('CrackQ', dest))
+        msg['From'] = email.utils.formataddr(('CrackQ', src))
+        msg['Subject'] = sub
+        try:
+            if tls:
+                server = smtplib.SMTP_SSL(mail_server, port)
+                # server.set_debuglevel(True)
+                server.sendmail(src, [dest],
+                                msg.as_string())
+                server.quit()
+            else:
+                server = smtplib.SMTP(mail_server, port)
+                # server.set_debuglevel(True)
+                server.sendmail(src, [dest],
+                                msg.as_string())
+                server.quit()
+        except TimeoutError:
+            logger.error('SMTP connection error - timeout')
+            server.quit()
 
     def status(self, sender):
         status_data = sender.hashcat_status_get_status()
@@ -98,10 +144,51 @@ class Crack(object):
         Callback function to take action on hashcat signal.
         Action is to write the latest cracked hashes
         """
-        ###***rename this method
         logger.debug('Callback Triggered: Cracked')
         status_dict = self.status(sender)
         logger.debug('Hashcat status: {}'.format(status_dict))
+        mail_server = CRACK_CONF['notify']['mail_server']
+        mail_port = CRACK_CONF['notify']['mail_port']
+        email_src = CRACK_CONF['notify']['src']
+        inactive_time = CRACK_CONF['notify']['inactive_time']
+        tls = CRACK_CONF['notify']['tls']
+        rconf = CRACK_CONF['redis']
+        redis_con = Redis(rconf['host'], rconf['port'])
+        redis_q = Queue(connection=redis_con)
+        started = rq.registry.StartedJobRegistry('default',
+                                                 connection=redis_con)
+        session = started.get_job_ids()[0]
+        job = redis_q.fetch_job(session)
+        if 'notify' in job.meta.keys():
+            if job.meta['notify']:
+                if 'email' in job.meta.keys():
+                    email = job.meta['email']
+                    try:
+                        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        now = datetime.strptime(now,
+                                                '%Y-%m-%d %H:%M:%S')
+                        last = datetime.strptime(job.meta['last_seen'],
+                                                 '%Y-%m-%d %H:%M:%S')
+                        inactive_time = timedelta(minutes=int(inactive_time))
+                        activity = now - last
+                        if (activity > inactive_time
+                                    and job.meta['email_count'] < 1):
+                            sub = 'CrackQ: Hash cracked notification'
+                            self.send_email(mail_server, mail_port,
+                                            email_src, email, sub, tls)
+                            job.meta['email_count'] += 1
+                            job.save()
+                    ###***update to specifica exceptions
+                    except Exception as err:
+                        logger.error('Failed to connect to mail server')
+                        logger.error(err)
+                        logger.error(type(err))
+                else:
+                    job.meta['Warning'] = "No email address in profile"
+                    job.save()
+        else:
+            job.meta['Warning'] = "Notification settings error"
+            job.save()
         if isinstance(status_dict, dict):
             self.write_result(status_dict)
         else:
@@ -115,13 +202,66 @@ class Crack(object):
         """
         logger.debug('Callback Triggered: Cracking Finished')
         status_dict = self.status(sender)
+        mail_server = CRACK_CONF['notify']['mail_server']
+        mail_port = CRACK_CONF['notify']['mail_port']
+        email_src = CRACK_CONF['notify']['src']
+        inactive_time = CRACK_CONF['notify']['inactive_time']
+        tls = CRACK_CONF['notify']['tls']
+        rconf = CRACK_CONF['redis']
+        redis_con = Redis(rconf['host'], rconf['port'])
+        redis_q = Queue(connection=redis_con)
+        started = rq.registry.StartedJobRegistry('default',
+                                                 connection=redis_con)
+        session = started.get_job_ids()[0]
+        logger.debug('Sending notification')
+        job = redis_q.fetch_job(session)
+        if 'notify' in job.meta.keys():
+            if job.meta['notify']:
+                if 'email' in job.meta.keys():
+                    email = job.meta['email']
+                    try:
+                        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        now = datetime.strptime(now,
+                                                '%Y-%m-%d %H:%M:%S')
+                        last = datetime.strptime(job.meta['last_seen'],
+                                                 '%Y-%m-%d %H:%M:%S')
+                        inactive_time = timedelta(minutes=int(inactive_time))
+                        activity = now - last
+                        if (activity > inactive_time
+                                and job.meta['email_count'] < 2):
+                            sub = 'CrackQ: Job complete notification'
+                            self.send_email(mail_server, mail_port,
+                                            email_src, email, sub, tls)
+                            job.meta['email_count'] += 1
+                            job.save()
+                    ###***update to specifica exceptions
+                    except Exception as err:
+                        logger.error('Failed to connect to mail server')
+                        logger.error(err)
+                        logger.error(type(err))
+                else:
+                    job.meta['Warning'] = "No email address in profile"
+                    job.save()
+        else:
+            job.meta['Warning'] = "Notification settings error"
+            job.save()
         if isinstance(status_dict, dict):
             self.write_result(status_dict)
         else:
             self.write_result('Hashcat: {}'.format(status_dict))
-        #self.set_rq_state(sender.session, 'finished')
-        #time.sleep(6)
-        #sender.reset()
+
+    def init_callback(self, sender):
+        """
+        Callback function to take action on hashcat signal.
+        Action is to write the latest cracked hashes
+        """
+        logger.debug('Callback Triggered: Init')
+        status_dict = self.status(sender)
+        logger.debug('Hashcat status: {}'.format(status_dict))
+        if isinstance(status_dict, dict):
+            self.write_result(status_dict)
+        else:
+            self.write_result('Hashcat: {}'.format(status_dict))
 
     def warning_callback(self, sender):
         """
@@ -162,25 +302,34 @@ class Crack(object):
         job.meta['ERROR'] = msg_buf
         job.save_meta()
 
-
-    ###***remove this??
-    def set_rq_state(self, job_id, value):
+    def abort_callback(self, sender):
         """
-        Method to set state of rq job
-
-        Used to notify/update rq job when hashcat finished or the runner
-        function will never return and leave the job hanging
-
+        Callback function to take action following Hashcat aborting
         """
-        logger.debug('Updating job state')
-        #redis_con = Redis(self.rconf['host'], self.rconf['port'])
+        logger.info('Callback Triggered: Aborted')
+        #msg_buf = sender.hashcat_status_get_log()
+        #logger.debug('{}'.format(msg_buf))
+        #rconf = CRACK_CONF['redis']
+        #redis_con = Redis(rconf['host'], rconf['port'])
         #redis_q = Queue(connection=redis_con)
-        #job = redis_q.fetch_job(job_id)
-        #job.set_status(value)
-        #try:
-        #    job.is_finished = True
-        #except AttributeError as err:
-        #    logger.debug('Redis job state update failed: {}'.format(err))
+        #started = rq.registry.StartedJobRegistry('default',
+        #                                         connection=redis_con)
+        #session = started.get_job_ids()[0]
+        #job = redis_q.fetch_job(session)
+        #job.meta['ERROR'] = msg_buf
+        #job.save_meta()
+        event_log = sender.hashcat_status_get_log()
+        raise ValueError('Aborted: {}'.format(event_log))
+
+    def any_callback(self, sender):
+        """
+        Callback function to take action following Hashcat aborting
+        """
+        logger.info('Callback Triggered: Any')
+        hc_state = sender.status_get_status_string()
+        if hc_state == "Aborted":
+            event_log = sender.hashcat_status_get_log()
+            raise ValueError('Aborted: {}'.format(event_log))
 
     def circulator(self, circList, entry, limit):
         """
@@ -299,11 +448,8 @@ class Crack(object):
                            signal="EVENT_CRACKER_FINISHED")
         hcat.event_connect(callback=self.cracked_callback,
                            signal="EVENT_CRACKER_HASH_CRACKED")
-        #print(dir(hcat.event_connect(callback=self.cracked_callback,
-        #                   signal="ANY")))
-        ###***EDITED HERE TESTING POLLING STATUS WHILE NULL
-        #hcat.event_connect(callback=self.cracked_callback,
-        #                   signal="ANY")
+        hcat.event_connect(callback=self.any_callback,
+                           signal="ANY")
         ###***restructure this when queue reorder is implemented
         #then move the show to run earlier, i.e. when the initial job
         #request comes in. This needs reordering to work
@@ -350,22 +496,21 @@ class Crack(object):
                 counter += 10
                 # added manual status update as callback doesn't get triggere
                 # in some cases, see issue #1
-                #self.cracked_callback(hcat)
                 if hc_state == 'Exhausted' and not mask_file:
-                    self.cracked_callback(hcat)
+                    self.finished_callback(hcat)
                     return 'Exhausted'
                 if hc_state == 'Exhausted' and mask_file:
-                    self.cracked_callback(hcat)
                     # workaround for mask files
                     ###***this needs to be better, some cases could exit early
                     sleep(30)
                     if hc_state == 'Exhausted':
                         logger.info('checking mask file')
                         if hc_state == 'Exhausted':
+                            self.finished_callback(hcat)
                             return 'Exhausted'
-                elif hc_state == 'Cracked':
-                    self.cracked_callback(hcat)
-                    return 'Cracked'
+                #elif hc_state == 'Cracked':
+                #    self.cracked_callback(hcat)
+                #    return 'Cracked'
                 elif hc_state == 'Aborted':
                     # add error check from hc here
                     ###***this seems to hang - look into it
@@ -380,7 +525,7 @@ class Crack(object):
                 ###***fix this to update current job state while loading
                 elif 'Initializing' not in hc_state:
                     logger.debug('Initialized: {}'.format(hc_state))
-                    self.cracked_callback(hcat)
+                    self.init_callback(hcat)
                     job = redis_q.fetch_job(str(hcat.session))
                     try:
                         if job.meta['CrackQ State'] == 'Stop':

@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+import re
 import time
 import uuid
 
@@ -10,6 +11,7 @@ import rq
 
 from crackq import crackqueue, hash_modes, run_hashcat, auth
 from crackq.conf import hc_conf
+from datetime import datetime
 from flask import (Flask, redirect, request, session, make_response, url_for)
 from flask_restful import reqparse, abort, Resource
 from logging.config import fileConfig
@@ -316,16 +318,37 @@ def check_mask(orig_masks):
     # this is just set to use the first mask file in the list for now
     #mask = mask_file[0] if mask_file else mask
 
-def create_user(username):
+
+def create_user(username, email=None):
     if User.query.filter_by(username=username).first():
         logger.debug('User already exists')
         return False
     else:
-        user = User(username=username)
+        user = User(username=username, email=email)
         db.session.add(user)
         db.session.commit()
         logger.debug('New user added')
         return True
+
+def email_check(email):
+    """
+    Simple regex check string is an email address
+
+    Arguments
+    --------
+    email: str
+        email address string to check
+    Returns
+    -------
+    match: boolean
+        true/false for valid email match
+    """
+    regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'
+    if re.search(regex, email):
+        logger.debug('Email address found')
+        return True
+    else:
+        return False
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -391,6 +414,12 @@ class Sso(Resource):
             for key, val in user_info:
                 if 'name' in key:
                     username = val[0]
+                if 'email' in key:
+                    email = val[0]
+                    print('Email returned from SAML***')
+                    print(email)
+                else:
+                    email = None
                 if self.group and 'Group' in key:
                     groups = val
             if self.group:
@@ -409,20 +438,22 @@ class Sso(Resource):
             user = load_user(username)
             if user:
                 crackq.app.session_interface.regenerate(session)
-                login_user(user)
             else:
-                create_user(username)
-                user = load_user(username)
+                if email:
+                    create_user(username, email=email)
+                else:
+                    create_user(username)
+            user = load_user(username)
             if isinstance(user, User):
                 crackq.app.session_interface.regenerate(session)
                 login_user(user)
             else:
                 logging.error('No user object loaded')
                 return json.dumps({"msg": "Bad username or password"}), 401
-            #return redirect(request.url_root)
             return redirect('/')
         else:
-            logger.info('Login error: {}'.format(authn))
+            ###***add error output to debug
+            logger.info('Login error')
             return json.dumps({"msg": "Bad username or password"}), 401
 
 
@@ -457,7 +488,7 @@ class Login(Resource):
                 return json.dumps({"msg": "Missing password parameter"}), 400
             ldap_uri = CRACK_CONF['auth']['ldap_server']
             authn = auth.Ldap.authenticate(ldap_uri, username, password)
-            if authn is "Success":
+            if authn == "Success":
                 logging.info('Authenticated: {}'.format(username))
                 user = load_user(username)
                 if user:
@@ -496,6 +527,8 @@ class Logout(Resource):
         #sid = request.cookies.get(app.session_cookie_name)
         sid = request.cookies.get(crackq.app.session_cookie_name)
         crackq.app.session_interface.destroy(session)
+        user.active = False
+        db.session.commit()
         logout_user()
         return 'Logged Out', 200
 
@@ -620,6 +653,10 @@ class Queuing(Resource):
         ------
 
         """
+        time_now = datetime.now().strftime("%Y-%m-%d %H:%M")
+        time_now = datetime.strptime(time_now, '%Y-%m-%d %H:%M')
+        current_user.last_seen = time_now
+        db.session.commit()
         ###***clean this up, maybe remove crackqueue.py entirely?
         ###***re-add this for validation?
         #args = marsh_schema.data
@@ -675,6 +712,11 @@ class Queuing(Resource):
             ###***definitely make these a function
             if len(cur_list) > 0:
                 job = self.q.fetch_job(cur_list[0])
+                #if len(json.loads(current_user.job_ids)) > 0:
+                if current_user.job_ids:
+                    if cur_list[0] in json.loads(current_user.job_ids):
+                        job.meta['email_count'] = 0
+                        job.save()
                 if job:
                     if 'HC State' in job.meta:
                         ###***small issue here when job is added initially?
@@ -1346,6 +1388,14 @@ class Adder(Resource):
             logger.info('API Job {} added to queue'.format(job_id))
             logger.debug('Job Details: {}'.format(q_args))
             job = self.q.fetch_job(job_id)
+            job.meta['email_count'] = 0
+            if current_user.email is not None and current_user.email != 'null':
+                if email_check(current_user.username):
+                    job.meta['email'] = str(current_user.email)
+                    job.meta['last_seen'] = str(current_user.last_seen)
+            elif email_check(current_user.username):
+                job.meta['email'] = current_user.username
+                job.meta['last_seen'] = str(current_user.last_seen)
             job.meta['CrackQ State'] = 'Run'
             job.meta['Speed Array'] = []
             job.save_meta()

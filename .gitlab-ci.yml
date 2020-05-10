@@ -1,22 +1,17 @@
 stages:
  - deploy
-services:
-  - docker:dind
-#image: docker
+#services:
+#  - docker:18.09.7-dind
+#variables:
+#        DOCKER_DRIVER: overlay2
+#        DOCKER_TLS_CERTDIR: ""
 image: tmaier/docker-compose:latest
 before_script:
-  - chmod +x install.sh
-  - whoami
-  - id 
-  - addgroup --gid 1111 -S crackq && adduser --uid 1111 -S -G crackq crackq
-  - mkdir /var/crackq/
-  - touch /var/crackq/crackq.log
-  - chown -R 1111:1111 /var/crackq/
-  - ./install.sh docker/opencl/ubuntu
+  - ./install.sh docker/opencl/ubuntu tests
   - docker-compose -f docker-compose.test.yml build
   - docker-compose -f docker-compose.test.yml up -d
 
-job1: 
+job1:
     stage: deploy
 
     script:
@@ -26,7 +21,8 @@ job1:
         - docker
 
 after_script:
-  - docker-compose -f docker-compose.test.yml down
-  - docker rm crackq
-  - docker rm redis 
-
+    - docker-compose -f docker-compose.test.yml down
+    - docker rm crackq
+    - docker rm ldap.crackq.org
+    - docker rm redis
+    - rm -rf /var/crackq/

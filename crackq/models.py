@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from logging.config import fileConfig
 from sqlalchemy import create_engine, Column, ForeignKey
@@ -21,9 +22,10 @@ class User(db.Model):
     #__table_args__ = {'extend_existing': True}
     active = Column(Boolean())
     username = Column(String(255), unique=True, index=True,
-                           primary_key=True)
-    #email = Column(String(255), unique=True)
+                      primary_key=True)
+    email = Column(String(255), unique=True)
     last_login_at = Column(DateTime())
+    last_seen = Column(DateTime())
     current_login_at = Column(DateTime())
     last_login_ip = Column(String(100))
     current_login_ip = Column(String(100))
@@ -52,7 +54,7 @@ class User(db.Model):
         ret = {
             'user': self.username,
             'job_ids': self.job_ids,
+            'email': self.email,
+            'last_seen':  self.last_seen,
             }
         return json.dumps(ret)
-
-

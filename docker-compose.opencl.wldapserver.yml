@@ -1,6 +1,6 @@
-###***add in args here and update to version 3 if it's possible with nvidia runtime
+###***add in args here and update to version 3
 
-version: '2.0'
+version: '2.1'
 services:
     redis:
         image: "redis:latest"
@@ -22,32 +22,30 @@ services:
         container_name: "crackq"
         volumes:
             - /var/crackq/:/var/crackq
-            #- ./crackq:/opt/crackq/build/crackq/
+            - ./crackq:/opt/crackq/build/crackq/
         stdin_open: true
         user: crackq
         tty: true        
         command:
-                sh -c "cd ../ &&
-                pip3 install . --user &&
-                cd ./crackq/ &&
-                python3 update_hashtypes.py &&
+                sh -c "cd ../ && ../build/benchmark.sh &&
+                pip3 install -e . --user &&
                 /usr/local/bin/circusd /opt/crackq/build/circus.ini"
 
-#nginx:
-#    build:
-#            context: .
-#            dockerfile: Dockerfile.nginx
-#        image: "nginx-crackq"
-#        restart: always
-#        depends_on:
-#                - crackq 
-#        container_name: "nginx"
-#        ports:
-#             - "443:443"
-#        volumes:
-#             - /var/crackq/files/nginx/conf.d:/etc/nginx/conf.d
-#        networks:
-#            - crackq_net
+    nginx:
+        build:
+            context: .
+            dockerfile: Dockerfile.nginx
+        image: "nginx-crackq"
+        restart: always
+        depends_on:
+                - crackq 
+        container_name: "nginx"
+        ports:
+             - "443:443"
+        volumes:
+             - /var/crackq/files/nginx/conf.d:/etc/nginx/conf.d
+        networks:
+            - crackq_net
 
     openldap:
         image: osixia/openldap:1.2.4 
@@ -94,7 +92,6 @@ services:
         #        sh -c "/tmp/wait.sh"
         networks:
             - crackq_net
-
 
 networks:
     crackq_net:

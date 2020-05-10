@@ -6,4 +6,6 @@ omit =
 	crackq/update_hashtypes.py
 	setup.py
 	crackq/hash_modes.py
-	
+	crackq/sp_conf.py
+	crackq/wsgi.py
+	crackq/models.py
