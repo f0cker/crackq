@@ -2,5 +2,6 @@ dn: cn=crackq_user1,dc=example,dc=org
 objectClass: simpleSecurityObject
 objectClass: organizationalRole
 cn: crackq_user1 
+mail: crackq_user1@crackq.org
 description: LDAP user
 userPassword: {SSHA}+j+LzZG4k/s6wjjiua5XsXAcYLMwb3fE

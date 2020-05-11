@@ -488,6 +488,7 @@ class Login(Resource):
                 return json.dumps({"msg": "Missing password parameter"}), 400
             ldap_uri = CRACK_CONF['auth']['ldap_server']
             authn = auth.Ldap.authenticate(ldap_uri, username, password)
+            logger.debug('LDAP reply: {}'.format(authn))
             if authn == "Success":
                 logging.info('Authenticated: {}'.format(username))
                 user = load_user(username)
