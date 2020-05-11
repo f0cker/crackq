@@ -30,7 +30,6 @@ services:
                 sh -c "cd ../ &&
                 pip3 install . --user &&
                 cd ./crackq/ &&
-                python3 update_hashtypes.py &&
                 /usr/local/bin/circusd /opt/crackq/build/circus.ini"
 
 #nginx:
