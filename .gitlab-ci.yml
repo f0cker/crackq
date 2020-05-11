@@ -18,4 +18,4 @@ job1:
 
 after_script:
     - docker-compose -f docker-compose.test.yml down
-    - rm -rf /var/crackq/
+      #- rm -rf /var/crackq/
