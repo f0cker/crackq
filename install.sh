@@ -44,6 +44,7 @@ if [ $TESTS ]
 		cp -r ./crackq/ ./build/
 		cp -r ./utils/ ./build/
 		cp ./cfg/sys_benchmark.txt /var/crackq/files/
+		cp ./cfg/hashm_dict.json /var/crackq/files/
 		rm /var/crackq/files/crackq.conf
 		cp crackq.conf /var/crackq/files/
 fi
