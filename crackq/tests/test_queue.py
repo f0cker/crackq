@@ -271,7 +271,12 @@ def test_wl_del():
         logger.error('Failed to delete job: {}'.format(err))
 
 if __name__ == '__main__':
+    test_bf()
+    test_stop()
+    test_del()
     test_wl()
+    test_wl_del()
+    test_stop_wl()
 #    TestQ.test_bf()
 #    TestQ.test_stop('restoretest_bf')
 

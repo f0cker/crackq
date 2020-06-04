@@ -333,7 +333,7 @@ class Crack(object):
 
     def circulator(self, circList, entry, limit):
         """
-        This method will wrap a list overwriting at the 
+        This method will wrap a list overwriting at the
         beginning when limit is reached.
 
         Args
@@ -360,12 +360,12 @@ class Crack(object):
         Method to write cracking results to file in json format
 
         When executed, this will open the corresponding session.crack file and
-        load the data into a results file with other meta data relating to the 
+        load the data into a results file with other meta data relating to the
         job
 
         Arguments
         ---------
-        hcat_status: dict 
+        hcat_status: dict
             Hashcat status dict (from self.status()), containing hashcat data
             form the cracking session
         redis_con: object
@@ -538,7 +538,8 @@ class Crack(object):
                             job.meta['CrackQ State'] == 'Run'
                             job.save_meta()
                     except Exception as err:
-                        job.meta['CrackQ State'] == 'Loading'
+                        job.meta = {'CrackQ State': 'Loading'}
+                        job.save_meta()
                         logger.warning('No CrackQ State set: {}'.format(err))
                 else:
                     ###***cleanup and move all job/redis stuff to init and remove from other areas
@@ -550,6 +551,9 @@ class Crack(object):
                     try:
                         job.meta['HC State'] = hc_state
                         job.meta['CrackQ State'] == 'Loading'
+                        job.save_meta()
+                    except KeyError:
+                        job.meta = {'CrackQ State': 'Loading'}
                         job.save_meta()
                     except AttributeError as err:
                         logger.error('Failed to update meta: {}'.format(err))
