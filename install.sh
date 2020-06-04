@@ -39,11 +39,12 @@ cp ./cfg/crackq.hcstat /var/crackq/files/crackq.hcstat
 cp ./masks/* /var/crackq/files/masks/
 cp -r ./rules/ /var/crackq/files/
 # check if running tests
-if [ TESTS ]
+if [ $TESTS ]
 	then
 		cp -r ./crackq/ ./build/
 		cp -r ./utils/ ./build/
 		cp ./cfg/sys_benchmark.txt /var/crackq/files/
+		cp ./cfg/hashm_dict.json /var/crackq/files/
 		rm /var/crackq/files/crackq.conf
 		cp crackq.conf /var/crackq/files/
 fi
@@ -56,7 +57,7 @@ cp ./crackq/log_config.ini ./build
 #cp -r ./crackq/ ./build
 cd ./build/
 #docker build -t "$DRIVER-$OS" . --no-cache
-docker build -t "$DRIVER-$OS" . 
+docker build -t "$DRIVER-crackq" . 
 #echo 'To run the application now use:\n\
 #docker network create crackq_net\n\
 #docker run --network crackq_net -d --name redis redis\n\

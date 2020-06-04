@@ -1,10 +1,6 @@
 stages:
  - deploy
-#services:
-#  - docker:18.09.7-dind
-#variables:
-#        DOCKER_DRIVER: overlay2
-#        DOCKER_TLS_CERTDIR: ""
+
 image: tmaier/docker-compose:latest
 before_script:
   - ./install.sh docker/opencl/ubuntu tests
@@ -22,8 +18,4 @@ job1:
 
 after_script:
     - docker-compose -f docker-compose.test.yml down
-    - sleep 30
-    - docker rm crackq
-    - docker rm ldap.crackq.org
-    - docker rm redis
     - rm -rf /var/crackq/

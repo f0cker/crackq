@@ -150,7 +150,7 @@ def test_wl():
         'kwargs': hc_args,
         }
     crack_q.q_add(q, q_args)
-    time.sleep(5)
+    time.sleep(15)
     started_list = rq.registry.StartedJobRegistry('default',
                                                   connection=redis_con).get_job_ids()
     print(started_list)

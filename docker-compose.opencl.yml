@@ -12,7 +12,7 @@ services:
         #volumes:
         #    - /var/crackq/:/var/crackq
     crackq:
-        image: "opencl-ubuntu"
+        image: "opencl-crackq"
         ports:
                 - "127.0.0.1:8080:8080"
         depends_on:
@@ -26,9 +26,11 @@ services:
         stdin_open: true
         user: crackq
         tty: true        
+        environment:
+                PYTHONPATH: "/opt/crackq/build/crackq/"
         command:
-                sh -c "cd ../ && ../build/benchmark.sh &&
-                pip3 install -e . --user &&
+                sh -c "./benchmark.sh &&
+                pip3 install -e . --user && cd ./crackq &&
                 /usr/local/bin/circusd /opt/crackq/build/circus.ini"
 
     nginx:
