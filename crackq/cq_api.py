@@ -503,12 +503,13 @@ class Login(Resource):
                     login_user(user)
                 else:
                     #***add ldap email query here***!!!
-                    if email:
+                    try:
+                        email
                         if email_check(email):
                             create_user(username, email=email)
                         else:
                             create_user(username)
-                    else:
+                    except UnboundLocalError:
                         create_user(username)
                     user = load_user(username)
                 if isinstance(user, User):
