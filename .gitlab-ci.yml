@@ -11,7 +11,7 @@ job1:
     stage: deploy
 
     script:
-        - docker exec -t crackq sh -c 'pytest --cache-clear --cov=./'
+        - docker exec -t crackq sh -c 'cd ./crackq/ && pytest --cache-clear --cov=./'
 
     tags:
         - docker
