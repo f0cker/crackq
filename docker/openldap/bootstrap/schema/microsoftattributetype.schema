@@ -1,0 +1,5682 @@
+attributetype ( 1.2.840.113556.1.2.447 NAME 'mailNickname'
+        DESC 'MS Exchange alias'
+        EQUALITY caseIgnoreMatch
+        SUBSTR caseIgnoreSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+attributetype ( 1.2.840.113556.1.2.171 NAME 'homeMTA'
+        DESC 'homeMTA'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )
+
+attributetype ( 1.2.840.113556.1.2.244 NAME 'homeMDB'
+        DESC 'homeMDB'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )
+
+attributetype ( 1.2.840.113556.1.2.309 NAME 'mDBUseDefaults'
+        DESC 'mDBUseDefaults'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+        SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.423 NAME 'extensionAttribute1'
+        DESC 'extensionAttribute1'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.528 NAME 'protocolSettings'
+        DESC 'protocolSettings'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        )
+
+attributetype ( 1.2.840.113556.1.2.551 NAME 'internetEncoding'
+        DESC 'internetEncoding'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.1696 NAME 'lastLogonTimestamp'
+        DESC 'lastLogonTimestamp'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.47 NAME 'msExchHomeServerName'
+        DESC 'msExchHomeServerName'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.80 NAME 'msExchMailboxSecurityDescriptor'
+        DESC 'msExchMailboxSecurityDescriptor'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.101 NAME 'msExchUserAccountControl'
+        DESC 'msExchUserAccountControl'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.11058 NAME 'msExchMailboxGuid'
+        DESC 'msExchMailboxGuid'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50050 NAME 'msExchPoliciesIncluded'
+        DESC 'msExchPoliciesIncluded'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50341 NAME 'msExchUMDtmfMap'
+        DESC 'msExchUMDtmfMap'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50413 NAME 'msExchMDBRulesQuota'
+        DESC 'msExchMDBRulesQuota'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50730 NAME 'msExchRecipientDisplayType'
+        DESC 'msExchRecipientDisplayType'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50773 NAME 'msExchUserCulture'
+        DESC 'msExchUserCulture'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50853 NAME 'msExchVersion'
+        DESC 'msExchVersion'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50855 NAME 'msExchRecipientTypeDetails'
+        DESC 'msExchRecipientTypeDetails'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50905 NAME 'msExchUMEnabledFlags2'
+        DESC 'msExchUMEnabledFlags2'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50972 NAME 'msExchModerationFlags'
+        DESC 'msExchModerationFlags'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51025 NAME 'msExchTransportRecipientSettingsFlags'
+        DESC 'msExchTransportRecipientSettingsFlags'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51143 NAME 'msExchProvisioningFlags'
+        DESC 'msExchProvisioningFlags'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51383 NAME 'msExchTextMessagingState'
+        DESC 'msExchTextMessagingState'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51429 NAME 'msExchRBACPolicyLink'
+        DESC 'msExchRBACPolicyLink'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51442 NAME 'msExchArchiveQuota'
+        DESC 'msExchArchiveQuota'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51493 NAME 'msExchArchiveWarnQuota'
+        DESC 'msExchArchiveWarnQuota'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51508 NAME 'msExchDumpsterQuota'
+        DESC 'msExchDumpsterQuota'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51509 NAME 'msExchDumpsterWarningQuota'
+        DESC 'msExchDumpsterWarningQuota'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51580 NAME 'msExchWhenMailboxCreated'
+        DESC 'msExchWhenMailboxCreated'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.24
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51671 NAME 'msExchMailboxAuditEnable'
+        DESC 'msExchMailboxAuditEnable'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51672 NAME 'msExchMailboxAuditLogAgeLimit'
+        DESC 'msExchMailboxAuditLogAgeLimit'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51678 NAME 'msExchBypassAudit'
+        DESC 'msExchBypassAudit'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51733 NAME 'msExchAddressBookFlags'
+        DESC 'msExchAddressBookFlags'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.1710 NAME 'msDS-AllowedDNSSuffixes'
+        DESC 'msDS-AllowedDNSSuffixes'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50765 NAME 'msExchSafeSendersHash'
+        DESC 'msExchSafeSendersHash'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50858 NAME 'msExchMobileMailboxFlags'
+        DESC 'msExchMobileMailboxFlags'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51757 NAME 'msExchObjectsDeletedThisPeriod'
+        DESC 'msExchObjectsDeletedThisPeriod'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.294 NAME 'altRecipientBL'
+        DESC 'altRecipientBL'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        )
+
+attributetype ( 1.2.840.113556.1.2.290 NAME 'authOrigBL'
+        DESC 'authOrigBL'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        )
+
+attributetype ( 1.2.840.113556.1.4.1963 NAME 'msDS-SupportedEncryptionTypes'
+        DESC 'msDS-SupportedEncryptionTypes'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.59 NAME 'msExchALObjectVersion'
+        DESC 'msExchALObjectVersion'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51438 NAME 'msExchMailboxMoveBatchName'
+        DESC 'msExchMailboxMoveBatchName'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51400 NAME 'msExchMailboxMoveFlags'
+        DESC 'msExchMailboxMoveFlags'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51401 NAME 'msExchMailboxMoveStatus'
+        DESC 'msExchMailboxMoveStatus'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51398 NAME 'msExchMailboxMoveTargetMDBLink'
+        DESC 'msExchMailboxMoveTargetMDBLink'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50976 NAME 'msExchBlockedSendersHash'
+        DESC 'msExchBlockedSendersHash'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50051 NAME 'msExchPoliciesExcluded'
+        DESC 'msExchPoliciesExcluded'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51538 NAME 'msExchDelegateListBL'
+        DESC 'msExchDelegateListBL'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        )
+
+attributetype ( 1.2.840.113556.1.2.126 NAME 'altRecipient'
+        DESC 'altRecipient'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.73 NAME 'msExchHideFromAddressLists'
+        DESC 'msExchHideFromAddressLists'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.6.20.1.124 NAME 'msExchOmaAdminWirelessEnable'
+        DESC 'msExchOmaAdminWirelessEnable'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51707 NAME 'msExchShadowProxyAddresses'
+        DESC 'msExchShadowProxyAddresses'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50954 NAME 'msExchCoManagedObjectsBL'
+        DESC 'msExchCoManagedObjectsBL'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        )
+
+attributetype ( 1.2.840.113556.1.2.272 NAME 'mDBOverQuotaLimit'
+        DESC 'mDBOverQuotaLimit'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.11037 NAME 'mDBOverHardQuotaLimit'
+        DESC 'mDBOverHardQuotaLimit'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.266 NAME 'mDBStorageQuota'
+        DESC 'mDBStorageQuota'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50766 NAME 'msExchSafeRecipientsHash'
+        DESC 'msExchSafeRecipientsHash'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51152 NAME 'msExchBypassModerationBL'
+        DESC 'msExchBypassModerationBL'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51698 NAME 'msExchShadowMailNickname'
+        DESC 'msExchShadowMailNickname'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        )
+
+attributetype ( 1.2.840.113556.1.2.238 NAME 'publicDelegates'
+        DESC 'publicDelegates'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        )
+
+attributetype ( 1.2.840.113556.1.2.295 NAME 'publicDelegatesBL'
+        DESC 'publicDelegatesBL'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51608 NAME 'msExchLastExchangeChangedTime'
+        DESC 'msExchLastExchangeChangedTime'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.24
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51694 NAME 'msExchShadowGivenName'
+        DESC 'msExchShadowGivenName'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51747 NAME 'msExchShadowManagerLink'
+        DESC 'msExchShadowManagerLink'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.5062 NAME 'msExchRequireAuthToSendTo'
+        DESC 'msExchRequireAuthToSendTo'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.432 NAME 'extensionAttribute10'
+        DESC 'extensionAttribute10'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.81 NAME 'msExchMasterAccountSid'
+        DESC 'msExchMasterAccountSid'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.82 NAME 'securityProtocol'
+        DESC 'securityProtocol'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.12527 NAME 'dLMemDefault'
+        DESC 'dLMemDefault'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.138 NAME 'delivContLength'
+        DESC 'delivContLength'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.424 NAME 'extensionAttribute2'
+        DESC 'extensionAttribute2'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.425 NAME 'extensionAttribute3'
+        DESC 'extensionAttribute3'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.426 NAME 'extensionAttribute4'
+        DESC 'extensionAttribute4'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.427 NAME 'extensionAttribute5'
+        DESC 'extensionAttribute5'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.428 NAME 'extensionAttribute6'
+        DESC 'extensionAttribute6'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.429 NAME 'extensionAttribute7'
+        DESC 'extensionAttribute7'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.430 NAME 'extensionAttribute8'
+        DESC 'extensionAttribute8'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.431 NAME 'extensionAttribute9'
+        DESC 'extensionAttribute9'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.371 NAME 'mAPIRecipient'
+        DESC 'mAPIRecipient'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.63 NAME 'msExchADCGlobalNames'
+        DESC 'msExchADCGlobalNames'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        )
+
+attributetype ( 1.2.840.113556.1.2.444 NAME 'msExchAssistantName'
+        DESC 'msExchAssistantName'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.604 NAME 'replicatedObjectVersion'
+        DESC 'replicatedObjectVersion'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.52 NAME 'replicationSignature'
+        DESC 'replicationSignature'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.280 NAME 'submissionContLength'
+        DESC 'submissionContLength'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.79 NAME 'telephoneAssistant'
+        DESC 'telephoneAssistant'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51692 NAME 'msExchShadowDisplayName'
+        DESC 'msExchShadowDisplayName'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51708 NAME 'msExchShadowSn'
+        DESC 'msExchShadowSn'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.190 NAME 'deliverAndRedirect'
+        DESC 'deliverAndRedirect'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51530 NAME 'msExchDelegateListLink'
+        DESC 'msExchDelegateListLink'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        )
+
+attributetype ( 1.2.840.113556.1.2.106 NAME 'deletedItemFlags'
+        DESC 'deletedItemFlags'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51761 NAME 'msExchShadowCompany'
+        DESC 'msExchShadowCompany'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51691 NAME 'msExchShadowDepartment'
+        DESC 'msExchShadowDepartment'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51713 NAME 'msExchShadowTitle'
+        DESC 'msExchShadowTitle'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51705 NAME 'msExchShadowPhysicalDeliveryOfficeName'
+        DESC 'msExchShadowPhysicalDeliveryOfficeName'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.1993 NAME 'msTSExpireDate'
+        DESC 'msTSExpireDate'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.24
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.1994 NAME 'msTSLicenseVersion'
+        DESC 'msTSLicenseVersion'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.1995 NAME 'msTSManagingLS'
+        DESC 'msTSManagingLS'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51690 NAME 'msExchShadowCountryCode'
+        DESC 'msExchShadowCountryCode'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.287 NAME 'autoReplyMessage'
+        DESC 'autoReplyMessage'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50761 NAME 'msExchELCMailboxFlags'
+        DESC 'msExchELCMailboxFlags'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51762 NAME 'msExchShadowInitials'
+        DESC 'msExchShadowInitials'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51699 NAME 'msExchShadowMobile'
+        DESC 'msExchShadowMobile'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50955 NAME 'msExchModeratedObjectsBL'
+        DESC 'msExchModeratedObjectsBL'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51260 NAME 'msExchUserBL'
+        DESC 'msExchUserBL'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        )
+
+attributetype ( 1.2.840.113556.1.4.1459 NAME 'msDS-Behavior-Version'
+        DESC 'msDS-Behavior-Version'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.2061 NAME 'msDS-EnabledFeature'
+        DESC 'msDS-EnabledFeature'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        )
+
+attributetype ( 1.2.840.113556.1.4.2055 NAME 'msDS-USNLastSyncSuccess'
+        DESC 'msDS-USNLastSyncSuccess'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50004 NAME 'msExchPolicyList'
+        DESC 'msExchPolicyList'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        )
+
+attributetype ( 1.2.840.113556.1.2.330 NAME 'dLMemberRule'
+        DESC 'dLMemberRule'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+        )
+
+attributetype ( 1.2.840.113556.1.2.297 NAME 'hideDLMembership'
+        DESC 'hideDLMembership'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.1819 NAME 'msDS-AzApplicationData'
+        DESC 'msDS-AzApplicationData'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.1801 NAME 'msDS-AzBizRule'
+        DESC 'msDS-AzBizRule'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.1802 NAME 'msDS-AzBizRuleLanguage'
+        DESC 'msDS-AzBizRuleLanguage'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.1950 NAME 'msDS-AzGenericData'
+        DESC 'msDS-AzGenericData'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.1792 NAME 'msDS-AzLDAPQuery'
+        DESC 'msDS-AzLDAPQuery'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.1803 NAME 'msDS-AzLastImportedBizRulePath'
+        DESC 'msDS-AzLastImportedBizRulePath'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.1949 NAME 'msDS-AzObjectGuid'
+        DESC 'msDS-AzObjectGuid'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.1997 NAME 'msDS-HABSeniorityIndex'
+        DESC 'msDS-HABSeniorityIndex'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.1793 NAME 'msDS-NonMembers'
+        DESC 'msDS-NonMembers'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        )
+
+attributetype ( 1.2.840.113556.1.4.1946 NAME 'msDS-PhoneticDisplayName'
+        DESC 'msDS-PhoneticDisplayName'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50957 NAME 'msExchArbitrationMailbox'
+        DESC 'msExchArbitrationMailbox'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50953 NAME 'msExchCoManagedByLink'
+        DESC 'msExchCoManagedByLink'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50964 NAME 'msExchGroupDepartRestriction'
+        DESC 'msExchGroupDepartRestriction'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50963 NAME 'msExchGroupJoinRestriction'
+        DESC 'msExchGroupJoinRestriction'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50835 NAME 'msExchMasterAccountHistory'
+        DESC 'msExchMasterAccountHistory'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50300 NAME 'msExchOriginatingForest'
+        DESC 'msExchOriginatingForest'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50640 NAME 'msExchServerAdminDelegationBL'
+        DESC 'msExchServerAdminDelegationBL'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        )
+
+attributetype ( 1.2.840.113556.1.6.47.2.3 NAME 'msOrg-GroupSubtypeName'
+        DESC 'msOrg-GroupSubtypeName'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.6.47.2.1 NAME 'msOrg-IsOrganizational'
+        DESC 'msOrg-IsOrganizational'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.6.47.2.2 NAME 'msOrg-Leaders'
+        DESC 'msOrg-Leaders'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        )
+
+attributetype ( 1.2.840.113556.1.6.47.2.4 NAME 'msOrg-OtherDisplayNames'
+        DESC 'msOrg-OtherDisplayNames'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        )
+
+attributetype ( 1.2.840.113556.1.6.18.1.309 NAME 'msSFU30Name'
+        DESC 'msSFU30Name'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.6.18.1.339 NAME 'msSFU30NisDomain'
+        DESC 'msSFU30NisDomain'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.6.18.1.346 NAME 'msSFU30PosixMember'
+        DESC 'msSFU30PosixMember'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.438 NAME 'oOFReplyToOriginator'
+        DESC 'oOFReplyToOriginator'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.206 NAME 'reportToOriginator'
+        DESC 'reportToOriginator'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.207 NAME 'reportToOwner'
+        DESC 'reportToOwner'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.4.1879 NAME 'msDS-SourceObjectDN'
+        DESC 'msDS-SourceObjectDN'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+attributetype ( 1.2.840.113556.1.2.352 NAME 'targetAddress'
+        DESC 'targetAddress'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE
+        )
+
+# 1.3.6.1.4.1.250.1.57 -> 1.3.6.1.4.1.250.1.57.0 clash with OpenLdap
+attributetype ( 1.3.6.1.4.1.250.1.57.0
+ NAME 'DUP-labeledURI-e20b3d32-5a2b-4f6c-84c0-65c94ba52437'
+ DESC 'DUP-labeledURI-e20b3d32-5a2b-4f6c-84c0-65c94ba52437'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+# 0.9.2342.19200300.100.1.21 -> 0.9.2342.19200300.100.1.21.0 clash with OpenLdap
+attributetype ( 0.9.2342.19200300.100.1.21.0
+ NAME 'DUP-secretary-00efea41-cee1-4f20-b9c3-a2a93ec60616'
+ DESC 'DUP-secretary-00efea41-cee1-4f20-b9c3-a2a93ec60616'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+  )
+
+attributetype ( 1.2.840.113556.1.2.129
+ NAME 'authOrig'
+ DESC 'authOrig'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.2.47
+ NAME 'dLMemRejectPerms'
+ DESC 'dLMemRejectPerms'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.44
+  )
+
+attributetype ( 1.2.840.113556.1.2.293
+ NAME 'dLMemRejectPermsBL'
+ DESC 'dLMemRejectPermsBL'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+  )
+
+attributetype ( 1.2.840.113556.1.2.144
+ NAME 'dLMemSubmitPerms'
+ DESC 'dLMemSubmitPerms'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.2.291
+ NAME 'dLMemSubmitPermsBL'
+ DESC 'dLMemSubmitPermsBL'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+  )
+
+attributetype ( 1.2.840.113556.1.2.140
+ NAME 'delivExtContTypes'
+ DESC 'delivExtContTypes'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+  )
+
+attributetype ( 1.2.840.113556.1.2.241
+ NAME 'deliveryMechanism'
+ DESC 'deliveryMechanism'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.474
+ NAME 'enabledProtocols'
+ DESC 'enabledProtocols'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.394
+ NAME 'expirationTime'
+ DESC 'expirationTime'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.24
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.228
+ NAME 'extensionData'
+ DESC 'extensionData'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+  )
+
+attributetype ( 1.2.840.113556.1.2.337
+ NAME 'folderPathname'
+ DESC 'folderPathname'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.607
+ NAME 'formData'
+ DESC 'formData'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.606
+ NAME 'forwardingAddress'
+ DESC 'forwardingAddress'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.263
+ NAME 'importedFrom'
+ DESC 'importedFrom'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.616
+ NAME 'language'
+ DESC 'language'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.467
+ NAME 'languageCode'
+ DESC 'languageCode'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51149
+ NAME 'msExchAggregationSubscriptionCredential'
+ DESC 'msExchAggregationSubscriptionCredential'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51673
+ NAME 'msExchAuditAdmin'
+ DESC 'msExchAuditAdmin'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51674
+ NAME 'msExchAuditDelegate'
+ DESC 'msExchAuditDelegate'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51675
+ NAME 'msExchAuditDelegateAdmin'
+ DESC 'msExchAuditDelegateAdmin'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51676
+ NAME 'msExchAuditOwner'
+ DESC 'msExchAuditOwner'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51151
+ NAME 'msExchBypassModerationFromDLMembersBL'
+ DESC 'msExchBypassModerationFromDLMembersBL'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51141
+ NAME 'msExchBypassModerationFromDLMembersLink'
+ DESC 'msExchBypassModerationFromDLMembersLink'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51140
+ NAME 'msExchBypassModerationLink'
+ DESC 'msExchBypassModerationLink'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51754
+ NAME 'msExchCalculatedTargetAddress'
+ DESC 'msExchCalculatedTargetAddress'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51336
+ NAME 'msExchCalendarRepairDisabled'
+ DESC 'msExchCalendarRepairDisabled'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51581
+ NAME 'msExchCapabilityIdentifiers'
+ DESC 'msExchCapabilityIdentifiers'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50049
+ NAME 'msExchCustomProxyAddresses'
+ DESC 'msExchCustomProxyAddresses'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51414
+ NAME 'msExchDirsyncID'
+ DESC 'msExchDirsyncID'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51746
+ NAME 'msExchDirsyncSourceObjectClass'
+ DESC 'msExchDirsyncSourceObjectClass'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51506
+ NAME 'msExchEdgeSyncRetryCount'
+ DESC 'msExchEdgeSyncRetryCount'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50969
+ NAME 'msExchEnableModeration'
+ DESC 'msExchEnableModeration'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51577
+ NAME 'msExchEwsApplicationAccessPolicy'
+ DESC 'msExchEwsApplicationAccessPolicy'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51571
+ NAME 'msExchEwsEnabled'
+ DESC 'msExchEwsEnabled'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51573
+ NAME 'msExchEwsExceptions'
+ DESC 'msExchEwsExceptions'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51576
+ NAME 'msExchEwsWellKnownApplicationPolicies'
+ DESC 'msExchEwsWellKnownApplicationPolicies'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.49
+ NAME 'msExchExpansionServerName'
+ DESC 'msExchExpansionServerName'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51032
+ NAME 'msExchExternalSyncState'
+ DESC 'msExchExternalSyncState'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.10001
+ NAME 'msExchFBURL'
+ DESC 'msExchFBURL'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51561
+ NAME 'msExchForeignGroupSID'
+ DESC 'msExchForeignGroupSID'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51620
+ NAME 'msExchGenericForwardingAddress'
+ DESC 'msExchGenericForwardingAddress'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50823
+ NAME 'msExchHABShowInDepartments'
+ DESC 'msExchHABShowInDepartments'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51022
+ NAME 'msExchImmutableId'
+ DESC 'msExchImmutableId'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51563
+ NAME 'msExchIntendedMailboxPlanLink'
+ DESC 'msExchIntendedMailboxPlanLink'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51677
+ NAME 'msExchInterruptUserOnAuditFailure'
+ DESC 'msExchInterruptUserOnAuditFailure'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.593
+ NAME 'msExchLabeledURI'
+ DESC 'msExchLabeledURI'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51570
+ NAME 'msExchLicenseToken'
+ DESC 'msExchLicenseToken'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51734
+ NAME 'msExchLitigationHoldDate'
+ DESC 'msExchLitigationHoldDate'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.24
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51735
+ NAME 'msExchLitigationHoldOwner'
+ DESC 'msExchLitigationHoldOwner'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51738
+ NAME 'msExchMailboxAuditLastAdminAccess'
+ DESC 'msExchMailboxAuditLastAdminAccess'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.24
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51739
+ NAME 'msExchMailboxAuditLastDelegateAccess'
+ DESC 'msExchMailboxAuditLastDelegateAccess'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.24
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51737
+ NAME 'msExchMailboxAuditLastExternalAccess'
+ DESC 'msExchMailboxAuditLastExternalAccess'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.24
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.11091
+ NAME 'msExchMailboxFolderSet'
+ DESC 'msExchMailboxFolderSet'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51568
+ NAME 'msExchMailboxFolderSet2'
+ DESC 'msExchMailboxFolderSet2'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51402
+ NAME 'msExchMailboxMoveRemoteHostName'
+ DESC 'msExchMailboxMoveRemoteHostName'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51684
+ NAME 'msExchMailboxMoveSourceArchiveMDBLink'
+ DESC 'msExchMailboxMoveSourceArchiveMDBLink'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51439
+ NAME 'msExchMailboxMoveSourceMDBLink'
+ DESC 'msExchMailboxMoveSourceMDBLink'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51685
+ NAME 'msExchMailboxMoveTargetArchiveMDBLink'
+ DESC 'msExchMailboxMoveTargetArchiveMDBLink'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51405
+ NAME 'msExchMailboxPlanType'
+ DESC 'msExchMailboxPlanType'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50687
+ NAME 'msExchMessageHygieneFlags'
+ DESC 'msExchMessageHygieneFlags'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50779
+ NAME 'msExchMessageHygieneSCLDeleteThreshold'
+ DESC 'msExchMessageHygieneSCLDeleteThreshold'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50783
+ NAME 'msExchMessageHygieneSCLJunkThreshold'
+ DESC 'msExchMessageHygieneSCLJunkThreshold'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50781
+ NAME 'msExchMessageHygieneSCLQuarantineThreshold'
+ DESC 'msExchMessageHygieneSCLQuarantineThreshold'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50780
+ NAME 'msExchMessageHygieneSCLRejectThreshold'
+ DESC 'msExchMessageHygieneSCLRejectThreshold'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50952
+ NAME 'msExchModeratedByLink'
+ DESC 'msExchModeratedByLink'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50993
+ NAME 'msExchOWAPolicy'
+ DESC 'msExchOWAPolicy'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51569
+ NAME 'msExchObjectID'
+ DESC 'msExchObjectID'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51142
+ NAME 'msExchParentPlanLink'
+ DESC 'msExchParentPlanLink'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51644
+ NAME 'msExchPartnerGroupID'
+ DESC 'msExchPartnerGroupID'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50030
+ NAME 'msExchPolicyEnabled'
+ DESC 'msExchPolicyEnabled'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50006
+ NAME 'msExchPolicyOptionList'
+ DESC 'msExchPolicyOptionList'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.93
+ NAME 'msExchPreviousAccountSid'
+ DESC 'msExchPreviousAccountSid'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50048
+ NAME 'msExchProxyCustomProxy'
+ DESC 'msExchProxyCustomProxy'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51492
+ NAME 'msExchRMSComputerAccountsLink'
+ DESC 'msExchRMSComputerAccountsLink'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.12523
+ NAME 'msExchRecipLimit'
+ DESC 'msExchRecipLimit'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51611
+ NAME 'msExchRemoteRecipientType'
+ DESC 'msExchRemoteRecipientType'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50332
+ NAME 'msExchResourceCapacity'
+ DESC 'msExchResourceCapacity'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50334
+ NAME 'msExchResourceDisplay'
+ DESC 'msExchResourceDisplay'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50333
+ NAME 'msExchResourceMetaData'
+ DESC 'msExchResourceMetaData'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50331
+ NAME 'msExchResourceSearchProperties'
+ DESC 'msExchResourceSearchProperties'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51240
+ NAME 'msExchRetentionComment'
+ DESC 'msExchRetentionComment'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51242
+ NAME 'msExchRetentionURL'
+ DESC 'msExchRetentionURL'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51150
+ NAME 'msExchSendAsAddresses'
+ DESC 'msExchSendAsAddresses'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50899
+ NAME 'msExchSenderHintTranslations'
+ DESC 'msExchSenderHintTranslations'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51624
+ NAME 'msExchSharingAnonymousIdentities'
+ DESC 'msExchSharingAnonymousIdentities'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51031
+ NAME 'msExchSharingPartnerIdentities'
+ DESC 'msExchSharingPartnerIdentities'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51266
+ NAME 'msExchSharingPolicyLink'
+ DESC 'msExchSharingPolicyLink'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50990
+ NAME 'msExchSignupAddresses'
+ DESC 'msExchSignupAddresses'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51366
+ NAME 'msExchSupervisionDLLink'
+ DESC 'msExchSupervisionDLLink'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51367
+ NAME 'msExchSupervisionOneOffLink'
+ DESC 'msExchSupervisionOneOffLink'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51365
+ NAME 'msExchSupervisionUserLink'
+ DESC 'msExchSupervisionUserLink'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51394
+ NAME 'msExchSyncAccountsPolicyDN'
+ DESC 'msExchSyncAccountsPolicyDN'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51096
+ NAME 'msExchThrottlingPolicyDN'
+ DESC 'msExchThrottlingPolicyDN'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51612
+ NAME 'msExchUCVoiceMailSettings'
+ DESC 'msExchUCVoiceMailSettings'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51344
+ NAME 'msExchUMAddresses'
+ DESC 'msExchUMAddresses'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51145
+ NAME 'msExchUMCallingLineIDs'
+ DESC 'msExchUMCallingLineIDs'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50342
+ NAME 'msExchUMListInDirectorySearch'
+ DESC 'msExchUMListInDirectorySearch'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50388
+ NAME 'msExchUMRecipientDialPlanLink'
+ DESC 'msExchUMRecipientDialPlanLink'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50336
+ NAME 'msExchUMSpokenName'
+ DESC 'msExchUMSpokenName'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51767
+ NAME 'msExchUsageLocation'
+ DESC 'msExchUsageLocation'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.51016
+ NAME 'msExchWindowsLiveID'
+ DESC 'msExchWindowsLiveID'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.468
+ NAME 'pOPCharacterSet'
+ DESC 'pOPCharacterSet'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.466
+ NAME 'pOPContentFormat'
+ DESC 'pOPContentFormat'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.223
+ NAME 'replicationSensitivity'
+ DESC 'replicationSensitivity'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.221
+ NAME 'unauthOrig'
+ DESC 'unauthOrig'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.44
+  )
+
+attributetype ( 1.2.840.113556.1.2.292
+ NAME 'unauthOrigBL'
+ DESC 'unauthOrigBL'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50351
+ NAME 'msExchMailboxTemplateLink'
+ DESC 'msExchMailboxTemplateLink'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.7031
+ NAME 'msExchIMACL'
+ DESC 'msExchIMACL'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.7038
+ NAME 'msExchIMAddress'
+ DESC 'msExchIMAddress'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.7035
+ NAME 'msExchIMMetaPhysicalURL'
+ DESC 'msExchIMMetaPhysicalURL'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.7036
+ NAME 'msExchIMPhysicalURL'
+ DESC 'msExchIMPhysicalURL'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.7037
+ NAME 'msExchIMVirtualServer'
+ DESC 'msExchIMVirtualServer'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50668
+ NAME 'msExchMobileMailboxPolicyLink'
+ DESC 'msExchMobileMailboxPolicyLink'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+ SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.63.1000.1.1.1.1.16
+ NAME 'apple-mcxsettings'
+ DESC 'apple-mcxsettings'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.48
+ NAME 'unmergedAtts'
+ DESC 'unmergedAtts'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.50666
+ NAME 'msExchMobileAllowedDeviceIDs'
+ DESC 'msExchMobileAllowedDeviceIDs'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.2.348
+ NAME 'logRolloverInterval'
+ DESC 'logRolloverInterval'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  )
+
+attributetype ( 1.2.840.113556.1.2.198
+ NAME 'monitoredConfigurations'
+ DESC 'monitoredConfigurations'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+  )
+
+attributetype ( 1.2.840.113556.1.2.199
+ NAME 'monitoredServices'
+ DESC 'monitoredServices'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.2.450
+ NAME 'monitoringAvailabilityStyle'
+ DESC 'monitoringAvailabilityStyle'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.200
+ NAME 'monitoringAvailabilityWindow'
+ DESC 'monitoringAvailabilityWindow'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.196
+ NAME 'monitoringCachedViaMail'
+ DESC 'monitoringCachedViaMail'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+  )
+
+attributetype ( 1.2.840.113556.1.2.197
+ NAME 'monitoringCachedViaRPC'
+ DESC 'monitoringCachedViaRPC'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+  )
+
+attributetype ( 1.2.840.113556.1.2.195
+ NAME 'monitoringMailUpdateInterval'
+ DESC 'monitoringMailUpdateInterval'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.93
+ NAME 'monitoringMailUpdateUnits'
+ DESC 'monitoringMailUpdateUnits'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.92
+ NAME 'monitoringRPCUpdateInterval'
+ DESC 'monitoringRPCUpdateInterval'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.89
+ NAME 'monitoringRPCUpdateUnits'
+ DESC 'monitoringRPCUpdateUnits'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1717
+ NAME 'msDS-AdditionalDnsHostName'
+ DESC 'msDS-AdditionalDnsHostName'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.1718
+ NAME 'msDS-AdditionalSamAccountName'
+ DESC 'msDS-AdditionalSamAccountName'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.1958
+ NAME 'msDS-AuthenticatedAtDC'
+ DESC 'msDS-AuthenticatedAtDC'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+  )
+
+attributetype ( 1.2.840.113556.1.4.1783
+ NAME 'msDS-ExecuteScriptPassword'
+ DESC 'msDS-ExecuteScriptPassword'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.2056
+ NAME 'msDS-HostServiceAccount'
+ DESC 'msDS-HostServiceAccount'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+  )
+
+attributetype ( 1.2.840.113556.1.4.2025
+ NAME 'msDS-IsUserCachableAtRodc'
+ DESC 'msDS-IsUserCachableAtRodc'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1923
+ NAME 'msDS-KrbTgtLink'
+ DESC 'msDS-KrbTgtLink'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1926
+ NAME 'msDS-NeverRevealGroup'
+ DESC 'msDS-NeverRevealGroup'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+  )
+
+attributetype ( 1.2.840.113556.1.4.1962
+ NAME 'msDS-PromotionSettings'
+ DESC 'msDS-PromotionSettings'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1928
+ NAME 'msDS-RevealOnDemandGroup'
+ DESC 'msDS-RevealOnDemandGroup'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+  )
+
+attributetype ( 1.2.840.113556.1.4.1940
+ NAME 'msDS-RevealedList'
+ DESC 'msDS-RevealedList'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+  )
+
+attributetype ( 1.2.840.113556.1.4.1924
+ NAME 'msDS-RevealedUsers'
+ DESC 'msDS-RevealedUsers'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.1961
+ NAME 'msDS-SiteName'
+ DESC 'msDS-SiteName'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1959
+ NAME 'msDS-isGC'
+ DESC 'msDS-isGC'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1960
+ NAME 'msDS-isRODC'
+ DESC 'msDS-isRODC'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.7000.102.71
+ NAME 'msExchExchangeServerLink'
+ DESC 'msExchExchangeServerLink'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.6.18.1.323
+ NAME 'msSFU30Aliases'
+ DESC 'msSFU30Aliases'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.1966
+ NAME 'msTPM-OwnerInformation'
+ DESC 'msTPM-OwnerInformation'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.2070
+ NAME 'msTSEndpointData'
+ DESC 'msTSEndpointData'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.2072
+ NAME 'msTSEndpointPlugin'
+ DESC 'msTSEndpointPlugin'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.2071
+ NAME 'msTSEndpointType'
+ DESC 'msTSEndpointType'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.2074
+ NAME 'msTSPrimaryDesktopBL'
+ DESC 'msTSPrimaryDesktopBL'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+  )
+
+attributetype ( 1.2.840.113556.1.4.1991
+ NAME 'msTSProperty01'
+ DESC 'msTSProperty01'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.1992
+ NAME 'msTSProperty02'
+ DESC 'msTSProperty02'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  )
+
+attributetype ( 1.2.840.113556.1.4.2078
+ NAME 'msTSSecondaryDesktopBL'
+ DESC 'msTSSecondaryDesktopBL'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+  )
+
+attributetype ( 1.2.840.113556.1.2.540
+ NAME 'promoExpiration'
+ DESC 'promoExpiration'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.24
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.347
+ NAME 'trackingLogPathName'
+ DESC 'trackingLogPathName'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.573
+ NAME 'type'
+ DESC 'type'
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+ SINGLE-VALUE )
+
+#---
+
+attributetype ( 1.2.840.113556.1.4.856
+	NAME 'netbootNewMachineOU'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.13
+	NAME 'builtinCreationTime'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1335
+	NAME 'pKIEnrollmentAccess'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.1333
+	NAME 'pKIExtendedKeyUsage'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.1123
+	NAME 'msNPCalledStationID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
+
+attributetype ( 1.2.840.113556.1.4.539
+	NAME 'initialAuthIncoming'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.370
+	NAME 'objectClassCategory'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.41
+	NAME 'generatedConnection'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.911
+	NAME 'allowedChildClasses'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.38'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.68
+	NAME 'machineArchitecture'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27' )
+
+attributetype ( 1.2.840.113556.1.4.767
+	NAME 'aCSMaxPeakBandwidth'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.72
+	NAME 'marshalledInterface'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.368
+	NAME 'rIDManagerReference'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.770
+	NAME 'aCSEnableACSService'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1237
+	NAME 'mSMQRoutingService'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1405
+	NAME 'mS-SQL-AllowQueuedUpdatingSubscription'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.648
+	NAME 'primaryTelexNumber'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.8
+	NAME 'userAccountControl'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.563
+	NAME 'shellPropertyPages'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.4
+	NAME 'replUpToDateVector'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.484
+	NAME 'fRSDirectoryFilter'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.230
+	NAME 'printSeparatorFile'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1329
+	NAME 'pKIMaxIssuingDepth'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1307
+	NAME 'accountNameHistory'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.1386
+	NAME 'mS-SQL-GPSLongitude'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.562
+	NAME 'adminPropertyPages'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.121
+	NAME 'securityIdentifier'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.166
+	NAME 'groupMembershipSAM'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.659
+	NAME 'serviceDNSNameType'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.585
+	NAME 'meetingIsEncrypted'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1400
+	NAME 'mS-SQL-Applications'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.330
+	NAME 'lastUpdateSequence'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.50
+	NAME 'lastContentIndexed'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.567
+	NAME 'meetingDescription'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.880
+	NAME 'fRSTimeLastCommand'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.24'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.83
+	NAME 'monikerDisplayName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.321
+	NAME 'requiredCategories'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.813
+	NAME 'upgradeProductCode'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.774
+	NAME 'aCSMaxNoOfLogFiles'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1370
+	NAME 'mS-SQL-CharacterSet'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.578
+	NAME 'meetingContactInfo'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1397
+	NAME 'mS-SQL-CreationDate'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.32
+	NAME 'domainPolicyObject'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.703
+	NAME 'dhcpObjDescription'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.573
+	NAME 'meetingApplication'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.518
+	NAME 'defaultHidingValue'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.875
+	NAME 'fRSMemberReference'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.701
+	NAME 'dhcpIdentification'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.135
+	NAME 'trustAuthOutgoing'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.197
+	NAME 'systemMustContain'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.38'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.1412
+	NAME 'primaryGroupToken'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.118
+	NAME 'rpcNsProfileEntry'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.129
+	NAME 'trustAuthIncoming'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1225
+	NAME 'mSMQPrevSiteGates'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.607
+	NAME 'queryPolicyObject'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.712
+	NAME 'optionDescription'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.1314
+	NAME 'aCSMaximumSDUSize'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.530
+	NAME 'nonSecurityMember'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.31
+	NAME 'fRSReplicaSetType'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.763
+	NAME 'aCSTotalNoOfFlows'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.915
+	NAME 'possibleInferiors'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.38'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.851
+	NAME 'netbootMaxClients'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1385
+	NAME 'mS-SQL-GPSLatitude'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.765
+	NAME 'aCSPermissionBits'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.926
+	NAME 'mSMQTransactional'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1390
+	NAME 'mS-SQL-Description'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.913
+	NAME 'allowedAttributes'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.38'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.491
+	NAME 'fRSFaultCondition'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.54
+	NAME 'tombstoneLifetime'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.809
+	NAME 'remoteStorageGUID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.644
+	NAME 'showInAddressBook'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.213
+	NAME 'defaultClassStore'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.577
+	NAME 'meetingOriginator'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.656
+	NAME 'userPrincipalName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1316
+	NAME 'aCSMinimumLatency'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+#attributetype ( 1.2.840.113556.1.2.617
+#	NAME 'homePostalAddress'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+#
+# Moved to microsoftattributetype.schema to satisfy
+# organizationalPerson objectclass
+#
+# 9.3.29.  Home postal address
+#
+#  The Home postal address attribute type specifies a home postal
+#  address for an object.  This should be limited to up to 6 lines of 30
+#  characters each.
+#
+#    homePostalAddress ATTRIBUTE
+#        WITH ATTRIBUTE-SYNTAX
+#            postalAddress
+#            MATCHES FOR EQUALITY
+#    ::= {pilotAttributeType 39}
+#
+attributetype ( 0.9.2342.19200300.100.1.39 NAME 'homePostalAddress'
+	DESC 'RFC1274: home postal address'
+	EQUALITY caseIgnoreListMatch
+	SUBSTR caseIgnoreListSubstringsMatch
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.41 )
+
+
+attributetype ( 1.2.840.113556.1.4.638
+	NAME 'isPrivilegeHolder'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.533
+	NAME 'fRSReplicaSetGUID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.371
+	NAME 'rIDAllocationPool'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.1327
+	NAME 'pKIDefaultKeySpec'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.537
+	NAME 'dynamicLDAPServer'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.516
+	NAME 'serverReferenceBL'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.500
+	NAME 'fRSServiceCommand'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1304
+	NAME 'sDRightsEffective'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1249
+	NAME 'proxiedObjectName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.586
+	NAME 'meetingRecurrence'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.251
+	NAME 'cOMTreatAsClassId'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1245
+	NAME 'globalAddressList'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.908
+	NAME 'extendedClassInfo'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.459
+	NAME 'machineWidePolicy'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.356
+	NAME 'foreignIdentifier'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1242
+	NAME 'dNReferenceUpdate'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.134
+	NAME 'trustPosixOffset'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.36
+	NAME 'enabledConnection'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.627
+	NAME 'ipsecNFAReference'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.86
+	NAME 'userWorkstations'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.301
+	NAME 'garbageCollPeriod'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.933
+	NAME 'mSMQComputerType'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.44'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.65
+	NAME 'logonWorkstation'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.921
+	NAME 'mSMQJournalQuota'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.108
+	NAME 'remoteSourceType'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.95
+	NAME 'pwdHistoryLength'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.920
+	NAME 'mSMQBasePriority'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.196
+	NAME 'systemMayContain'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.38'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.1407
+	NAME 'mS-SQL-ThirdParty'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1243
+	NAME 'mSMQQueueNameExt'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.485
+	NAME 'fRSUpdateTimeout'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.924
+	NAME 'mSMQPrivacyLevel'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.615
+	NAME 'shellContextMenu'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.618
+	NAME 'wellKnownObjects'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.789
+	NAME 'transportDLLName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.458
+	NAME 'qualityOfService'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.73
+	NAME 'lockoutThreshold'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.105
+	NAME 'remoteServerName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.694
+	NAME 'previousParentCA'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.1345
+	NAME 'dSUIShellMaximum'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.303
+	NAME 'notificationList'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1244
+	NAME 'addressBookRoots'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.878
+	NAME 'fRSPrimaryMember'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.587
+	NAME 'meetingStartTime'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.24' )
+
+attributetype ( 1.2.840.113556.1.4.1310
+	NAME 'mSMQSiteGatesMig'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.709
+	NAME 'dhcpReservations'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.44' )
+
+attributetype ( 1.2.840.113556.1.4.614
+	NAME 'adminContextMenu'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.1332
+	NAME 'pKIOverlapPeriod'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.142
+	NAME 'winsockAddresses'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.923
+	NAME 'mSMQAuthenticate'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1344
+	NAME 'dSUIAdminMaximum'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.848
+	NAME 'appSchemaVersion'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.123
+	NAME 'serviceClassInfo'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.769
+	NAME 'aCSEventLogLevel'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.751
+	NAME 'userSharedFolder'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.421
+	NAME 'domainWidePolicy'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.669
+	NAME 'rIDSetReferences'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.815
+	NAME 'canUpgradeScript'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.610
+	NAME 'classDisplayName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.2.226
+	NAME 'adminDescription'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.67
+	NAME 'lSAModifiedCount'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.509
+	NAME 'serviceClassName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.56
+	NAME 'localPolicyFlags'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.115
+	NAME 'rpcNsInterfaceID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.194
+	NAME 'adminDisplayName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.753
+	NAME 'nameServiceFlags'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.589
+	NAME 'meetingBandwidth'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27' )
+
+attributetype ( 1.2.840.113556.1.4.755
+	NAME 'domainIdentifier'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.370
+	NAME 'rIDAvailablePool'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+# Printable String does not support '_'
+#
+#attributetype ( 1.2.840.113556.1.4.655
+#	NAME 'legacyExchangeDN'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.44'
+#	SINGLE-VALUE )
+attributetype ( 1.2.840.113556.1.4.655
+	NAME 'legacyExchangeDN'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.470
+	NAME 'trustAttributes'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.535
+	NAME 'fRSRootSecurity'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.532
+	NAME 'superiorDNSRoot'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.278
+	NAME 'printMaxYExtent'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.277
+	NAME 'printMaxXExtent'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.280
+	NAME 'printMinYExtent'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.279
+	NAME 'printMinXExtent'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.32
+	NAME 'attributeSyntax'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.38'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.247
+	NAME 'printAttributes'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.152
+	NAME 'groupAttributes'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.816
+	NAME 'fileExtPriority'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.930
+	NAME 'mSMQServiceType'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.363
+	NAME 'operatingSystem'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1371
+	NAME 'mS-SQL-SortOrder'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.329
+	NAME 'versionNumberLo'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.884
+	NAME 'msRRASAttribute'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.781
+	NAME 'lastKnownParent'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1209
+	NAME 'shortServerName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.60
+	NAME 'lockoutDuration'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.232
+	NAME 'defaultPriority'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.754
+	NAME 'rpcNsEntryFlags'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.713
+	NAME 'optionsLocation'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.44' )
+
+attributetype ( 1.2.840.113556.1.4.328
+	NAME 'versionNumberHi'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.366
+	NAME 'rpcNsAnnotation'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.886
+	NAME 'purportedSearch'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.776
+	NAME 'aCSDSBMPriority'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.961
+	NAME 'mSMQSiteForeign'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7' )
+
+attributetype ( 1.2.840.113556.1.4.335
+	NAME 'currentLocation'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.570
+	NAME 'meetingProtocol'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.420
+	NAME 'publicKeyPolicy'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1402
+	NAME 'mS-SQL-Publisher'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.812
+	NAME 'createWizardExt'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.1373
+	NAME 'mS-SQL-Clustered'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.334
+	NAME 'volTableIdxGUID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.696
+	NAME 'currentParentCA'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.504
+	NAME 'seqNotification'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.515
+	NAME 'serverReference'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1119
+	NAME 'msNPAllowDialin'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1387
+	NAME 'mS-SQL-GPSHeight'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1378
+	NAME 'mS-SQL-AppleTalk'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.269
+	NAME 'linkTrackSecret'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.378
+	NAME 'dnsAllowDynamic'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.49
+	NAME 'badPasswordTime'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.637
+	NAME 'privilegeHolder'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.289
+	NAME 'printMediaReady'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.288
+	NAME 'printMACAddress'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.66
+	NAME 'lSACreationTime'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.569
+	NAME 'meetingLocation'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.784
+	NAME 'aCSIdentityName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.1410
+	NAME 'mS-DS-CreatorSID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.1374
+	NAME 'mS-SQL-NamedPipe'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.843
+	NAME 'lDAPAdminLimits'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.2.460
+	NAME 'lDAPDisplayName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.218
+	NAME 'applicationName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.695
+	NAME 'pendingParentCA'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.779
+	NAME 'aCSCacheTimeout'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.574
+	NAME 'meetingLanguage'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.778
+	NAME 'aCSDSBMDeadTime'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.697
+	NAME 'cACertificateDN'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.138
+	NAME 'userParameters'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.132
+	NAME 'trustDirection'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.962
+	NAME 'mSMQQueueQuota'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.936
+	NAME 'mSMQEncryptKey'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.885
+	NAME 'terminalServer'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.233
+	NAME 'printStartTime'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.664
+	NAME 'syncWithObject'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.344
+	NAME 'groupsToIgnore'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.665
+	NAME 'syncMembership'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.666
+	NAME 'syncAttributes'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.214
+	NAME 'nextLevelStore'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.302
+	NAME 'sAMAccountType'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1401
+	NAME 'mS-SQL-Keywords'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.2.210 NAME 'proxyAddresses'
+        DESC 'rfc822 mail address of group member(s)'
+        EQUALITY caseIgnoreIA5Match
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+        
+attributetype ( 1.2.840.113556.1.4.284
+	NAME 'bytesPerMinute'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.241
+	NAME 'printMaxCopies'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.98
+	NAME 'primaryGroupID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.89
+	NAME 'nTGroupMembers'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.1228
+	NAME 'mSMQDsServices'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.43
+	NAME 'fRSVersionGUID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.486
+	NAME 'fRSWorkingPath'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.18
+	NAME 'otherTelephone'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.2.277
+	NAME 'otherHomePhone'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.151
+	NAME 'oEMInformation'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.459
+	NAME 'networkAddress'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.44' )
+
+attributetype ( 1.2.840.113556.1.4.966
+	NAME 'mSMQDigestsMig'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.568
+	NAME 'meetingKeyword'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.844
+	NAME 'lDAPIPDenyList'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.847
+	NAME 'installUiLevel'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.894
+	NAME 'gPCFileSysPath'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.488
+	NAME 'fRSStagingPath'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.351
+	NAME 'auxiliaryClass'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.38' )
+
+attributetype ( 1.2.840.113556.1.4.159
+	NAME 'accountExpires'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.718
+	NAME 'dhcpProperties'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.346
+	NAME 'desktopProfile'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.762
+	NAME 'aCSServiceType'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+#attributetype ( 1.2.840.113556.1.2.610
+#	NAME 'employeeNumber'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1213
+	NAME 'assocNTAccount'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.498
+	NAME 'creationWizard'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.253
+	NAME 'cOMOtherProgId'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.202
+	NAME 'auditingPolicy'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.635
+	NAME 'privilegeValue'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1366
+	NAME 'mS-SQL-Location'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1334
+	NAME 'pKIDefaultCSPs'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.270
+	NAME 'printShareName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.2.33
+	NAME 'isSingleValued'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.472
+	NAME 'domainCrossRef'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1240
+	NAME 'netbootSIFFile'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.250
+	NAME 'cOMUniqueLIBID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.657
+	NAME 'serviceDNSName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.782
+        NAME 'objectCategory'
+        EQUALITY distinguishedNameMatch
+        SUBSTR caseIgnoreSubstringsMatch
+        SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+        SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.122
+	NAME 'serviceClassID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.720
+	NAME 'dhcpUpdateTime'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.221
+	NAME 'sAMAccountName'
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.588
+	NAME 'meetingEndTime'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.24' )
+
+attributetype ( 1.2.840.113556.1.4.1389
+	NAME 'mS-SQL-Language'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.777
+	NAME 'aCSDSBMRefresh'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1393
+	NAME 'mS-SQL-Database'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.20
+	NAME 'cOMInterfaceID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.1403
+	NAME 'mS-SQL-AllowKnownPullSubscription'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1394
+	NAME 'mS-SQL-AllowAnonymousSubscription'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.654
+	NAME 'managedObjects'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	 )
+
+attributetype ( 1.2.840.113556.1.2.8
+	NAME 'possSuperiors'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.38' )
+
+attributetype ( 1.2.840.113556.1.4.791
+	NAME 'transportType'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.345
+	NAME 'groupPriority'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.117
+	NAME 'rpcNsPriority'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27' )
+
+attributetype ( 1.2.840.113556.1.4.917
+	NAME 'mSMQQueueType'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.141
+	NAME 'versionNumber'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.121
+	NAME 'uSNLastObjRem'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.1346
+	NAME 'templateRoots'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.93
+	NAME 'pwdProperties'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.290
+	NAME 'printNumberUp'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.536
+	NAME 'fRSExtensions'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.286
+	NAME 'printRateUnit'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.846
+	NAME 'msiScriptSize'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.274
+	NAME 'printSpooling'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.608
+	NAME 'queryPolicyBL'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.103
+	NAME 'proxyLifetime'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.144
+	NAME 'operatorCount'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.860
+	NAME 'netbootServer'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.369
+	NAME 'fSMORoleOwner'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.276
+	NAME 'driverVersion'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1388
+	NAME 'mS-SQL-Version'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.939
+	NAME 'mSMQNameStyle'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.471
+	NAME 'schemaVersion'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27' )
+
+attributetype ( 1.2.840.113556.1.2.436
+	NAME 'directReports'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	 )
+
+attributetype ( 1.2.840.113556.1.2.255
+	NAME 'addressSyntax'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.235
+	NAME 'printFormName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.15
+	NAME 'msiScriptPath'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1312
+	NAME 'aCSServerList'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+#attributetype ( 1.2.840.113556.1.2.615
+#	NAME 'personalTitle'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+#
+# Moved to microsoftattributetype.schema to satisfy
+# organizationalPerson objectclass
+#
+# 9.3.30.  Personal Title
+#
+#  The Personal Title attribute type specifies a personal title for a
+#  person. Examples of personal titles are "Ms", "Dr", "Prof" and "Rev".
+#
+#    personalTitle ATTRIBUTE
+#        WITH ATTRIBUTE-SYNTAX
+#            caseIgnoreStringSyntax
+#            (SIZE (1 .. ub-personal-title))
+#    ::= {pilotAttributeType 40}
+#
+attributetype ( 0.9.2342.19200300.100.1.40 NAME 'personalTitle'
+	DESC 'RFC1274: personal title'
+	EQUALITY caseIgnoreMatch
+	SUBSTR caseIgnoreSubstringsMatch
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{256} )
+
+attributetype ( 1.2.840.113556.1.4.1305
+	NAME 'moveTreeState'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.945
+	NAME 'mSMQSiteGates'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.1238
+	NAME 'mSMQDsService'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.76
+	NAME 'objectVersion'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1414
+	NAME 'dNSTombstoned'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.941
+	NAME 'mSMQLongLived'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.534
+	NAME 'fRSLevelLimit'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.845
+	NAME 'msiScriptName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+#attributetype ( 1.2.840.113556.1.4.44
+#	NAME 'homeDirectory'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.698
+	NAME 'dhcpUniqueKey'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.227
+	NAME 'extensionName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+#attributetype ( 1.2.840.113556.1.2.256
+#	NAME 'streetAddress'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.113
+	NAME 'rpcNsBindings'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.237
+	NAME 'printBinNames'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.109
+	NAME 'replicaSource'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.246
+	NAME 'printLanguage'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.1365
+	NAME 'mS-SQL-Contact'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.357
+	NAME 'nTMixedDomain'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.483
+	NAME 'fRSFileFilter'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.332
+	NAME 'birthLocation'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.682
+	NAME 'friendlyNames'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.622
+	NAME 'ipsecDataType'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.584
+	NAME 'meetingRating'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.681
+	NAME 'indexedScopes'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.312
+	NAME 'rpcNsObjectID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.168
+	NAME 'modifiedCount'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.218
+	NAME 'oMObjectClass'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.772
+	NAME 'aCSPolicyName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.502
+	NAME 'timeVolChange'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.337
+	NAME 'currMachineId'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.120
+	NAME 'schemaFlagsEx'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1356
+	NAME 'validAccesses'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.158
+	NAME 'domainReplica'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1309
+	NAME 'mSMQInterval2'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1308
+	NAME 'mSMQInterval1'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.916
+	NAME 'canonicalName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.94
+	NAME 'ntPwdHistory'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.133
+	NAME 'trustPartner'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.160
+	NAME 'lmPwdHistory'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.1380
+	NAME 'mS-SQL-Status'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.469
+	NAME 'USNIntersite'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.858
+	NAME 'netbootTools'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.99
+	NAME 'priorSetTime'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1367
+	NAME 'mS-SQL-Memory'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.950
+	NAME 'mSMQServices'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+#attributetype ( 1.2.840.113556.1.2.613
+#	NAME 'employeeType'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.27
+	NAME 'currentValue'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.822
+	NAME 'siteLinkList'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.107
+	NAME 'remoteSource'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.325
+	NAME 'setupCommand'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.212
+	NAME 'dSHeuristics'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1336
+	NAME 'replInterval'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.234
+	NAME 'printEndTime'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.1
+        NAME 'instanceType'
+        SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+        SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.722
+	NAME 'otherIpPhone'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.965
+	NAME 'mSMQSiteName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.44'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.579
+	NAME 'meetingOwner'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.242
+	NAME 'printCollate'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.480
+	NAME 'defaultGroup'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.79
+	NAME 'minPwdLength'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.864
+	NAME 'netbootSCPBL'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.650
+	NAME 'mhsORAddress'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+#attributetype ( 1.2.840.113556.1.4.651
+#	NAME 'otherMailbox'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+#
+# Moved to microsoftattributetype.schema to satisfy
+# organizationalPerson objectclass
+#
+# 9.3.18.  Other Mailbox
+#
+#  The Other Mailbox attribute type specifies values for electronic
+#  mailbox types other than X.400 and rfc822.
+#
+#    otherMailbox ATTRIBUTE
+#        WITH ATTRIBUTE-SYNTAX
+#            SEQUENCE {
+#                    mailboxType PrintableString, -- e.g. Telemail
+#                    mailbox IA5String  -- e.g. X378:Joe
+#            }
+#    ::= {pilotAttributeType 22}
+#
+attributetype ( 0.9.2342.19200300.100.1.22 NAME 'otherMailbox'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.39 )
+
+
+attributetype ( 1.2.840.113556.1.4.367
+	NAME 'rpcNsCodeset'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.2.14
+	NAME 'hasMasterNCs'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.952
+	NAME 'mSMQMigrated'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.74
+	NAME 'dSASignature'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.115
+	NAME 'invocationId'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.254
+	NAME 'cOMTypelibId'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.26
+	NAME 'creationTime'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.581
+	NAME 'meetingScope'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.336
+	NAME 'volTableGUID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.513
+	NAME 'siteObjectBL'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.756
+	NAME 'aCSTimeOfDay'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.757
+	NAME 'aCSDirection'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.77
+	NAME 'maxTicketAge'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.481
+	NAME 'schemaUpdate'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.24'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.80
+	NAME 'minTicketAge'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.628
+	NAME 'ipsecNegotiationPolicyReference'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.327
+	NAME 'helpFileName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.148
+	NAME 'schemaIDGUID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.810
+	NAME 'createDialog'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.964
+	NAME 'mSMQNt4Flags'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.327
+	NAME 'packageFlags'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.464
+	NAME 'wWWHomePage'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.507
+	NAME 'volumeCount'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.273
+	NAME 'printStatus'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.890
+	NAME 'uPNSuffixes'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.471
+	NAME 'trustParent'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1301
+	NAME 'tokenGroups'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.375
+	NAME 'systemFlags'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.667
+	NAME 'syncWithSID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1306
+	NAME 'dNSProperty'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.710
+	NAME 'superScopes'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.44' )
+
+attributetype ( 1.2.840.113556.1.4.1347
+	NAME 'sPNMappings'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.272
+	NAME 'printNotify'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.282
+	NAME 'printMemory'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.154
+	NAME 'serverState'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.942
+	NAME 'mSMQVersion'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.373
+	NAME 'rIDUsedPool'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.1355
+	NAME 'queryFilter'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.300
+	NAME 'printerName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.97
+	NAME 'preferredOU'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.649
+	NAME 'primaryInternationalISDNNumber'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.333
+	NAME 'oMTIndxGuid'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1337
+	NAME 'mSMQUserSid'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.487
+	NAME 'fRSRootPath'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.918
+	NAME 'mSMQJournal'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.499
+	NAME 'contextMenu'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.764
+	NAME 'aCSPriority'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.937
+	NAME 'mSMQSignKey'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.359
+	NAME 'netbootGUID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.925
+	NAME 'mSMQOwnerID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.24
+	NAME 'mustContain'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.38' )
+
+attributetype ( 1.2.840.113556.1.4.379
+	NAME 'dnsAllowXFR'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1379
+	NAME 'mS-SQL-Vines'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.948
+	NAME 'mSMQDigests'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.662
+	NAME 'lockoutTime'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.53
+	NAME 'lastSetTime'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.25
+	NAME 'countryCode'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1377
+	NAME 'mS-SQL-TCPIP'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.934
+	NAME 'mSMQForeign'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.571
+	NAME 'meetingType'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.714
+	NAME 'dhcpOptions'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.704
+	NAME 'dhcpServers'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.44' )
+
+attributetype ( 1.2.840.113556.1.4.283
+	NAME 'assetNumber'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.350
+	NAME 'addressType'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.44'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.940
+	NAME 'mSMQCSPName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.44'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.671
+	NAME 'msiFileList'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.619
+	NAME 'dNSHostName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.705
+	NAME 'dhcpSubnets'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.44' )
+
+attributetype ( 1.2.840.113556.1.4.1328
+	NAME 'pKIKeyUsage'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.30
+	NAME 'attributeID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.38'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.506
+	NAME 'objectCount'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.503
+	NAME 'timeRefresh'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.139
+	NAME 'profilePath'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.818
+	NAME 'productCode'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.647
+	NAME 'otherMobile'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.12
+	NAME 'badPwdCount'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1368
+	NAME 'mS-SQL-Build'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+#attributetype ( 1.2.840.113556.1.2.13
+#	NAME 'displayName'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.87
+	NAME 'nETBIOSName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1395
+	NAME 'mS-SQL-Alias'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.75
+	NAME 'maxRenewAge'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.806
+	NAME 'treatAsLeaf'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.960
+	NAME 'mSMQNt4Stub'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27' )
+
+attributetype ( 1.2.840.113556.1.4.324
+	NAME 'packageType'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1212
+	NAME 'isEphemeral'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.2.36
+	NAME 'dMDLocation'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.715
+	NAME 'dhcpClasses'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.39
+	NAME 'forceLogoff'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.2
+        NAME 'whenCreated'
+        SYNTAX '1.3.6.1.4.1.1466.115.121.1.24'
+        SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.566
+	NAME 'meetingName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.786
+	NAME 'mailAddress'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.590
+	NAME 'meetingBlob'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.71
+	NAME 'machineRole'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.334
+	NAME 'searchFlags'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.3
+        NAME 'whenChanged'
+        SYNTAX '1.3.6.1.4.1.1466.115.121.1.24'
+        SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.702
+	NAME 'dhcpObjName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.897
+	NAME 'aCSMaxAggregatePeakRatePerUser'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.326
+	NAME 'packageName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.170
+	NAME 'systemOnly'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.935
+	NAME 'mSMQOSType'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.680
+	NAME 'queryPoint'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.271
+	NAME 'printOwner'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.19
+        NAME 'uSNCreated'
+        SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+        SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.494
+	NAME 'siteServer'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.114
+	NAME 'rpcNsGroup'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.609
+	NAME 'sIDHistory'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.882
+	NAME 'fRSVersion'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.64
+	NAME 'logonHours'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.854
+	NAME 'netbootAnswerOnlyValidClients'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.96
+	NAME 'pwdLastSet'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.243
+	NAME 'printColor'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1391
+	NAME 'mS-SQL-Type'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.40
+	NAME 'fromServer'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.157
+	NAME 'serverRole'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.100
+	NAME 'priorValue'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.169
+	NAME 'logonCount'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.90
+	NAME 'unicodePwd'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.21
+	NAME 'subClassOf'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.38'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.1396
+	NAME 'mS-SQL-Size'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.101
+	NAME 'privateKey'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.512
+	NAME 'siteObject'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.62
+	NAME 'scriptPath'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.223
+	NAME 'serverName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.953
+	NAME 'mSMQSiteID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.340
+	NAME 'rightsGuid'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.374
+	NAME 'rIDNextRID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.583
+	NAME 'meetingURL'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.2.400
+	NAME 'addressEntryDisplayTableMSDOS'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.76
+	NAME 'maxStorage'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.35
+	NAME 'rangeUpper'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.34
+	NAME 'rangeLower'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.118
+	NAME 'otherPager'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.639
+	NAME 'isMemberOfPartialAttributeSet'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1224
+	NAME 'parentGUID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.1.2.1.1 NAME 'department'
+        DESC 'Department Name'
+        EQUALITY caseIgnoreMatch
+        SUBSTR caseIgnoreSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.25
+	NAME 'mayContain'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.38' )
+
+attributetype ( 1.2.840.113556.1.4.150
+	NAME 'adminCount'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.51
+	NAME 'lastLogoff'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1409
+	NAME 'masteredBy'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.35
+	NAME 'employeeID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.719
+	NAME 'dhcpMaxKey'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.229
+	NAME 'driverName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1363
+	NAME 'mS-SQL-Name'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.322
+	NAME 'categoryId'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.889
+	NAME 'additionalTrustedServiceNames'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.1354
+	NAME 'scopeFlags'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.672
+	NAME 'categories'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.855
+	NAME 'netbootNewMachineNamingPolicy'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.19
+	NAME 'cOMClassID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.2.120 
+        NAME 'uSNChanged' 
+        SYNTAX '1.3.6.1.4.1.1466.115.121.1.27' 
+        SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.2
+        NAME 'objectGUID'
+        SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+        SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.707
+	NAME 'dhcpRanges'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.44' )
+
+attributetype ( 1.2.840.113556.1.4.1358
+	NAME 'schemaInfo'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.646
+	NAME 'otherFacsimileTelephoneNumber'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.520
+	NAME 'machinePasswordChangeInterval'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.674
+	NAME 'rootTrust'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.136
+	NAME 'trustType'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.750
+	NAME 'groupType'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.896
+	NAME 'uSNSource'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.919
+	NAME 'mSMQQuota'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.927
+	NAME 'mSMQSites'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.910
+	NAME 'fromEntry'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.1376
+	NAME 'mS-SQL-SPX'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.892
+	NAME 'gPOptions'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.814
+	NAME 'msiScript'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.285
+	NAME 'printRate'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.683
+	NAME 'cRLPartitionedRevocationList'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.652
+	NAME 'assistant'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.490
+	NAME 'fRSDSPoll'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.663
+	NAME 'partialAttributeDeletionList'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.52
+	NAME 'lastLogon'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.22
+	NAME 'governsID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.38'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.341
+	NAME 'appliesTo'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.268
+	NAME 'eFSPolicy'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.155
+	NAME 'uASCompat'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.538
+	NAME 'prefixMap'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.661
+	NAME 'isDefunct'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.708
+	NAME 'dhcpSites'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.44' )
+
+attributetype ( 1.2.840.113556.1.4.888
+	NAME 'iPSECNegotiationPolicyAction'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.382
+	NAME 'dnsRecord'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.21
+	NAME 'cOMProgID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.45
+	NAME 'homeDrive'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.580
+	NAME 'meetingIP'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1321
+	NAME 'aCSNonReservedMinPolicedSize'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.717
+	NAME 'dhcpState'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.44' )
+
+attributetype ( 1.2.840.113556.1.4.922
+	NAME 'mSMQLabel'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.44'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.74
+	NAME 'maxPwdAge'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.78
+	NAME 'minPwdAge'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.689
+	NAME 'cRLObject'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.146
+	NAME 'objectSid'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.565
+	NAME 'meetingID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.620
+	NAME 'ipsecName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.48
+	NAME 'isDeleted'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.760
+	NAME 'aCSAggregateTokenRatePerUser'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.623
+	NAME 'ipsecData'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.668
+	NAME 'domainCAs'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.687
+	NAME 'cAConnect'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.238
+	NAME 'printMaxResolutionSupported'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.700
+	NAME 'dhcpFlags'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.402
+	NAME 'helpData16'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.653
+        NAME 'managedBy'
+        SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+        SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.9
+	NAME 'helpData32'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.944
+	NAME 'mSMQSite2'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.943
+	NAME 'mSMQSite1'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.677
+	NAME 'replTopologyStayOfExecution'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.912
+	NAME 'allowedChildClassesEffective'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.38'
+	 )
+
+attributetype ( 1.2.840.113556.1.2.231
+	NAME 'oMSyntax'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.231
+	NAME 'priority'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.48
+	NAME 'keywords'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.946
+	NAME 'mSMQCost'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.821
+	NAME 'siteList'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.145
+	NAME 'revision'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.91
+	NAME 'repsFrom'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.645
+	NAME 'userCert'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.951
+	NAME 'mSMQQMID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.228
+	NAME 'portName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.859
+	NAME 'netbootLocallyInstalledOSes'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.261
+	NAME 'division'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.902
+	NAME 'aCSMaxSizeOfRSVPAccountFile'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.699
+	NAME 'dhcpType'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.301
+	NAME 'wbemPath'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.362
+	NAME 'siteGUID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.26
+	NAME 'rDNAttID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.38'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.900
+	NAME 'aCSRSVPAccountFilesLocation'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1226
+	NAME 'mSMQDependentClientServices'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.222
+	NAME 'location'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.874
+	NAME 'fRSFlags'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.219
+	NAME 'iconPath'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.688
+	NAME 'cAWEBURL'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.716
+	NAME 'mscopeId'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.44'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.660
+	NAME 'treeName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.211
+	NAME 'schedule'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.557
+	NAME 'parentCA'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.249
+	NAME 'cOMCLSID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.675
+	NAME 'catalogs'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.2.102
+	NAME 'memberOf'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.690
+	NAME 'cAUsages'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.706
+	NAME 'dhcpMask'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.44' )
+
+attributetype ( 1.2.840.113556.1.4.511
+	NAME 'flatName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.686
+	NAME 'domainID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.58
+	NAME 'localeID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27' )
+
+attributetype ( 1.2.840.113556.1.4.16
+	NAME 'codePage'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.768
+	NAME 'aCSEnableRSVPMessageLogging'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.240
+	NAME 'printOrientationsSupported'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.883
+	NAME 'msRRASVendorAttributeEntry'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.1246
+	NAME 'interSiteTopologyGenerator'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.307
+	NAME 'options'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.28
+	NAME 'dnsRoot'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.887
+	NAME 'iPSECNegotiationPolicyType'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1392
+	NAME 'mS-SQL-InformationDirectory'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.365
+	NAME 'operatingSystemServicePack'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.88
+	NAME 'nextRid'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.865
+	NAME 'pekList'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.7
+        NAME 'subRefs'
+        SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.505
+	NAME 'oMTGuid'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.205
+	NAME 'pKTGuid'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.1.2.1.2 NAME 'company'
+        DESC 'Company Name'
+        EQUALITY caseIgnoreMatch
+        SUBSTR caseIgnoreSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+        SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.82
+	NAME 'moniker'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.156
+	NAME 'comment'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.721
+	NAME 'ipPhone'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1361
+	NAME 'mS-DS-ConsistencyChildCount'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.679
+	NAME 'creator'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.137
+	NAME 'uNCName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.55
+	NAME 'dBCSPwd'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1239
+	NAME 'mSMQDependentClientService'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.684
+	NAME 'certificateAuthorityObject'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.621
+	NAME 'ipsecID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.914
+	NAME 'allowedAttributesEffective'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.38'
+	 )
+
+#attributetype ( 1.2.840.113556.1.2.598
+#	NAME 'dmdName'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.759
+	NAME 'aCSMaxPeakBandwidthPerFlow'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.557
+	NAME 'Enabled'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.326
+	NAME 'perRecipDialogDisplayTable'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1248
+	NAME 'interSiteTopologyFailover'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.895
+	NAME 'transportAddressAttribute'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.38'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.852
+	NAME 'netbootCurrentClientCount'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.372
+	NAME 'rIDPreviousAllocationPool'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.2.83
+	NAME 'repsTo'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.224
+	NAME 'defaultSecurityDescriptor'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.519
+	NAME 'lastBackupRestorationTime'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.873
+	NAME 'fRSControlOutboundBacklog'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.255
+	NAME 'vendor'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.891
+        NAME 'gPLink'
+        SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+        SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.214
+	NAME 'originalDisplayTableMSDOS'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.50
+	NAME 'linkID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.1130
+	NAME 'msNPSavedCallingStationID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
+
+attributetype ( 1.2.840.113556.1.2.49
+	NAME 'mAPIID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.510
+	NAME 'serviceBindingInformation'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.2.16
+	NAME 'nCName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.1303
+	NAME 'tokenGroupsNoGCAcceptable'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.1418
+	NAME 'tokenGroupsGlobalAndUniversal'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.1190
+	NAME 'msRASSavedFramedIPAddress'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.766
+	NAME 'aCSAllocableRSVPBandwidth'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.61
+	NAME 'lockOutObservationWindow'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.857
+	NAME 'netbootIntelliMirrorOSes'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.1320
+	NAME 'aCSNonReservedMaxSDUSize'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.265
+	NAME 'notes'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.673
+	NAME 'retiredReplDSASignatures'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.1313
+	NAME 'aCSMaxTokenBucketPerFlow'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.324
+	NAME 'addressEntryDisplayTable'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1317
+	NAME 'aCSMinimumDelayVariation'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.872
+	NAME 'fRSControlInboundBacklog'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.38
+	NAME 'flags'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1399
+	NAME 'mS-SQL-LastDiagnosticDate'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1348
+	NAME 'gPCMachineExtensionNames'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1411
+	NAME 'ms-DS-MachineAccountQuota'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.325
+	NAME 'perMsgDialogDisplayTable'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.57
+	NAME 'defaultLocalPolicyObject'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1189
+	NAME 'msRASSavedCallbackNumber'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.26'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.685
+	NAME 'parentCACertificateChain'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.893
+	NAME 'gPCFunctionalityVersion'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.879
+	NAME 'fRSServiceCommandStatus'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1319
+	NAME 'aCSNonReservedTokenSize'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.775
+	NAME 'aCSMaxSizeOfRSVPLogFile'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.135
+	NAME 'cost'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.81
+	NAME 'modifiedCountAtLastProm'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.773
+	NAME 'aCSRSVPLogFilesLocation'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+#attributetype ( 1.2.840.113556.1.2.81
+#	NAME 'info'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.125
+	NAME 'supplementalCredentials'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.819
+	NAME 'bridgeheadTransportList'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.967
+	NAME 'mSMQSignCertificatesMig'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+#attributetype ( 1.2.840.113556.1.4.1
+#	NAME 'name'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE
+#	 )
+
+attributetype ( 1.2.840.113556.1.4.1153
+	NAME 'msRADIUSFramedIPAddress'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1408
+	NAME 'mS-DS-ReplicatesNCReason'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.899
+	NAME 'aCSEnableRSVPAccounting'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.881
+	NAME 'fRSTimeLastConfigChange'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.24'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.281
+	NAME 'printStaplingSupported'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1247
+	NAME 'interSiteTopologyRenew'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.364
+	NAME 'operatingSystemVersion'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.91
+	NAME 'otherLoginWorkstations'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.849
+	NAME 'netbootAllowNewClients'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1372
+	NAME 'mS-SQL-UnicodeSortOrder'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.749
+	NAME 'url'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.206
+	NAME 'pKT'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.199
+	NAME 'serviceInstanceVersion'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.169
+	NAME 'showInAdvancedViewOnly'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.758
+	NAME 'aCSMaxTokenRatePerFlow'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.868
+	NAME 'isCriticalSystemObject'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.576
+	NAME 'meetingMaxParticipants'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1208
+	NAME 'aNR'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.153
+	NAME 'rid'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.523
+	NAME 'proxyGenerationEnabled'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.871
+	NAME 'fRSControlDataCreation'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.692
+	NAME 'previousCACertificates'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.24
+	NAME 'contentIndexingAllowed'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.633
+	NAME 'policyReplicationFlags'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.870
+	NAME 'frsComputerReferenceBL'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.1318
+	NAME 'aCSNonReservedPeakRate'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.901
+	NAME 'aCSMaxNoOfAccountFiles'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.514
+	NAME 'physicalLocationObject'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.928
+	NAME 'mSMQOutRoutingServers'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.820
+	NAME 'bridgeheadServerListBL'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.1145
+	NAME 'msRADIUSCallbackNumber'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.26'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.361
+	NAME 'netbootMachineFilePath'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.963
+	NAME 'mSMQQueueJournalQuota'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.853
+	NAME 'netbootAnswerRequests'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.415
+	NAME 'operatingSystemHotfix'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.149
+	NAME 'attributeSecurityGUID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.711
+	NAME 'superScopeDescription'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.1359
+	NAME 'otherWellKnownObjects'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.780
+	NAME 'aCSNonReservedTxLimit'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.11
+	NAME 'authenticationOptions'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.867
+	NAME 'altSecurityIdentities'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.1349
+	NAME 'gPCUserExtensionNames'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.358
+	NAME 'netbootInitialization'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1364
+	NAME 'mS-SQL-RegisteredOwner'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.761
+	NAME 'aCSMaxDurationPerFlow'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1330
+	NAME 'pKICriticalExtensions'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.748
+	NAME 'attributeDisplayNames'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.1404
+	NAME 'mS-SQL-AllowImmediateUpdatingSubscription'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1191
+	NAME 'msRASSavedFramedRoute'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
+
+attributetype ( 1.2.840.113556.1.4.752
+	NAME 'userSharedFolderOther'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+#attributetype ( 1.2.840.113556.1.2.131
+#	NAME 'co'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.909
+	NAME 'extendedAttributeInfo'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.1241
+	NAME 'netbootMirrorDataFile'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.1315
+	NAME 'aCSMinimumPolicedSize'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1353
+	NAME 'localizationDisplayId'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.582
+	NAME 'meetingAdvertiseScope'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1343
+	NAME 'dSUIAdminNotification'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.1381
+	NAME 'mS-SQL-LastUpdatedDate'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1357
+        NAME 'dSCorePropagationData'
+        SYNTAX '1.3.6.1.4.1.1466.115.121.1.24' )
+
+attributetype ( 1.2.840.113556.1.4.320
+	NAME 'implementedCategories'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+attributetype ( 1.2.840.113556.1.4.783
+	NAME 'defaultObjectCategory'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.422
+	NAME 'domainPolicyReference'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.929
+	NAME 'mSMQInRoutingServers'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.1311
+	NAME 'printDuplexSupported'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.693
+	NAME 'pendingCACertificates'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.281
+        NAME 'nTSecurityDescriptor'
+        SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+        SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.198
+	NAME 'systemAuxiliaryClass'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.38'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.898
+	NAME 'aCSNonReservedTxSize'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1382
+	NAME 'mS-SQL-InformationURL'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.3
+	NAME 'replPropertyMetaData'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.1384
+	NAME 'mS-SQL-PublicationURL'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.275
+	NAME 'printKeepPrintedJobs'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.267
+	NAME 'uSNDSALastObjRemoved'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.381
+	NAME 'dnsNotifySecondaries'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27' )
+
+attributetype ( 1.2.840.113556.1.4.1360
+	NAME 'mS-DS-ConsistencyGuid'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.869
+	NAME 'frsComputerReference'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1369
+	NAME 'mS-SQL-ServiceAccount'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1124
+	NAME 'msNPCallingStationID'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
+
+attributetype ( 1.2.840.113556.1.4.947
+	NAME 'mSMQSignCertificates'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.624
+	NAME 'ipsecOwnersReference'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.14
+	NAME 'builtinModifiedCount'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.634
+	NAME 'privilegeDisplayName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.380
+	NAME 'dnsSecureSecondaries'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27' )
+
+attributetype ( 1.2.840.113556.1.4.817
+	NAME 'localizedDescription'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.195
+	NAME 'systemPossSuperiors'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.38'
+	 )
+
+attributetype ( 1.2.840.113556.1.2.353
+	NAME 'displayNamePrintable'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.44'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.771
+	NAME 'servicePrincipalName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.866
+	NAME 'pekKeyChangeInterval'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.445
+	NAME 'originalDisplayTable'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1398
+	NAME 'mS-SQL-LastBackupDate'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.517
+	NAME 'ipsecPolicyReference'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.823
+	NAME 'certificateTemplates'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.2.15
+	NAME 'hasPartialReplicaNCs'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.457
+	NAME 'localPolicyReference'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.2.380
+	NAME 'extendedCharsAllowed'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.629
+	NAME 'ipsecFilterReference'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributetype ( 1.2.840.113556.1.4.626
+	NAME 'ipsecISAKMPReference'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.876
+	NAME 'fRSMemberReferenceBL'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.314
+	NAME 'rpcNsTransferSyntax'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1227
+	NAME 'mSMQRoutingServices'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1375
+	NAME 'mS-SQL-MultiProtocol'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.825
+	NAME 'enrollmentProviders'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.287
+	NAME 'printNetworkAddress'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1171
+	NAME 'msRADIUSServiceType'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.631
+	NAME 'printPagesPerMinute'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.299
+	NAME 'printMediaSupported'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributetype ( 1.2.840.113556.1.4.824
+	NAME 'signatureAlgorithms'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.877
+	NAME 'fRSPartnerAuthLevel'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.636
+	NAME 'privilegeAttributes'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.640
+	NAME 'partialAttributeSet'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE
+	 )
+
+attributetype ( 1.2.840.113556.1.4.850
+	NAME 'netbootLimitClients'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1383
+	NAME 'mS-SQL-ConnectionURL'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1406
+	NAME 'mS-SQL-AllowSnapshotFilesFTPDownloading'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.7'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1331
+	NAME 'pKIExpirationPeriod'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.531
+	NAME 'nonSecurityMemberBL'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+	 )
+
+attributetype ( 1.2.840.113556.1.4.540
+	NAME 'initialAuthOutgoing'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 1.2.840.113556.1.4.1158
+	NAME 'msRADIUSFramedRoute'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
+
+attributetype ( 1.2.840.113556.1.4.200
+	NAME 'controlAccessRights'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+

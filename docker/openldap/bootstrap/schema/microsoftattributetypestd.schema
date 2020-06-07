@@ -1,0 +1,382 @@
+#####################################################
+
+#attributetype ( 2.5.4.0
+#	NAME 'objectClass'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.38'
+#	 )
+
+#attributetype ( 2.5.4.2
+#	NAME 'knowledgeInformation'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.44' )
+
+#attributetype ( 2.5.4.3
+#	NAME 'cn'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+#attributetype ( 2.5.4.4
+#	NAME 'sn'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+#attributetype ( 2.5.4.5
+#	NAME 'serialNumber'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.44' )
+
+#attributetype ( 2.5.4.6
+#	NAME 'c'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+#attributetype ( 2.5.4.7
+#	NAME 'l'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+#attributetype ( 2.5.4.8
+#	NAME 'st'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+#attributetype ( 2.5.4.9
+#	NAME 'street'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+#attributetype ( 2.5.4.10
+#	NAME 'o'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+#attributetype ( 2.5.4.11
+#	NAME 'ou'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+#attributetype ( 2.5.4.12
+#	NAME 'title'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+#attributetype ( 2.5.4.13
+#	NAME 'description'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+#attributetype ( 2.5.4.14
+#	NAME 'searchGuide'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+#attributetype ( 2.5.4.15
+#	NAME 'businessCategory'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+#attributetype ( 2.5.4.16
+#	NAME 'postalAddress'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+#attributetype ( 2.5.4.17
+#	NAME 'postalCode'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+#attributetype ( 2.5.4.18
+#	NAME 'postOfficeBox'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+#attributetype ( 2.5.4.19
+#	NAME 'physicalDeliveryOfficeName'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+#attributetype ( 2.5.4.20
+#	NAME 'telephoneNumber'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+#attributetype ( 2.5.4.21
+#	NAME 'telexNumber'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+#attributetype ( 2.5.4.22
+#	NAME 'teletexTerminalIdentifier'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+#attributetype ( 2.5.4.23
+#	NAME 'facsimileTelephoneNumber'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+#attributetype ( 2.5.4.24
+#	NAME 'x121Address'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.36' )
+
+#attributetype ( 2.5.4.25
+#	NAME 'internationalISDNNumber'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.36' )
+
+#attributetype ( 2.5.4.26
+#	NAME 'registeredAddress'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+#attributetype ( 2.5.4.27
+#	NAME 'destinationIndicator'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.44' )
+
+#attributetype ( 2.5.4.28
+#	NAME 'preferredDeliveryMethod'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.27' )
+
+#attributetype ( 2.5.4.29
+#	NAME 'presentationAddress'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.43'
+#	SINGLE-VALUE )
+
+#attributetype ( 2.5.4.30
+#	NAME 'supportedApplicationContext'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+#attributetype ( 2.5.4.31
+#	NAME 'member'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+#attributetype ( 2.5.4.32
+#	NAME 'owner'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+#	SINGLE-VALUE )
+
+#attributetype ( 2.5.4.33
+#	NAME 'roleOccupant'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+#attributetype ( 2.5.4.34
+#	NAME 'seeAlso'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+#attributetype ( 2.5.4.35
+#	NAME 'userPassword'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+#attributetype ( 2.5.4.36
+#	NAME 'userCertificate'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+#attributetype ( 2.5.4.37
+#	NAME 'cACertificate'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+#attributetype ( 2.5.4.38
+#	NAME 'authorityRevocationList'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+#attributetype ( 2.5.4.39
+#	NAME 'certificateRevocationList'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+#	SINGLE-VALUE )
+
+#attributetype ( 2.5.4.40
+#	NAME 'crossCertificatePair'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+#attributetype ( 2.5.4.42
+#	NAME 'givenName'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+#attributetype ( 2.5.4.43
+#	NAME 'initials'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+#attributetype ( 2.5.4.44
+#	NAME 'generationQualifier'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+#attributetype ( 2.5.4.49
+#	NAME 'distinguishedName'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+#	SINGLE-VALUE
+#	 )
+
+#attributetype ( 2.5.4.53
+#	NAME 'deltaRevocationList'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+#attributetype ( 2.5.18.1
+#	NAME 'createTimeStamp'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.24'
+#	SINGLE-VALUE
+#	 )
+
+#attributetype ( 2.5.18.2
+#	NAME 'modifyTimeStamp'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.24'
+#	SINGLE-VALUE
+#	 )
+
+#attributetype ( 2.5.18.10
+#	NAME 'subSchemaSubEntry'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+#	 )
+
+#attributetype ( 2.5.21.2
+#	NAME 'dITContentRules'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	 )
+
+#attributetype ( 2.5.21.5
+#	NAME 'attributeTypes'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	 )
+
+#attributetype ( 2.5.21.6
+#	NAME 'objectClasses'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	 )
+
+# Clash with OpenLdap: 2.16.840.1.113730.3.1.34 NAME 'ref'
+attributetype ( 2.16.840.1.113730.3.1.34.0
+	NAME 'middleName'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+attributetype ( 2.16.840.1.113730.3.1.35
+	NAME 'thumbnailPhoto'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+attributetype ( 2.16.840.1.113730.3.1.36
+	NAME 'thumbnailLogo'
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40'
+	SINGLE-VALUE )
+
+#attributetype ( 2.16.840.1.113730.3.140
+#	NAME 'userSMIMECertificate'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.40' )
+
+#####################################################
+
+#attributetype ( 0.9.2342.19200300.100.1.2
+#	NAME 'textEncodedORAddress'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+#attributetype ( 0.9.2342.19200300.100.1.3
+#	NAME 'mail'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+#attributetype ( 0.9.2342.19200300.100.1.10
+#	NAME 'manager'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.12'
+#	SINGLE-VALUE )
+#
+# Moved to microsoftattributetypestd.schema to satisfy
+# organizationalPerson objectclass
+#
+# 9.3.10.  Manager
+#
+#  The Manager attribute type specifies the manager of an object
+#  represented by an entry.
+#
+#    manager ATTRIBUTE
+#        WITH ATTRIBUTE-SYNTAX
+#            distinguishedNameSyntax
+#    ::= {pilotAttributeType 10}
+#
+attributetype ( 0.9.2342.19200300.100.1.10 NAME 'manager'
+	DESC 'RFC1274: DN of manager'
+	EQUALITY distinguishedNameMatch
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )
+
+# Moved to microsoftattributetypestd.schema to satisfy
+# organizationalPerson objectclass
+#
+# 9.3.16.  Home Telephone Number
+#
+#  The Home Telephone Number attribute type specifies a home telephone
+#  number associated with a person.  Attribute values should follow the
+#  agreed format for international telephone numbers: i.e., "+44 71 123
+#  4567".
+#
+#    homeTelephoneNumber ATTRIBUTE
+#        WITH ATTRIBUTE-SYNTAX
+#            telephoneNumberSyntax
+#    ::= {pilotAttributeType 20}
+#
+#attributetype ( 0.9.2342.19200300.100.1.20
+#	NAME ( 'homePhone' 'homeTelephoneNumber' )
+#	DESC 'RFC1274: home telephone number'
+#	EQUALITY telephoneNumberMatch
+#	SUBSTR telephoneNumberSubstringsMatch
+#	SYNTAX 1.3.6.1.4.1.1466.115.121.1.50 )
+#
+#
+# MS 0.9.2342.19200300.100.1.20 can contain any kind of string
+attributetype ( 0.9.2342.19200300.100.1.20
+	NAME ( 'homePhone' 'homeTelephoneNumber' )
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+#attributetype ( 0.9.2342.19200300.100.1.25
+#	NAME 'dc'
+#	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+#	SINGLE-VALUE )
+
+# Moved to microsoftattributetypestd.schema to satisfy
+# organizationalPerson objectclass
+#
+# 9.3.31.  Mobile Telephone Number
+#
+#  The Mobile Telephone Number attribute type specifies a mobile
+#  telephone number associated with a person.  Attribute values should
+#  follow the agreed format for international telephone numbers: i.e.,
+#  "+44 71 123 4567".
+#
+#    mobileTelephoneNumber ATTRIBUTE
+#        WITH ATTRIBUTE-SYNTAX
+#            telephoneNumberSyntax
+#    ::= {pilotAttributeType 41}
+#
+#attributetype ( 0.9.2342.19200300.100.1.41
+#	NAME ( 'mobile' 'mobileTelephoneNumber' )
+#	DESC 'RFC1274: mobile telephone number'
+#	EQUALITY telephoneNumberMatch
+#	SUBSTR telephoneNumberSubstringsMatch
+#	SYNTAX 1.3.6.1.4.1.1466.115.121.1.50 )
+#
+#
+# MS 0.9.2342.19200300.100.1.41 can contain any kind of string
+attributetype ( 0.9.2342.19200300.100.1.41
+	NAME ( 'mobile' 'mobileTelephoneNumber' )
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+
+# Moved to microsoftattributetypestd.schema to satisfy
+# organizationalPerson objectclass
+#
+# 9.3.32.  Pager Telephone Number
+#
+#  The Pager Telephone Number attribute type specifies a pager telephone
+#  number for an object. Attribute values should follow the agreed
+#  format for international telephone numbers: i.e., "+44 71 123 4567".
+#
+#    pagerTelephoneNumber ATTRIBUTE
+#        WITH ATTRIBUTE-SYNTAX
+#            telephoneNumberSyntax
+#    ::= {pilotAttributeType 42}
+#
+#attributetype ( 0.9.2342.19200300.100.1.42
+#	NAME ( 'pager' 'pagerTelephoneNumber' )
+#	DESC 'RFC1274: pager telephone number'
+#	EQUALITY telephoneNumberMatch
+#	SUBSTR telephoneNumberSubstringsMatch
+#	SYNTAX 1.3.6.1.4.1.1466.115.121.1.50 )
+#
+#
+# MS 0.9.2342.19200300.100.1.42 can contain any kind of string
+attributetype ( 0.9.2342.19200300.100.1.42
+	NAME ( 'pager' 'pagerTelephoneNumber' )
+	SYNTAX '1.3.6.1.4.1.1466.115.121.1.15'
+	SINGLE-VALUE )
+
+

@@ -61,10 +61,10 @@ EXPOSE 8080
 ENV LANG "C.UTF-8"
 ENV LC_ALL "C.UTF-8"
 
-RUN groupadd -g 1111 -r crackq && useradd -u 1111 -d /home/crackq/ -r -g crackq crackq
-RUN mkdir /home/crackq/ && chown 1111:1111 /home/crackq/
+#RUN groupadd -g 1111 -r crackq && useradd -u 1111 -d /home/crackq/ -r -g crackq crackq
+#RUN mkdir /home/crackq/ && chown 1111:1111 /home/crackq/
 RUN chown -R 1111:1111 $DOCKYARD/
 # && chown -R 1111:1111 /var/crackq/
 USER crackq
-WORKDIR $DOCKYARD/crackq/
+WORKDIR $DOCKYARD/
 CMD ["/usr/local/bin/circusd", "/opt/crackq/build/circus.ini"]

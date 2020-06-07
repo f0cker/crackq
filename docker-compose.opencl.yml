@@ -1,4 +1,4 @@
-###***add in args here and update to version 3
+###***add in args here and update to version 3 if it's possible with nvidia runtime
 
 version: '2.1'
 services:

@@ -57,7 +57,8 @@ class Saml2():
                               meta_fh.write(res.text)
                 ###***fix
                 except Exception as err:
-                    print(err)
+                    logger.error('Invalid SAML metadata file/s provided:\n{}'.format(
+                        err))
                     logger.error('Invalid SAML metadata file/s provided')
         except FileNotFoundError as err:
             res = requests.get(self.meta_url)
@@ -111,8 +112,19 @@ class Ldap():
             #conn.set_option(ldap.OPT_X_TLS_DEMAND, True )
             conn.set_option(ldap.OPT_DEBUG_LEVEL, 255)
             #conn.start_tls_s()
-            bind = conn.simple_bind_s("cn={},dc=example,dc=org".format(username), password)
+            ###***Make this configurable from the config file!!!!***
+            ldap_base = 'dc=example,dc=org'
+            #ldap_base = 'dc=example,dc=org'.format(
+            bind = conn.simple_bind_s("cn={},{}".format(
+                                    username, ldap_base), password)
             logger.debug('LDAP bind: {}'.format(bind))
+            try:
+                query = 'cn={}'.format(username)
+                result = conn.search_s(ldap_base, 2,
+                    query)
+                print('RESULT: {}'.format(result))
+            except Exception:
+                logger.error('Failed to get email address from LDAP')
             conn.unbind_s()
             ###***fix this shit to make it more secure
             return "Success" if 97 in bind else "Failed"

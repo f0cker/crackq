@@ -67,7 +67,7 @@ class Crack(object):
         try:
             if tls:
                 server = smtplib.SMTP_SSL(mail_server, port)
-                # server.set_debuglevel(True)
+                server.set_debuglevel(True)
                 server.sendmail(src, [dest],
                                 msg.as_string())
                 server.quit()
@@ -162,7 +162,7 @@ class Crack(object):
         if 'notify' in job.meta.keys():
             if job.meta['notify']:
                 if 'email' in job.meta.keys():
-                    email = job.meta['email']
+                    user_email = job.meta['email']
                     try:
                         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                         now = datetime.strptime(now,
@@ -172,17 +172,16 @@ class Crack(object):
                         inactive_time = timedelta(minutes=int(inactive_time))
                         activity = now - last
                         if (activity > inactive_time
-                                    and job.meta['email_count'] < 1):
+                                        and job.meta['email_count'] < 1):
                             sub = 'CrackQ: Hash cracked notification'
                             self.send_email(mail_server, mail_port,
-                                            email_src, email, sub, tls)
+                                            email_src, user_email, sub, tls)
                             job.meta['email_count'] += 1
                             job.save()
-                    ###***update to specifica exceptions
+                    ###***update to specific exceptions
                     except Exception as err:
                         logger.error('Failed to connect to mail server')
                         logger.error(err)
-                        logger.error(type(err))
                 else:
                     job.meta['Warning'] = "No email address in profile"
                     job.save()
@@ -212,13 +211,17 @@ class Crack(object):
         redis_q = Queue(connection=redis_con)
         started = rq.registry.StartedJobRegistry('default',
                                                  connection=redis_con)
-        session = started.get_job_ids()[0]
+        #try:
+        #    session = started.get_job_ids()[0]
+        #except KeyError:
+            #logger.debug('Problem getting stopped session for notify')
+        session = sender.session
         logger.debug('Sending notification')
         job = redis_q.fetch_job(session)
         if 'notify' in job.meta.keys():
             if job.meta['notify']:
                 if 'email' in job.meta.keys():
-                    email = job.meta['email']
+                    user_email = job.meta['email']
                     try:
                         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                         now = datetime.strptime(now,
@@ -231,14 +234,13 @@ class Crack(object):
                                 and job.meta['email_count'] < 2):
                             sub = 'CrackQ: Job complete notification'
                             self.send_email(mail_server, mail_port,
-                                            email_src, email, sub, tls)
+                                            email_src, user_email, sub, tls)
                             job.meta['email_count'] += 1
                             job.save()
                     ###***update to specifica exceptions
                     except Exception as err:
                         logger.error('Failed to connect to mail server')
                         logger.error(err)
-                        logger.error(type(err))
                 else:
                     job.meta['Warning'] = "No email address in profile"
                     job.save()
@@ -325,7 +327,7 @@ class Crack(object):
         """
         Callback function to take action following Hashcat aborting
         """
-        logger.info('Callback Triggered: Any')
+        logger.debug('Callback Triggered: Any')
         hc_state = sender.status_get_status_string()
         if hc_state == "Aborted":
             event_log = sender.hashcat_status_get_log()

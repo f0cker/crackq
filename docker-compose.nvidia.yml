@@ -31,7 +31,6 @@ services:
         tty: true
             
         command:
-            #sh -c "/bin/bash"
             sh -c "./benchmark.sh &&
             pip3 install -e . --user && cd ./crackq &&
             /usr/local/bin/circusd /opt/crackq/build/circus.ini"
@@ -52,8 +51,6 @@ services:
              #- /var/crackq/files/nginx/:/etc/nginx/
         stdin_open: true
         tty: true
-        #command:
-        #    sh -c "/bin/bash"
         networks:
             - crackq_net
 

@@ -48,7 +48,10 @@ if [ $TESTS ]
 		rm /var/crackq/files/crackq.conf
 		cp crackq.conf /var/crackq/files/
 fi
-groupadd -g 1111 -r crackq && useradd -u 1111 -r -g crackq crackq
+if [[ ! $( groups crackq) == *"crackq"* ]]
+then 
+        groupadd -g 1111 -r crackq && useradd -u 1111 -r -g crackq crackq
+fi
 chown -R 1111:1111 /var/crackq/
 cp $1/* ./build
 cp docker/common/* ./build

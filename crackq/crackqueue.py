@@ -51,7 +51,7 @@ class Queuer(object):
         logger.info('Adding task to job queue: '
                     '{:s}'.format(arg_dict['job_id']))
         q_obj.enqueue_call(func=arg_dict['func'], job_id=arg_dict['job_id'],
-                           kwargs=arg_dict['kwargs'], ttl=-1, timeout=1209600,
+                           kwargs=arg_dict['kwargs'], timeout=1209600,
                            result_ttl=-1)
         return
 

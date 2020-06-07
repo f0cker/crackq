@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Setup crackq user
+#usermod -a -G crackq crackq
+groupadd -g 1111 -r crackq && useradd -u 1111 -r -g crackq crackq
+mkdir /home/crackq && chown crackq:crackq /home/crackq
+
 # Run pip install
 python3 -m pip install --upgrade pip
 python3 -m pip install -r ./requirements.txt

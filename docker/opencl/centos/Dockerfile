@@ -25,7 +25,7 @@ EXPOSE 8080
 ENV LANG "en_US.UTF-8"
 ENV LC_ALL "en_US.UTF-8"
 
-RUN groupadd -r crackq && useradd -r -g crackq crackq
+#RUN groupadd -r crackq && useradd -r -g crackq crackq
 #RUN chown crackq:crackq $DOCKYARD/crackq && chown -R crackq:crackq /var/crackq/
 USER crackq
 WORKDIR $DOCKYARD/

@@ -67,6 +67,7 @@ csrf.init_app(app)
 
 CRACK_CONF = hc_conf()
 
+
 class StringContains(validate.Regexp):
     """
     Custom validation class to reject any strtings matching supplied regex
@@ -110,11 +111,12 @@ class parse_json_schema(Schema):
                                                 Length(min=1, max=60)]),
                         allow_none=True)
     username = fields.Bool(allow_none=True)
+    notify = fields.Bool(allow_none=True)
     disable_brain = fields.Bool(allow_none=True)
     mask = fields.Str(allow_none=True, validate=StringContains(r'[^aldsu\?0-9a-zA-Z]'))
     mask_file = fields.List(fields.String(validate=[StringContains(r'[\W]\-'),
-                                                Length(min=1, max=60)]),
-                        allow_none=True)
+                                                    Length(min=1, max=60)]),
+                                allow_none=True)
     name = fields.Str(allow_none=True, validate=StringContains(r'[\W]'), error_messages=error_messages)
     hash_mode = fields.Int(allow_none=False, validate=Range(min=0, max=65535))
     restore = fields.Int(validate=Range(min=0, max=1000000000000))
@@ -330,6 +332,7 @@ def create_user(username, email=None):
         logger.debug('New user added')
         return True
 
+
 def email_check(email):
     """
     Simple regex check string is an email address
@@ -343,16 +346,18 @@ def email_check(email):
     match: boolean
         true/false for valid email match
     """
-    regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'
+    regex = r'^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'
     if re.search(regex, email):
         logger.debug('Email address found')
         return True
     else:
         return False
 
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(user_id)
+
 
 class Sso(Resource):
     """
@@ -416,8 +421,6 @@ class Sso(Resource):
                     username = val[0]
                 if 'email' in key:
                     email = val[0]
-                    print('Email returned from SAML***')
-                    print(email)
                 else:
                     email = None
                 if self.group and 'Group' in key:
@@ -439,7 +442,7 @@ class Sso(Resource):
             if user:
                 crackq.app.session_interface.regenerate(session)
             else:
-                if email:
+                if email_check(email):
                     create_user(username, email=email)
                 else:
                     create_user(username)
@@ -491,12 +494,22 @@ class Login(Resource):
             logger.debug('LDAP reply: {}'.format(authn))
             if authn == "Success":
                 logging.info('Authenticated: {}'.format(username))
+                if email_check(username):
+                    logger.debug('Email address found, using for notify')
+                    email = username
                 user = load_user(username)
                 if user:
                     crackq.app.session_interface.regenerate(session)
                     login_user(user)
                 else:
-                    create_user(username)
+                    #***add ldap email query here***!!!
+                    if email:
+                        if email_check(email):
+                            create_user(username, email=email)
+                        else:
+                            create_user(username)
+                    else:
+                        create_user(username)
                     user = load_user(username)
                 if isinstance(user, User):
                     crackq.app.session_interface.regenerate(session)
@@ -723,7 +736,10 @@ class Queuing(Resource):
                         ###***small issue here when job is added initially?
                         if isinstance(job.meta['HC State'], dict):
                             job_details = get_jobdetails(job.description)
-                            q_dict['Current Job'][cur_list[0]]['Job Details'] = job_details
+                            try:
+                                q_dict['Current Job'][cur_list[0]]['Job Details'] = job_details
+                            except KeyError:
+                                logger.error('No job to update - does not exist')
                 else:
                     logger.error('No Queue')
             if len(q_dict) > 0:
@@ -1430,7 +1446,6 @@ def output_html(data, code, headers=None):
     return resp
 
 
-
 class Reports(Resource):
     """
     Class for creating and serving HTML password analysis reports
@@ -1566,7 +1581,7 @@ class Reports(Resource):
                                                     report_path,
                                                     job_timeout=10080,
                                                     result_ttl=604800,
-                                                    job_id='{}_report'.format(job_id), ttl=-1)
+                                                    job_id='{}_report'.format(job_id))
                         if rep:
                             return json.dumps({'msg': 'Successfully queued '
                                                'report generation'}), 202
