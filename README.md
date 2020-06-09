@@ -9,7 +9,7 @@ Author: Daniel Turner @ Trustwave
 
 Python 3 REST API & JS GUI for managing hashcat crack jobs in a queuing system.
 
-[![Build Status](https://gitlab.com/f0cker/crackq/badges/master/pipeline.svg)]
+[![Build Status](https://gitlab.com/f0cker/crackq/badges/master/pipeline.svg)](https://gitlab.com/f0cker/crackq/badges/master/pipeline.svg)
 [![PyPI license](https://img.shields.io/pypi/l/ansicolortags.svg)](https://pypi.python.org/pypi/ansicolortags/)
 [![PyPI status](https://img.shields.io/pypi/status/ansicolortags.svg)](https://pypi.python.org/pypi/ansicolortags/)
 [![Python 3.7](https://img.shields.io/badge/python-3.4+-blue.svg)](https://www.python.org/downloads/release/python-370/)
