@@ -70,7 +70,8 @@ class Crack(object):
         msg['Subject'] = sub
         try:
             if tls:
-                server = smtplib.SMTP_SSL(mail_server, port)
+                server = smtplib.SMTP(mail_server, port)
+                server.starttls()
                 if mail_username and mail_password:
                     server.login(mail_username, mail_password)
                 #server.set_debuglevel(True)
@@ -85,6 +86,9 @@ class Crack(object):
                 server.quit()
         except TimeoutError:
             logger.error('SMTP connection error - timeout')
+            server.quit()
+        except ssl.SSLError:
+            logger.error('SMTP SSL/TLS error')
             server.quit()
 
     def status(self, sender):
@@ -139,7 +143,6 @@ class Crack(object):
         hc.outfile = outfile
         logger.debug('HC. Hashcat Rules: {}'.format(hc.rules))
         logger.debug('HC. Hashcat rp_files_cnt: {}'.format(hc.rp_files_cnt))
-
         if restore:
             hc.skip = int(restore)
         hc.hashcat_session_execute()
@@ -185,6 +188,9 @@ class Crack(object):
                             job.meta['email_count'] += 1
                             job.save()
                     ###***update to specific exceptions
+                    except ssl.SSLError as err:
+                        logger.error('Failed to connect to mail server')
+                        logger.error(err)
                     except Exception as err:
                         logger.error('Failed to connect to mail server')
                         logger.error(err)
