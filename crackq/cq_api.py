@@ -189,9 +189,6 @@ def get_jobdetails(job_details):
     return deets_dict
 
 
-
-
-
 def add_jobid(job_id):
     """Add job_id to job_ids column in user table"""
     user = User.query.filter_by(username=current_user.username).first()
@@ -326,7 +323,7 @@ def create_user(username, email=None):
         logger.debug('User already exists')
         return False
     else:
-        user = User(username=username, email=email)
+        user = User(username=username, email=email, is_admin=False)
         db.session.add(user)
         db.session.commit()
         logger.debug('New user added')
@@ -490,9 +487,11 @@ class Login(Resource):
             if not password:
                 return json.dumps({"msg": "Missing password parameter"}), 400
             ldap_uri = CRACK_CONF['auth']['ldap_server']
-            authn = auth.Ldap.authenticate(ldap_uri, username, password)
+            ldap_base = CRACK_CONF['auth']['ldap_base']
+            authn = auth.Ldap.authenticate(ldap_uri, username, password,
+                                           ldap_base=ldap_base)
             logger.debug('LDAP reply: {}'.format(authn))
-            if authn == "Success":
+            if authn[0] == "Success":
                 logging.info('Authenticated: {}'.format(username))
                 if email_check(username):
                     logger.debug('Email address found, using for notify')
@@ -502,14 +501,13 @@ class Login(Resource):
                     crackq.app.session_interface.regenerate(session)
                     login_user(user)
                 else:
-                    #***add ldap email query here***!!!
-                    try:
-                        email
+                    if authn[1]:
+                        email = authn[1]
                         if email_check(email):
                             create_user(username, email=email)
                         else:
                             create_user(username)
-                    except UnboundLocalError:
+                    else:
                         create_user(username)
                     user = load_user(username)
                 if isinstance(user, User):
@@ -519,8 +517,7 @@ class Login(Resource):
                     logging.error('No user object loaded')
                     return json.dumps({"msg": "Bad username or password"}), 401
                 return 'OK', 200
-                #return redirect('/queuing/all')
-            elif authn is "Invalid Credentials":
+            elif authn[0] is "Invalid Credentials":
                 return json.dumps({"msg": "Bad username or password"}), 401
             else:
                 logger.info('Login error: {}'.format(authn))
@@ -1407,8 +1404,9 @@ class Adder(Resource):
             logger.debug('Job Details: {}'.format(q_args))
             job = self.q.fetch_job(job_id)
             job.meta['email_count'] = 0
+            job.meta['notify'] = args['notify']
             if current_user.email is not None and current_user.email != 'null':
-                if email_check(current_user.username):
+                if email_check(current_user.email):
                     job.meta['email'] = str(current_user.email)
                     job.meta['last_seen'] = str(current_user.last_seen)
             elif email_check(current_user.username):

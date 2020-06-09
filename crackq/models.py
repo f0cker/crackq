@@ -6,14 +6,13 @@ from sqlalchemy import create_engine, Column, ForeignKey
 from sqlalchemy.types import (
     Boolean,
     DateTime,
-    #Column,
     Integer,
     String,
-    #ForeignKey,
     TypeDecorator,
     JSON,
     )
 from crackq.db import db
+
 
 class User(db.Model):
     """Flask-login User model for session management"""
@@ -32,6 +31,7 @@ class User(db.Model):
     login_count = Column(Integer)
     confirmed_at = Column(DateTime())
     job_ids = Column(JSON, unique=True)
+    is_admin = Column(Boolean())
 
     def is_active(self):
         """Required method for flask-login User class"""

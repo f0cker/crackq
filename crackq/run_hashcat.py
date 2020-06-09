@@ -60,6 +60,10 @@ class Crack(object):
         Returns
         -------
         """
+        if os.environ['MAIL_USERNAME']:
+            mail_username = os.environ['MAIL_USERNAME']
+        if os.environ['MAIL_PASSWORD']:
+            mail_password = os.environ['MAIL_PASSWORD']
         msg = MIMEText('')
         msg['To'] = email.utils.formataddr(('CrackQ', dest))
         msg['From'] = email.utils.formataddr(('CrackQ', src))
@@ -67,13 +71,15 @@ class Crack(object):
         try:
             if tls:
                 server = smtplib.SMTP_SSL(mail_server, port)
-                server.set_debuglevel(True)
+                if mail_username and mail_password:
+                    server.login(mail_username, mail_password)
+                #server.set_debuglevel(True)
                 server.sendmail(src, [dest],
                                 msg.as_string())
                 server.quit()
             else:
                 server = smtplib.SMTP(mail_server, port)
-                # server.set_debuglevel(True)
+                #server.set_debuglevel(True)
                 server.sendmail(src, [dest],
                                 msg.as_string())
                 server.quit()

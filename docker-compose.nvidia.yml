@@ -29,7 +29,10 @@ services:
         runtime: nvidia
         user: crackq
         tty: true
-            
+        environment:
+                PYTHONPATH: "/opt/crackq/build/"
+                MAIL_USERNAME: ${MAIL_USERNAME}
+                MAIL_PASSWORD: ${MAIL_PASSWORD}
         command:
             sh -c "./benchmark.sh &&
             pip3 install -e . --user && cd ./crackq &&

@@ -28,6 +28,8 @@ services:
         tty: true        
         environment:
                 PYTHONPATH: "/opt/crackq/build/crackq/"
+                MAIL_USERNAME: ${MAIL_USERNAME}
+                MAIL_PASSWORD: ${MAIL_PASSWORD}
         command:
                 sh -c "./benchmark.sh &&
                 pip3 install -e . --user && cd ./crackq &&

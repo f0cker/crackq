@@ -99,7 +99,8 @@ class Saml2():
         return client
 
 class Ldap():
-    def authenticate(uri, username, password):
+    def authenticate(uri, username, password, ldap_base=None):
+        email = None
         try:
             username = ldap.dn.escape_dn_chars(username)
             password = ldap.dn.escape_dn_chars(password)
@@ -111,27 +112,27 @@ class Ldap():
             #conn.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
             #conn.set_option(ldap.OPT_X_TLS_DEMAND, True )
             conn.set_option(ldap.OPT_DEBUG_LEVEL, 255)
-            #conn.start_tls_s()
-            ###***Make this configurable from the config file!!!!***
-            ldap_base = 'dc=example,dc=org'
-            #ldap_base = 'dc=example,dc=org'.format(
-            bind = conn.simple_bind_s("cn={},{}".format(
-                                    username, ldap_base), password)
+            #con.start_tls_s()
+            if not ldap_base:
+                ldap_base = 'dc=example,dc=org'
+            bind_base = 'cn={},{}'.format(username, ldap_base)
+            bind = conn.simple_bind_s(bind_base, password)
             logger.debug('LDAP bind: {}'.format(bind))
             try:
                 query = 'cn={}'.format(username)
-                result = conn.search_s(ldap_base, 2,
-                    query)
-                print('RESULT: {}'.format(result))
-            except Exception:
-                logger.error('Failed to get email address from LDAP')
+                result = conn.search_s(bind_base, 2,
+                    query, ['mail'])
+                email = str(result[0][1]['mail'][0], 'utf-8')
+                logger.debug('Found email address in LDAP attributes')
+            except ldap.NO_SUCH_OBJECT as err:
+                logger.debug('Failed to get email address from LDAP: {}'.format(err))
             conn.unbind_s()
-            ###***fix this shit to make it more secure
-            return "Success" if 97 in bind else "Failed"
+            ###***fix this shit to make it more secures
+            return ("Success", email) if 97 in bind else ("Failed", email)
         except ldap.INVALID_CREDENTIALS:
-            return "Invalid Credentials"
+            return ("Invalid Credentials", email)
         except ldap.SERVER_DOWN:
-            return "Server down"
+            return ("Server down", email)
         except ldap.LDAPError as err:
             return "Other LDAP error: {}".format(err)
-        return "Error"
+        return ("Error", email)

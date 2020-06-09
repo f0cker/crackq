@@ -90,7 +90,7 @@ and run the benchmark script to include any new algorithms:
 and don't forget to update your config files if you need to.
 
 Otherwise you can just run a complete installation from scratch. Either way, it
-should'nt take any longer than an hour or so.
+should'nt take any longer than an hour or so. While the project is still pre-release it is recommended to perform a full reinstallation when installing updates.
 
 -----
 **Acknowledgements**

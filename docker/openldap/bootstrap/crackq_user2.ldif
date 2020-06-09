@@ -6,5 +6,6 @@ objectClass: inetOrgPerson
 cn: crackq_user2 
 sn: user
 mail: crackquser2@crackq.org
+telephonenumber: 555 5555 555
 description: LDAP user
 userPassword: {SSHA}o6MRwW5zPJlDDWRFGMc7JEXpbeC/K1Bf

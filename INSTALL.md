@@ -218,6 +218,7 @@ Specify the auth type and location of the LDAP server in the crackq.conf. The fo
 [auth]
 type: ldap
 ldap_server: ldaps://xxx.xxx.com
+ldap_base: dc=example,dc=org
 group: domain\Domain Users
 ```
 
@@ -294,10 +295,38 @@ Also modify any of the other LDAP config options there as needed.
 
 Just to reiterate, it is not recommended to use the demo LDAP server in production without further hardening. However, there is a task to do this on the project roadmap.
 
+
+Notification Settings
+--------------
+
+CrackQ currently supports notifications via email using SMTP. I will add another notification method in the future, but haven't decided which one yet. If you would like to see Slack, Telegram, SMS or some other notification added please let me know and I'll go with the majority.
+
+Add your relevant SMTP mail server settings to the config file: 
+
+```
+[notify]
+mail_server: mail.crackq.org
+mail_port: 465
+src: crackq@crackq.org
+inactive_time: 20
+tls: True
+```
+
+The inactive_time setting is the time to wait since last user activity before sending event notifications in minutes (there's no sense sending email if you're actively looking at the progress).
+
+If you need to provide credentials to the SMTP server you will need them as environment variables, which will be passed to the crackq docker container before you execute docker-compose:
+```
+export MAIL_USERNAME=<your-mail-username>
+export MAIL_PASSWORD=<your-mail-password>
+```
+
+Run The Application
+------------
+
 That's it you're all done with the installation/configuration! Run the docker containers again with:
 
 ```
-docker-compose -f docker-compose.nvidia.yml up --build
+sudo docker-compose -f docker-compose.nvidia.yml up --build
 ```
 
 **Troubleshooting**
@@ -314,15 +343,16 @@ ERROR: for crackq  Cannot create container for service crackq: Unknown runtime s
 ```
 Install the NVidia container toolkit and runtime: https://github.com/NVIDIA/nvidia-docker
 
-
 ```
 crackq      | FileNotFoundError: [Errno 2] No such file or directory: '/var/crackq/files/hashm_dict.json'
 ```
 
 This is because you haven't run the benchmark script (see above), the benchmark creates a file listing all supported hashtypes and their benchmark speed into a file, which is needed by CrackQ. In a pinch you can ask it to copy the default benchmark file, but this is obviously not a good choice as all the brain callibration will be off.
 
-
-
+```
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError)
+```
+If you see SQL related error it's most likely due to an outdated SQL schema, I've made changes to the user model a couple of times since release. To resolve this, just delete the sqlite DB at /var/crackq/files/crackqdb/sqlite and a new one will be created automatically when you restart the container. I will be adding DB migration in a future update which will handle any schema changes automagically.
 
 
 If you have any issues and need to debug from within one of the containers, the container names are:
