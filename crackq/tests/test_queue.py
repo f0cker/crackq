@@ -43,7 +43,7 @@ def test_init_check():
             job.save_meta()
             time.sleep(5)
             counter = 0
-            while cur_list > 0 and counter < 9:
+            while len(cur_list) > 0 and counter < 9:
                 cur_list = rq.registry.StartedJobRegistry('default',
                                                           connection=redis_con).get_job_ids()
                 time.sleep(5)
