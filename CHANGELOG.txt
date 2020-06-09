@@ -4,7 +4,18 @@ Changelog
 
 v0.0.1b
 ------------
-
+- Fixed SMTP in TLS mode.
+- Added email to LDAP schema and query when account is created.
+- You want badges? I give you badges
+- Added email notifications.
+- Fixed tests.
+- Bumped flask and pysaml versions.
+- Fixed issue stopping job before it has initialized.
+- Updated hashcat event and error handling
+- Added missing test config files.
+- Updated docs, fixed bug with job details display and reports error
+  message #5.
+- Fixed display issue in job details/rules and sso redirect error.
 
 ------------
 - Fixing mask file name display. 
