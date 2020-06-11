@@ -21,8 +21,8 @@ def create_app(test_config=None):
     app = Flask(__name__)
     aconf = CRACK_CONF['app']
     #CORS(app, resources={r'/*': {'origins': 'http://localhost:8081',
-    #                            'supports_credentials': True},
-    #                   })
+    #                             'supports_credentials': True},
+    #                    })
     app.config['SESSION_TYPE'] = aconf['SESSION_TYPE']
     app.config['SQLALCHEMY_DATABASE_URI'] = aconf['SQLALCHEMY_DATABASE_URI']
     app.config['SESSION_COOKIE_HTTPONLY'] = aconf['SESSION_COOKIE_HTTPONLY']

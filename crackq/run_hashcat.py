@@ -105,7 +105,8 @@ class Crack(object):
                mask=None, wordlist=None, session=None,
                outfile=None, restore=None, username=False,
                pot_path=None, show=False, brain=True,
-               increment=False):
+               increment=False, increment_min=None,
+               increment_max=False):
         logger.info('Running hashcat')
         hc = Hashcat()
         logger.debug('Hashcat object ID: {}'.format(id(hc)))
@@ -126,6 +127,12 @@ class Crack(object):
             hc.username = True
         if increment is True:
             hc.increment = True
+        if increment_min:
+            if isinstance(increment_min, int):
+                hc.increment_min = increment_min
+        if increment_max:
+            if isinstance(increment_max, int):
+                hc.increment_max = increment_max
         #hc.remove = True
         #hc.remove_timer = 20
         ###*** update this to config file path and try/except
@@ -431,7 +438,8 @@ class Crack(object):
                   wordlist=None, outfile=None, hash_mode=1000,
                   attack_mode=None, mask=None, rules=None, name=None,
                   username=False, pot_path=None, restore=None,
-                  brain=True, mask_file=False, increment=False):
+                  brain=True, mask_file=False, increment=False,
+                  increment_min=None, increment_max=None):
         """
         Method to load a rq worker to take jobs from redis queue for execution
 

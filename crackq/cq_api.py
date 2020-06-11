@@ -114,6 +114,8 @@ class parse_json_schema(Schema):
     notify = fields.Bool(allow_none=True)
     increment = fields.Bool(allow_none=True)
     disable_brain = fields.Bool(allow_none=True)
+    incement_min = fields.Int(allow_none=True, validate=Range(min=0, max=20))
+    increment_max = fields.Int(allow_none=True, validate=Range(min=0, max=20))
     mask = fields.Str(allow_none=True, validate=StringContains(r'[^aldsu\?0-9a-zA-Z]'))
     mask_file = fields.List(fields.String(validate=[StringContains(r'[\W]\-'),
                                                     Length(min=1, max=60)]),
@@ -148,6 +150,8 @@ def get_jobdetails(job_details):
                     'name',
                     'username',
                     'increment',
+                    'increment_min',
+                    'increment_max',
                     'disable_brain',
                     'restore']
     ###***make this less ugly
@@ -1271,6 +1275,8 @@ class Adder(Resource):
                         'restore': job_deets['restore'],
                         'username': job_deets['username'] if 'user' in job_deets else None,
                         'increment': job_deets['increment'] if 'increment' in job_deets else None,
+                        'increment_min': job_deets['increment_min'] if 'increment_min' in job_deets else None,
+                        'increment_max': job_deets['increment_max'] if 'increment_max' in job_deets else None,
                         'brain': False if 'disable_brain' in job_deets else True,
                         'name': job_deets['name'] if 'name' in job_deets else None,
                         'pot_path': pot_path,
@@ -1355,6 +1361,16 @@ class Adder(Resource):
                 logger.debug('Increment value not provided')
                 increment = False
             try:
+                increment_min = args['increment_min']
+            except KeyError as err:
+                logger.debug('Increment min value not provided')
+                increment_min = None
+            try:
+                increment_max = args['increment_max']
+            except KeyError as err:
+                logger.debug('Increment max value not provided')
+                increment_max = None
+            try:
                 logger.debug(args)
                 if args['disable_brain']:
                     logger.debug('Brain disabled')
@@ -1397,14 +1413,17 @@ class Adder(Resource):
                 #'#restore': restore if restore else None,
                 'username': username,
                 'increment': increment,
+                'increment_min': increment_min,
+                'increment_max': increment_max,
                 'brain': brain,
                 'name': name,
                 'pot_path': pot_path,
-                    }
+                }
         q_args = {
-                'func': self.crack.hc_worker,
-                'job_id': job_id,
-                'kwargs': hc_args}
+            'func': self.crack.hc_worker,
+            'job_id': job_id,
+            'kwargs': hc_args,
+            }
         try:
             q = self.crack_q.q_connect()
             self.crack_q.q_add(q, q_args)
@@ -1414,8 +1433,8 @@ class Adder(Resource):
             job.meta['email_count'] = 0
             job.meta['notify'] = args['notify']
             if email_check(current_user.email):
-                    job.meta['email'] = str(current_user.email)
-                    job.meta['last_seen'] = str(current_user.last_seen)
+                job.meta['email'] = str(current_user.email)
+                job.meta['last_seen'] = str(current_user.last_seen)
             elif email_check(current_user.username):
                 job.meta['email'] = current_user.username
                 job.meta['last_seen'] = str(current_user.last_seen)
