@@ -31,7 +31,7 @@ services:
                 MAIL_USERNAME: ${MAIL_USERNAME}
                 MAIL_PASSWORD: ${MAIL_PASSWORD}
         command:
-                #cp ./devinit.py ./crackq/__init__.py &&
+                #cp ./crackq/devinit.py ./crackq/__init__.py &&
                 sh -c "./benchmark.sh &&
                 pip3 install -e . --user ./ && cd ./crackq &&
                 /usr/local/bin/circusd /opt/crackq/build/circus.ini"

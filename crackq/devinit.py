@@ -15,7 +15,6 @@ from flask_seasurf import SeaSurf
 
 CRACK_CONF = hc_conf()
 
-
 def create_app(test_config=None):
     """Create and configure an instance of the Flask application."""
     app = Flask(__name__)
@@ -32,9 +31,9 @@ def create_app(test_config=None):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     #Talisman(app, strict_transport_security=False)
-    #csrf = SeaSurf()
+    csrf = SeaSurf()
     app.config['CSRF_COOKIE_NAME'] = 'csrftoken'
-    #csrf.init_app(app)
+    csrf.init_app(app)
     db.init_app(app)
     with app.app_context():
         db.create_all()
