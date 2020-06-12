@@ -1,7 +1,9 @@
 CrackQ
 ============
 
-Author: Daniel Turner @ Trustwave
+Author: Daniel Turner
+@f0cker_
+
 ------------
 
 **INTRODUCTION**
