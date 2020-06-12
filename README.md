@@ -21,7 +21,8 @@ Python 3 REST API & JS GUI for managing hashcat crack jobs in a queuing system.
 ![CrackQ Dashboard](docs/crackq_dash.jpg)
 
 
-**Feature List**
+Feature List
+------------
 
 * LDAP or SAML2 Authentication
 * Multi-user support with privilege separation for jobs
@@ -35,7 +36,8 @@ Python 3 REST API & JS GUI for managing hashcat crack jobs in a queuing system.
 * Markov stats pre-configured
 * Sample mask files included
 
-**Requirements**
+Requirements
+------------
 
 This tool has the following requirements:
 
