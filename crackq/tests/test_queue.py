@@ -50,7 +50,7 @@ def test_init_check():
                 counter += 2
             print(cur_list)
             job.delete()
-            time.sleep(2)
+            time.sleep(11)
             comp_list = crack_q.check_complete()
             assert job_id not in comp_list
             assert len(cur_list) < 1
