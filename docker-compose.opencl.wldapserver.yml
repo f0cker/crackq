@@ -32,7 +32,7 @@ services:
                 MAIL_PASSWORD: ${MAIL_PASSWORD}
         command:
                 sh -c "./benchmark.sh &&
-                pip3 install -e . --user && cd ./crackq &&
+                pip3 install . --user && cd ./crackq &&
                 /usr/local/bin/circusd /opt/crackq/build/circus.ini"
 
     nginx:

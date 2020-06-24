@@ -87,7 +87,8 @@ class Crack(object):
         except TimeoutError:
             logger.error('SMTP connection error - timeout')
             server.quit()
-        except ssl.SSLError:
+        except ssl.SSLError as err:
+            logger.debug(err)
             logger.error('SMTP SSL/TLS error')
             server.quit()
 
@@ -166,11 +167,12 @@ class Crack(object):
         logger.debug('Callback Triggered: Cracked')
         status_dict = self.status(sender)
         logger.debug('Hashcat status: {}'.format(status_dict))
-        mail_server = CRACK_CONF['notify']['mail_server']
-        mail_port = CRACK_CONF['notify']['mail_port']
-        email_src = CRACK_CONF['notify']['src']
-        inactive_time = CRACK_CONF['notify']['inactive_time']
-        tls = CRACK_CONF['notify']['tls']
+        if CRACK_CONF['notify']:
+            mail_server = CRACK_CONF['notify']['mail_server']
+            mail_port = CRACK_CONF['notify']['mail_port']
+            email_src = CRACK_CONF['notify']['src']
+            inactive_time = CRACK_CONF['notify']['inactive_time']
+            tls = CRACK_CONF['notify']['tls']
         rconf = CRACK_CONF['redis']
         redis_con = Redis(rconf['host'], rconf['port'])
         redis_q = Queue(connection=redis_con)
@@ -223,11 +225,12 @@ class Crack(object):
         """
         logger.debug('Callback Triggered: Cracking Finished')
         status_dict = self.status(sender)
-        mail_server = CRACK_CONF['notify']['mail_server']
-        mail_port = CRACK_CONF['notify']['mail_port']
-        email_src = CRACK_CONF['notify']['src']
-        inactive_time = CRACK_CONF['notify']['inactive_time']
-        tls = CRACK_CONF['notify']['tls']
+        if CRACK_CONF['notify']:
+            mail_server = CRACK_CONF['notify']['mail_server']
+            mail_port = CRACK_CONF['notify']['mail_port']
+            email_src = CRACK_CONF['notify']['src']
+            inactive_time = CRACK_CONF['notify']['inactive_time']
+            tls = CRACK_CONF['notify']['tls']
         rconf = CRACK_CONF['redis']
         redis_con = Redis(rconf['host'], rconf['port'])
         redis_q = Queue(connection=redis_con)
@@ -393,7 +396,7 @@ class Crack(object):
             Hashcat status dict (from self.status()), containing hashcat data
             form the cracking session
         redis_con: object
-            redis connection object initiated  ***by
+            redis connection object initiated 
         Returns
         -------
 
@@ -432,7 +435,9 @@ class Crack(object):
                 job_details = json.dumps(job_details)
                 result_fh.write(job_details)
             except AttributeError as err:
-                logger.info('Status update failure: {}'.format(err))
+                logger.debug('Status update failure: {}'.format(err))
+            except KeyError as err:
+                logger.debug('Status update failure: {}'.format(err))
 
     def hc_worker(self, crack=None, hash_file=None, session=None,
                   wordlist=None, outfile=None, hash_mode=1000,
@@ -533,9 +538,9 @@ class Crack(object):
                         if hc_state == 'Exhausted':
                             self.finished_callback(hcat)
                             return 'Exhausted'
-                #elif hc_state == 'Cracked':
-                #    self.cracked_callback(hcat)
-                #    return 'Cracked'
+                elif hc_state == 'Cracked':
+                    self.cracked_callback(hcat)
+                    return 'Cracked'
                 elif hc_state == 'Aborted':
                     # add error check from hc here
                     ###***this seems to hang - look into it

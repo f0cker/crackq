@@ -1,19 +1,37 @@
-
+#"""Main Flask code handling REST API"""
 import json
 import logging
+import nltk
 import os
 import re
+import rq
 import time
 import uuid
 
-import nltk
-import rq
 
 from crackq import crackqueue, hash_modes, run_hashcat, auth
 from crackq.conf import hc_conf
 from datetime import datetime
-from flask import (Flask, redirect, request, session, make_response, url_for)
+from flask import (
+    Flask,
+    redirect,
+    request,
+    session,
+    url_for)
+from flask.views import MethodView
+from flask_bcrypt import Bcrypt
+from flask_seasurf import SeaSurf
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import (
+    LoginManager,
+    login_required,
+    login_user,
+    logout_user,
+    UserMixin,
+    current_user)
+from flask_session import Session
 from flask_restful import reqparse, abort, Resource
+from functools import wraps
 from logging.config import fileConfig
 from marshmallow import Schema, fields, validate, ValidationError
 from marshmallow.validate import Length, Range, Regexp
@@ -25,14 +43,10 @@ from rq import use_connection, Queue
 from saml2 import BINDING_HTTP_POST
 from saml2 import BINDING_HTTP_REDIRECT
 from saml2 import sigver
-from flask_seasurf import SeaSurf
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, login_required, login_user, logout_user, UserMixin, current_user
-from flask_session import Session
 from crackq.models import User
-from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy import create_engine, Column, ForeignKey
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import scoped_session, sessionmaker, exc
+#from sqlalchemy import create_engine, Column, ForeignKey
+#from sqlalchemy.orm import relationship, backref
 from sqlalchemy.types import (
     Boolean,
     DateTime,
@@ -42,8 +56,6 @@ from sqlalchemy.types import (
     JSON,
     )
 
-from sqlalchemy.ext.declarative import declarative_base
-#from crackq import create_app
 from crackq.db import db
 import crackq
 import saml2
@@ -59,11 +71,13 @@ os.umask(0o077)
 fileConfig('log_config.ini')
 logger = logging.getLogger()
 login_manager = LoginManager()
-
+# Setup Flask App
 app = Flask(__name__)
-###***is it possible to move this to __init__?
+###***move this to __init__?
 csrf = SeaSurf()
 csrf.init_app(app)
+bcrypt = Bcrypt(app)
+
 
 CRACK_CONF = hc_conf()
 
@@ -96,13 +110,14 @@ class parse_json_schema(Schema):
 
     """
     error_messages = {
-            "name": "Invalid input characters",
-            "username": "Invalid input characters",
-            }
+        "name": "Invalid input characters",
+        "username": "Invalid input characters",
+        }
     job_id = fields.UUID(allow_none=False)# validate=Length(min=1, max=32))
     batch_job = fields.List(fields.Dict(fields.UUID(), fields.Int(min=0, max=1000)))
     place = fields.Int(validate=Range(min=1, max=100))
-    hash_list = fields.List(fields.String(validate=StringContains(r'[^A-Za-z0-9\*\$\@\/\\\.\:\-\_\+\.]+\~')),
+    hash_list = fields.List(fields.String(validate=StringContains(
+                            r'[^A-Za-z0-9\*\$\@\/\\\.\:\-\_\+\.]+\~')),
                             allow_none=True, error_messages=error_messages)
     wordlist = fields.Str(allow_none=True, validate=[StringContains(r'[\W]\-'),
                                                      Length(min=1, max=60)])
@@ -119,12 +134,20 @@ class parse_json_schema(Schema):
     mask = fields.Str(allow_none=True, validate=StringContains(r'[^aldsu\?0-9a-zA-Z]'))
     mask_file = fields.List(fields.String(validate=[StringContains(r'[\W]\-'),
                                                     Length(min=1, max=60)]),
-                                allow_none=True)
+                            allow_none=True)
     name = fields.Str(allow_none=True, validate=StringContains(r'[\W]'), error_messages=error_messages)
     hash_mode = fields.Int(allow_none=False, validate=Range(min=0, max=65535))
     restore = fields.Int(validate=Range(min=0, max=1000000000000))
     user = fields.Str(allow_none=False, validate=StringContains(r'[\W]'))
-    password = fields.Str(allow_none=False, validate=StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/]'))
+    password = fields.Str(allow_none=False,
+                          validate=StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/]'))
+    confirm_password = fields.Str(allow_none=False,
+                          validate=StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/]'))
+    new_password = fields.Str(allow_none=False,
+                          validate=StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/]'))
+    email = fields.Str(allow_none=False,
+                          validate=StringContains(r'[^\w\@\^\-\+\./]'))
+    admin = fields.Bool(allow_none=True)
 
 
 def get_jobdetails(job_details):
@@ -324,16 +347,70 @@ def check_mask(orig_masks):
     #mask = mask_file[0] if mask_file else mask
 
 
-def create_user(username, email=None):
+def admin_required(func):
+    @wraps(func)
+    def wrap(*args, **kwargs):
+        """Decorator to check user is admin"""
+        try:
+            logger.debug('User authenticating {}'.format(current_user.username))
+            if current_user.is_admin:
+                return func(*args, **kwargs)
+        except AttributeError as err:
+            logger.debug(err)
+            logger.info('Anonymous user cant be admin')
+        return abort(401)
+    return wrap
+
+
+def create_user(username, email=None, password=None):
+    """
+    Adds a new user to the SQLAlchemy datastore
+
+    Arguments
+    ---------
+    username: string
+        Username to create
+
+    Returns
+    -------
+    result: boolean
+        True/False indicating status of delete operation
+    """
     if User.query.filter_by(username=username).first():
         logger.debug('User already exists')
         return False
     else:
-        user = User(username=username, email=email, is_admin=False)
+        user = User(username=username, email=email,
+                    password=password, is_admin=False)
         db.session.add(user)
         db.session.commit()
         logger.debug('New user added')
         return True
+
+
+def del_user(user_id):
+    """
+    Delete a user from the SQLAlchemy datastore
+
+    Arguments
+    ---------
+    user_id: int
+        User ID number for the user to delete
+
+    Returns
+    -------
+    result: boolean
+        True/False indicating status of delete operation
+    """
+    try:
+        user = User.query.filter_by(id=user_id).first()
+        db.session.delete(user)
+        db.session.commit()
+        return True
+    except AttributeError:
+        return False
+    except exc.UnmappedInstanceError:
+        return False
 
 
 def email_check(email):
@@ -359,6 +436,7 @@ def email_check(email):
 
 @login_manager.user_loader
 def load_user(user_id):
+    """user_loader function requried as part of Flask login-manager"""
     return User.query.get(user_id)
 
 
@@ -439,7 +517,7 @@ class Sso(Resource):
             try:
                 username
             except UnboundLocalError:
-                return json.dumps({'msg': 'No user returned in SAML response'}), 500
+                return {'msg': 'No user returned in SAML response'}, 500
             logging.info('Authenticated: {}'.format(username))
             user = load_user(username)
             if user:
@@ -489,9 +567,9 @@ class Login(Resource):
             username = args['user']
             password = args['password']
             if not username:
-                return json.dumps({"msg": "Missing username parameter"}), 400
+                return {"msg": "Missing username parameter"}, 400
             if not password:
-                return json.dumps({"msg": "Missing password parameter"}), 400
+                return {"msg": "Missing password parameter"}, 400
             ldap_uri = CRACK_CONF['auth']['ldap_server']
             ldap_base = CRACK_CONF['auth']['ldap_base']
             authn = auth.Ldap.authenticate(ldap_uri, username, password,
@@ -521,13 +599,21 @@ class Login(Resource):
                     login_user(user)
                 else:
                     logging.error('No user object loaded')
-                    return json.dumps({"msg": "Bad username or password"}), 401
+                    return {"msg": "Bad username or password"}, 401
                 return 'OK', 200
             elif authn[0] is "Invalid Credentials":
-                return json.dumps({"msg": "Bad username or password"}), 401
+                return {"msg": "Bad username or password"}, 401
             else:
                 logger.info('Login error: {}'.format(authn))
-                return json.dumps({"msg": "Bad username or password"}), 401
+                return {"msg": "Bad username or password"}, 401
+        if CRACK_CONF['auth']['type'] == 'sql':
+            user = User.query.filter_by(username=args['user']).first()
+            if isinstance(user, User):
+                if bcrypt.check_password_hash(user.password, args['password']):
+                    crackq.app.session_interface.regenerate(session)
+                    login_user(user)
+                    return 'OK', 200
+            return {"msg": "Bad username or password"}, 401
         else:
             return 'Method not supported', 405
 
@@ -543,7 +629,7 @@ class Logout(Resource):
         logger.info('User logged out: {}'.format(current_user.username))
         user = User.query.filter_by(username=current_user.username).first()
         #sid = request.cookies.get(app.session_cookie_name)
-        sid = request.cookies.get(crackq.app.session_cookie_name)
+        #sid = request.cookies.get(crackq.app.session_cookie_name)
         crackq.app.session_interface.destroy(session)
         user.active = False
         db.session.commit()
@@ -1345,7 +1431,7 @@ class Adder(Resource):
                 mask = args['mask']
             except KeyError:
                 mask = None
-            # this is just set to use the first mask file in the list for now
+            ####***this is just set to use the first mask file in the list for now
             mask = mask_file[0] if mask_file else mask
             rules = check_rules(args['rules'])
             if rules is False:
@@ -1432,12 +1518,13 @@ class Adder(Resource):
             job = self.q.fetch_job(job_id)
             job.meta['email_count'] = 0
             job.meta['notify'] = args['notify']
-            if email_check(current_user.email):
-                job.meta['email'] = str(current_user.email)
-                job.meta['last_seen'] = str(current_user.last_seen)
-            elif email_check(current_user.username):
-                job.meta['email'] = current_user.username
-                job.meta['last_seen'] = str(current_user.last_seen)
+            if current_user.email:
+                if email_check(current_user.email):
+                    job.meta['email'] = str(current_user.email)
+                    job.meta['last_seen'] = str(current_user.last_seen)
+                elif email_check(current_user.username):
+                    job.meta['email'] = current_user.username
+                    job.meta['last_seen'] = str(current_user.last_seen)
             job.meta['CrackQ State'] = 'Run'
             job.meta['Speed Array'] = []
             job.save_meta()
@@ -1445,10 +1532,9 @@ class Adder(Resource):
         except KeyError as err:
             logger.warning('Key missing from meta data:\n{}'.format(err))
             return job_id, 202
-        ###***make this more specific?
-        except Exception as err:
-            logger.info('API post failed:\n{}'.format(err))
-            return job_id, 500
+        except TypeError as err:
+            logger.warning('Type error in job meta data:\n{}'.format(err))
+            return job_id, 202
 
 
 def reporter(cracked_path, report_path):
@@ -1463,15 +1549,6 @@ def reporter(cracked_path, report_path):
     with open(report_path, 'w') as fh_report:
         fh_report.write(json.dumps(report_json))
     return True
-
-###***remove later if not used
-def output_html(data, code, headers=None):
-    """
-    This function allows flask-restful to return HTML
-    """
-    resp = make_response(data, code)
-    resp.headers.extend(headers or {})
-    return resp
 
 
 class Reports(Resource):
@@ -1490,9 +1567,7 @@ class Reports(Resource):
         self.report_dir = CRACK_CONF['reports']['dir']
         self.log_dir = CRACK_CONF['files']['log_dir']
         self.adder = Adder()
-        #self.representation = 'text/html'
 
-    #@api.representation('text/html')
     @login_required
     def get(self, job_id=None):
         """
@@ -1623,13 +1698,251 @@ class Reports(Resource):
             return {'msg': 'Invalid Job ID'}, 404
 
 
-#app = Flask(__name__)
-#app = crackq.app
-#api = Api(app)
-#api.add_resource(Options, '/options')
-#api.add_resource(Queuing, '/queuing/<job_id>')
-#api.add_resource(Adder, '/add')
-#app = create_app()
+class Profile(MethodView):
+    """Flask User/profile management"""
 
-#if __name__ == '__main__':
-#    app.run(host='0.0.0.0', port=8080, debug=True)
+    @login_required
+    def get(self):
+        """
+        View user profile
+        """
+        result = {}
+        try:
+            #result['user_id'] = current_user.id
+            result['user'] = current_user.username
+            result['admin'] = current_user.is_admin
+            result['email'] = current_user.email
+        except AttributeError:
+            abort(404)
+        return json.dumps(result), 200
+
+    @login_required
+    def post(self, password=None,
+             new_password=None, confirm_password=None,
+             email=None):
+        """
+        Update current user profile
+
+        Arguments
+        ---------
+        password: string
+            Current Password
+        new_password: string
+            New Password
+        confirm_password: string
+            New Password
+        email: string
+            Email address
+
+        Returns
+        -------
+        result: JSON
+            message, HTTP code
+        """
+        marsh_schema = parse_json_schema().loads(json.dumps(request.json))
+        if len(marsh_schema.errors) > 0:
+            logger.debug('Validation error: {}'.format(marsh_schema.errors))
+            return marsh_schema.errors, 500
+        else:
+            args = marsh_schema.data
+        logger.debug('Updating user details')
+        user = User.query.filter_by(id=current_user.id).first()
+        ret = []
+        if isinstance(user, User) and 'password' in args:
+            if args['password']:
+                if 'new_password' in args and 'confirm_password' in args:
+                    if args['confirm_password'] and args['new_password']:
+                        if args['new_password'] != args['confirm_password']:
+                            return {'msg': 'Passwords do not match'}, 400
+                        if bcrypt.check_password_hash(user.password, args['password']):
+                            pass_hash = bcrypt.generate_password_hash(args['new_password'])
+                            user.password = pass_hash.decode('utf-8')
+                            logger.debug('Updating password')
+                            ret.append({'msg': 'Password updated'})
+                            crackq.app.session_interface.regenerate(session)
+                        else:
+                            return {'msg': 'Invalid Password'}, 401
+                if 'email' in args:
+                    if args['email'] and email_check(args['email']):
+                        if bcrypt.check_password_hash(user.password, args['password']):
+                            user.email = args['email']
+                            logger.debug('Updating email')
+                            ret.append({'msg': 'Email updated'})
+                        else:
+                            return {'msg': 'Invalid Password'}, 401
+                    #else:
+                    #    return {'msg': 'Invalid Email'}, 500
+            if ret:
+                db.session.commit()
+                return json.dumps(ret), 200
+        return {'msg': 'Invalid Request'}, 500
+
+
+class Admin(MethodView):
+    """Flask Admin and user management"""
+    @admin_required
+    @login_required
+    def get(self, user_id):
+        """
+        View list of users or details of a single user
+
+        Arguments
+        ---------
+        user_id: int/None
+            User's ID to view details (if None show all)
+        """
+        if user_id:
+            result = {}
+            try:
+                user = User.query.filter_by(id=user_id).first()
+                result['user_id'] = user.id
+                result['user'] = user.username
+                result['admin'] = user.is_admin
+                result['email'] = user.email
+            except AttributeError:
+                abort(404)
+        else:
+            result = []
+            users = User.query.all()
+            for user in users:
+                entry = {}
+                entry['user_id'] = user.id
+                entry['user'] = user.username
+                entry['admin'] = user.is_admin
+                entry['email'] = user.email
+                result.append(entry)
+        return json.dumps(result), 200
+
+    @admin_required
+    @login_required
+    def post(self, user=None, password=None,
+             email=None):
+        """
+        Creates a new user
+
+        Arguments
+        ---------
+        user: string
+            Username to create
+        password: string
+            Password
+        email: string
+            Email address
+
+        Returns
+        -------
+        result: tuple
+            message, HTTP code
+        """
+        marsh_schema = parse_json_schema().loads(json.dumps(request.json))
+        if len(marsh_schema.errors) > 0:
+            logger.debug('Validation error: {}'.format(marsh_schema.errors))
+            return marsh_schema.errors, 500
+        else:
+            args = marsh_schema.data
+        if 'email' in args:
+            if email_check(args['email']):
+                logger.debug('Adding email address: {}'.format(args['email']))
+                email = args['email']
+        if 'password' in args and 'user' in args:
+            if args['password'] and args['user']:
+                logger.debug('Creating User: {}'.format(args['user']))
+                pass_hash = bcrypt.generate_password_hash(args['password']).decode('utf-8')
+                create_user(username=args['user'],
+                            password=pass_hash, email=email)
+                return {'msg': 'User created'}, 200
+        return {'msg': 'Error'}, 500
+
+    @admin_required
+    @login_required
+    def delete(self, user_id):
+        """
+        Deletes a user account
+
+        Arguments
+        ---------
+        user: string
+            Username to make admin
+
+        Returns
+        -------
+        result: boolean
+            Function success or failure
+
+        """
+        if del_user(user_id):
+            return {'msg': 'User deleted'}, 200
+        abort(404)
+
+    @admin_required
+    @login_required
+    def put(self, user_id):
+        """
+        Toggle admin privs for selected user
+
+        Arguments
+        ---------
+        user_id: 1
+            User ID to make admin
+
+        Returns
+        -------
+        result: boolean
+            Function success or failure
+        """
+        user = User.query.filter_by(id=user_id).first()
+        if isinstance(user, User):
+            user.is_admin = not user.is_admin
+            db.session.commit()
+            return 'OK', 200
+        return 404
+
+    @admin_required
+    @login_required
+    def patch(self, user_id, new_password=None,
+              confirm_password=None, email=None):
+        """
+        Update selected user profile
+
+        Arguments
+        ---------
+        new_password: string
+            New Password
+        confirm_password: string
+            New Password
+        email: string
+            Email address
+
+        Returns
+        -------
+        result: JSON
+            message, HTTP code
+        """
+        marsh_schema = parse_json_schema().loads(json.dumps(request.json))
+        if len(marsh_schema.errors) > 0:
+            logger.debug('Validation error: {}'.format(marsh_schema.errors))
+            return marsh_schema.errors, 500
+        else:
+            args = marsh_schema.data
+        logger.debug('Updating user details')
+        user = User.query.filter_by(id=user_id).first()
+        if isinstance(user, User):
+            ret = []
+            if 'email' in args:
+                if email_check(args['email']):
+                    logger.debug('Adding email address: {}'.format(args['email']))
+                    user.email = args['email']
+                    ret.append({'msg': 'Email updated'})
+            if 'new_password' in args and 'confirm_password' in args:
+                if args['confirm_password'] and args['new_password']:
+                    if args['new_password'] != args['confirm_password']:
+                        return {'msg': 'Passwords do not match'}, 400
+                    pass_hash = bcrypt.generate_password_hash(args['new_password']).decode('utf-8')
+                    user.password = pass_hash
+                    ret.append({'msg': 'Password updated'})
+            if ret:
+                db.session.commit()
+                ###***logout any sessions belonging user here
+                return json.dumps(ret), 200
+            return {'msg': 'Nothing to update'}, 200
+        return {'msg': 'Error'}, 500

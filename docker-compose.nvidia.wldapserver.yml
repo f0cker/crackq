@@ -36,7 +36,7 @@ services:
         command:
             #sh -c "/bin/bash"
             sh -c "./benchmark.sh &&
-            pip3 install -e . --user && cd ./crackq &&
+            pip3 install . --user && cd ./crackq &&
             /usr/local/bin/circusd /opt/crackq/build/circus.ini"
             
     nginx:

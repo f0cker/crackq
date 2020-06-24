@@ -33,8 +33,9 @@ services:
         command:
                 #cp ./crackq/devinit.py ./crackq/__init__.py &&
                 sh -c "./benchmark.sh &&
-                pip3 install -e . --user ./ && cd ./crackq &&
-                /usr/local/bin/circusd /opt/crackq/build/circus.ini"
+                pip3 install -e . --user ./ && cd ./crackq 
+                && /usr/local/bin/circusd /opt/crackq/build/circus.ini"
+                #&& /usr/local/bin/circusd /opt/crackq/build/circus.dev.ini"
 
     nginx:
         build:
