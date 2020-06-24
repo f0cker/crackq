@@ -18,8 +18,8 @@ EXPOSE 8080
 ENV LANG "en_US.UTF-8"
 ENV LC_ALL "en_US.UTF-8"
 
-RUN groupadd -g 1111 -r crackq && useradd -u 1111 -d /home/crackq/ -r -g crackq crackq
-RUN mkdir /home/crackq/ && chown 1111:1111 /home/crackq/
+#RUN groupadd -g 1111 -r crackq && useradd -u 1111 -d /home/crackq/ -r -g crackq crackq
+#RUN mkdir /home/crackq/ && chown 1111:1111 /home/crackq/
 RUN chown -R 1111:1111 $DOCKYARD/
 #RUN chown -R 1111:1111 /opt/crackq/build/crackq/
 USER crackq
