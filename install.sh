@@ -50,7 +50,8 @@ if [ $TESTS ]
 fi
 if [[ ! $( groups crackq) == *"crackq"* ]]
 then 
-        groupadd -g 1111 -r crackq && useradd -u 1111 -r -g crackq crackq
+        groupadd -g 1111 -r crackq
+	useradd -u 1111 -r -g crackq crackq
 fi
 chown -R 1111:1111 /var/crackq/
 cp $1/* ./build

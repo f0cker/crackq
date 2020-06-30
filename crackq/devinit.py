@@ -17,7 +17,6 @@ from flask_login import (
 from flask_migrate import Migrate
 from flask_session import Session
 from flask_seasurf import SeaSurf
-from flask_security import Security, SQLAlchemyUserDatastore
 
 CRACK_CONF = hc_conf()
 

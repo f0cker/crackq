@@ -1,14 +1,18 @@
-#"""Main Flask code handling REST API"""
+"""Main Flask code handling REST API"""
+import crackq
 import json
 import logging
 import nltk
 import os
 import re
 import rq
+import saml2
 import time
 import uuid
 
 
+from crackq.db import db
+from crackq.models import User
 from crackq import crackqueue, hash_modes, run_hashcat, auth
 from crackq.conf import hc_conf
 from datetime import datetime
@@ -43,10 +47,7 @@ from rq import use_connection, Queue
 from saml2 import BINDING_HTTP_POST
 from saml2 import BINDING_HTTP_REDIRECT
 from saml2 import sigver
-from crackq.models import User
 from sqlalchemy.orm import scoped_session, sessionmaker, exc
-#from sqlalchemy import create_engine, Column, ForeignKey
-#from sqlalchemy.orm import relationship, backref
 from sqlalchemy.types import (
     Boolean,
     DateTime,
@@ -56,13 +57,6 @@ from sqlalchemy.types import (
     JSON,
     )
 
-from crackq.db import db
-import crackq
-import saml2
-#from crackq import app
-#from wsgi import db, app
-#import crackq
-#from wsgi import app
 
 # set perms
 os.umask(0o077)
@@ -77,8 +71,6 @@ app = Flask(__name__)
 csrf = SeaSurf()
 csrf.init_app(app)
 bcrypt = Bcrypt(app)
-
-
 CRACK_CONF = hc_conf()
 
 
@@ -129,7 +121,7 @@ class parse_json_schema(Schema):
     notify = fields.Bool(allow_none=True)
     increment = fields.Bool(allow_none=True)
     disable_brain = fields.Bool(allow_none=True)
-    incement_min = fields.Int(allow_none=True, validate=Range(min=0, max=20))
+    increment_min = fields.Int(allow_none=True, validate=Range(min=0, max=20))
     increment_max = fields.Int(allow_none=True, validate=Range(min=0, max=20))
     mask = fields.Str(allow_none=True, validate=StringContains(r'[^aldsu\?0-9a-zA-Z]'))
     mask_file = fields.List(fields.String(validate=[StringContains(r'[\W]\-'),
@@ -141,12 +133,14 @@ class parse_json_schema(Schema):
     user = fields.Str(allow_none=False, validate=StringContains(r'[\W]'))
     password = fields.Str(allow_none=False,
                           validate=StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/]'))
-    confirm_password = fields.Str(allow_none=False,
-                          validate=StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/]'))
-    new_password = fields.Str(allow_none=False,
-                          validate=StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/]'))
+    confirm_password = fields.Str(allow_none=True,
+                                  validate=[StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/]'),
+                                            Length(min=10, max=60)])
+    new_password = fields.Str(allow_none=True,
+                              validate=[StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/]'),
+                                  Length(min=10, max=60)])
     email = fields.Str(allow_none=False,
-                          validate=StringContains(r'[^\w\@\^\-\+\./]'))
+                       validate=StringContains(r'[^\w\@\^\-\+\./]'))
     admin = fields.Bool(allow_none=True)
 
 
@@ -1097,7 +1091,7 @@ class Queuing(Resource):
                 job.meta['CrackQ State'] = 'Stop'
                 job.save_meta()
                 ###***decrease this??
-                time.sleep(6)
+                time.sleep(3)
             job.delete()
             started.cleanup()
             ###***re-add this when delete job bug is fixed
@@ -1717,9 +1711,7 @@ class Profile(MethodView):
         return json.dumps(result), 200
 
     @login_required
-    def post(self, password=None,
-             new_password=None, confirm_password=None,
-             email=None):
+    def post(self):
         """
         Update current user profile
 
@@ -1815,8 +1807,7 @@ class Admin(MethodView):
 
     @admin_required
     @login_required
-    def post(self, user=None, password=None,
-             email=None):
+    def post(self):
         """
         Creates a new user
 
@@ -1844,10 +1835,14 @@ class Admin(MethodView):
             if email_check(args['email']):
                 logger.debug('Adding email address: {}'.format(args['email']))
                 email = args['email']
-        if 'password' in args and 'user' in args:
-            if args['password'] and args['user']:
+        args_needed = ['password', 'confirm_password', 'user']
+        if all(arg in args for arg in args_needed):
+            if args['confirm_password'] and args['password'] and args['user']:
+                if args['password'] != args['confirm_password']:
+                    return {'msg': 'Passwords do not match'}, 400
                 logger.debug('Creating User: {}'.format(args['user']))
                 pass_hash = bcrypt.generate_password_hash(args['password']).decode('utf-8')
+                email = args['email'] if args['email'] else None
                 create_user(username=args['user'],
                             password=pass_hash, email=email)
                 return {'msg': 'User created'}, 200
@@ -1899,8 +1894,7 @@ class Admin(MethodView):
 
     @admin_required
     @login_required
-    def patch(self, user_id, new_password=None,
-              confirm_password=None, email=None):
+    def patch(self, user_id):
         """
         Update selected user profile
 

@@ -1,10 +1,7 @@
 import json
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
-#from flask_security import UserMixin, RoleMixin
 from sqlalchemy import create_engine, Column, ForeignKey
-#from sqlalchemy.ext.declarative import declarative_base
-#from sqlalchemy.orm import backref, relationship
 from sqlalchemy.types import (
     Boolean,
     DateTime,
@@ -14,25 +11,6 @@ from sqlalchemy.types import (
     Unicode,
     )
 from crackq.db import db
-#Base = declarative_base()
-
-
-"""
-class RolesUsers(db.Model):
-    __tablename__ = 'roles_users'
-    id = db.Column(Integer(), primary_key=True)
-    user_id = Column('user_id', Integer(), ForeignKey('user.id'))
-    role_id = Column('role_id', Integer(), ForeignKey('role.id'))
-
-class Role(db.Model, RoleMixin):
-    __tablename__ = 'role'
-    id = db.Column(Integer(), primary_key=True, index=True)
-    name = Column(db.String(40), unique=True)
-    username = Column(String(255), unique=True)
-    description = Column(String(255))
-"""
-#Flask-security User-Roles relationship helper class
-#Flask-security Role model for session management
 
 
 class User(db.Model):
@@ -42,7 +20,7 @@ class User(db.Model):
     __table_args__ = {'extend_existing': True}
     active = Column(Boolean())
     username = Column(String(255), unique=True)
-    email = Column(String(255), unique=True)
+    email = Column(String(255))
     last_login_at = Column(DateTime())
     last_seen = Column(DateTime())
     current_login_at = Column(DateTime())
@@ -53,8 +31,6 @@ class User(db.Model):
     job_ids = Column(JSON, unique=True)
     is_admin = Column(Boolean())
     password = Column(Unicode(100))
-    #roles = relationship('Role', secondary='roles_users',
-    #                     backref=backref('user', lazy='dynamic'))
 
     def is_active(self):
         """Required method for flask-login User class"""

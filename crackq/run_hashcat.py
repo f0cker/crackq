@@ -1,3 +1,4 @@
+"""This module handles the PyHashcat integration"""
 #!/usr/bin/env python
 import email.utils
 import logging
@@ -96,9 +97,6 @@ class Crack(object):
         status_data = sender.hashcat_status_get_status()
         if status_data == -1:
             status_data = 'Waiting'
-        # hide cracked passwords
-        #elif isinstance(status_data, dict):
-        #    del status_data['Cracked']
         return status_data
 
     def runner(self, hash_file=None, hash_mode=1000,
