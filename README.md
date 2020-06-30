@@ -24,17 +24,20 @@ Python 3 REST API & JS GUI for managing hashcat crack jobs in a queuing system.
 Feature List
 ------------
 
-* LDAP or SAML2 Authentication
-* Multi-user support with privilege separation for jobs
+* REST API
+* Cracked passwords analysis and reporting
 * Uses Hashcat API directly via libhashcat, no shell commands
+* SQL, LDAP or SAML2 Authentication
+* Multi-user support with privilege separation for jobs
 * Job queues with pause/restore/move
 * Detailed job stats/charts for active jobs
+* Always supports the latest Hashcat version
 * Email notifications when a hash cracks or job finishes
-* Cracked passwords analysis and reporting
 * Automated Brain integration, Brain activates when it becomes efficient
-* Python remote REST client
+* Remote Python client
 * Markov stats pre-configured
 * Sample mask files included
+
 
 Requirements
 ------------
