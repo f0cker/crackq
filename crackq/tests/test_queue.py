@@ -123,7 +123,7 @@ def test_del():
         cur_list = started.get_job_ids()
         assert job_id not in cur_list
         job.delete()
-        time.sleep(2)
+        time.sleep(4)
         comp_list = crack_q.check_complete()
         assert job_id not in comp_list
     except AttributeError as err:
