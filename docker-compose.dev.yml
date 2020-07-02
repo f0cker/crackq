@@ -5,6 +5,7 @@ services:
     redis:
         image: "redis:latest"
         container_name: "redis"
+        hostname: "redis"
         networks:
             - crackq_net
         ports:
@@ -20,12 +21,13 @@ services:
         networks:
             - crackq_net
         container_name: "crackq"
+        hostname: "crackq"
         volumes:
             - /var/crackq/:/var/crackq
             - ./crackq:/opt/crackq/build/crackq/
         stdin_open: true
         user: crackq
-        tty: true        
+        tty: true  
         environment:
                 PYTHONPATH: "/opt/crackq/build/"
                 MAIL_USERNAME: ${MAIL_USERNAME}
@@ -46,10 +48,14 @@ services:
         depends_on:
                 - crackq 
         container_name: "nginx"
+        hostname: "nginx"
+        cap_add:
+                - NET_ADMIN      
         ports:
              - "443:443"
         volumes:
              - /var/crackq/files/nginx/conf.d:/etc/nginx/conf.d
+             - /var/crackq/logs/nginx/:/var/log/nginx/
         networks:
             - crackq_net
 
@@ -92,8 +98,6 @@ services:
         ports:
              - "127.0.0.1:389:389"
              - "127.0.0.1:636:636"
-        #command:
-        #        sh -c "/tmp/wait.sh"
         networks:
             - crackq_net
 

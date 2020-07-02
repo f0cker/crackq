@@ -45,6 +45,7 @@ services:
 #             - "443:443"
 #        volumes:
 #             - /var/crackq/files/nginx/conf.d:/etc/nginx/conf.d
+#             - /var/crackq/logs/nginx/:/var/log/nginx/
 #        networks:
 #            - crackq_net
 

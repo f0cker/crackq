@@ -431,7 +431,8 @@ def email_check(email):
 @login_manager.user_loader
 def load_user(user_id):
     """user_loader function requried as part of Flask login-manager"""
-    return User.query.get(user_id)
+    #return User.query.get(user_id)
+    return User.query.filter_by(username=user_id).first()
 
 
 class Sso(Resource):

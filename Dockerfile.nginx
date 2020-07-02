@@ -1,15 +1,18 @@
-FROM nginx:1.16.1
+FROM nginx:1.18
 
+RUN apt-get update && apt-get install fail2ban -y && update-rc.d fail2ban enable
+RUN rm /var/log/nginx/access.log && rm /var/log/nginx/error.log
 RUN rm /etc/nginx/nginx.conf
+RUN rm /etc/fail2ban/jail.d/defaults-debian.conf
 COPY cfg/nginx.conf /etc/nginx/
+COPY cfg/fail2ban.conf /etc/fail2ban/jail.conf
+COPY cfg/nginx-http-auth.conf /etc/fail2ban/filter.d/nginx-http-auth.conf
+COPY cfg/nginx.sh ./nginx.sh
 RUN mkdir /var/www/
 RUN mkdir /var/www/static/
 COPY dist/ /var/www/static/
 RUN chown -R nginx:nginx /var/www/
 RUN chmod -R 755 /var/www/static/
-#COPY /var/crackq/files/nginx/nginx.conf /etc/nginx/
-#COPY /var/crackq/files/nginx/conf.d/* /etc/nginx/conf.d/
-#RUN chown nginx:nginx /etc/nginx/nginx.conf
 RUN rm /etc/nginx/conf.d/default.conf
-#COPY cfg/crackq_nginx.conf /etc/nginx/conf.d/
 
+CMD ./nginx.sh

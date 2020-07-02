@@ -25,6 +25,7 @@ if [ ! -d /var/crackq/files/masks ]
                 mkdir /var/crackq/files/
                 mkdir /var/crackq/logs/
                 mkdir /var/crackq/logs/reports/
+                mkdir /var/crackq/logs/nginx/
                 mkdir /var/crackq/files/masks/
                 mkdir /var/crackq/files/nginx/
                 mkdir /var/crackq/files/nginx/conf.d/
@@ -48,8 +49,10 @@ if [ $TESTS ]
 		rm /var/crackq/files/crackq.conf
 		cp crackq.conf /var/crackq/files/
 fi
-if [[ ! $( groups crackq) == *"crackq"* ]]
+if grep -q crackq /etc/group
 then 
+	echo 'crackq group already exists'
+else
         groupadd -g 1111 -r crackq
 	useradd -u 1111 -r -g crackq crackq
 fi
