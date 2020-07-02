@@ -12,7 +12,7 @@ services:
         #volumes:
         #    - /var/crackq/:/var/crackq
     crackq:
-        image: "opencl-crackq"
+        image: "nvidia-crackq"
         ports:
                 - "127.0.0.1:8080:8080"
         depends_on:
