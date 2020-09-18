@@ -1,7 +1,8 @@
+#!/bin/bash
 # Installation script to get Docker setup. Provide single
 # argument: driver type and os (Ubuntu or Centos supported)
 # in the following format docker/nvidia/ubuntu
-#!/bin/bash
+
 
 if [ $# -lt 1 ]
 	then
