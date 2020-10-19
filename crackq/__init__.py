@@ -2,7 +2,7 @@
 from flask import Flask
 from flask_cors import CORS
 from flask_restful import Api
-from crackq import cq_api
+from crackq import cq_api, crackqueue, hash_modes, run_hashcat, auth
 from crackq.conf import hc_conf
 from crackq.db import db
 from crackq.models import User
@@ -19,7 +19,6 @@ from flask_session import Session
 from flask_seasurf import SeaSurf
 
 CRACK_CONF = hc_conf()
-
 
 def create_app():
     """Create and configure an instance of the Flask application."""
@@ -45,6 +44,7 @@ def create_app():
         db.create_all()
     admin_view = cq_api.Admin.as_view('admin')
     profile_view = cq_api.Profile.as_view('profile')
+    bench_view = cq_api.Benchmark.as_view('benchmark')
     app.add_url_rule('/api/admin/', defaults={'user_id': None},
                      view_func=admin_view, methods=['POST', 'GET'])
     app.add_url_rule('/api/admin/<int:user_id>',
@@ -53,6 +53,8 @@ def create_app():
                      view_func=admin_view, methods=['POST'])
     app.add_url_rule('/api/profile/',
                      view_func=profile_view, methods=['GET', 'POST'])
+    app.add_url_rule('/api/benchmark/',
+                     view_func=bench_view, methods=['GET', 'POST'])
     api = Api(app)
     api.add_resource(cq_api.Login, '/api/login')
     api.add_resource(cq_api.Sso, '/api/sso')

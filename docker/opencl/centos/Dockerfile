@@ -6,7 +6,7 @@ FROM nvidia/opencl:runtime-centos7
 # docker run --runtime=nvidia --name crackq -p8080:8080 -v /var/crackq/:/var/crackq --network crackq_net -it nvidia-centos
 
 RUN yum update -y && yum install -y epel-release && yum install -y gcc make clinfo opencl-headers &&\
-yum install -y python36 python36-libs python36-devel python36-pip git circus wget openldap-devel && yum update -y
+yum install -y python36 python36-libs python36-devel python36-pip git circus wget openldap-devel minizip-devel && yum update -y
  
 ENV DOCKYARD=/opt/crackq/build
 #ENV PYTHONPATH=$DOCKYARD:/opt/crackq/build/

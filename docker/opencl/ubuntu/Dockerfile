@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND noninteractive
 # docker run --network crackq_net -d --name redis redis
 # docker run --runtime=nvidia --name crackq -p8080:8080 -v /var/crackq/:/var/crackq --network crackq_net -it opencl-ubuntu
 
-RUN apt-get update -q && apt-get install --no-install-recommends -yq alien wget unzip clinfo \
+RUN apt-get update -q && apt-get install --no-install-recommends -yq alien wget unzip clinfo libminizip-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Download the Intel OpenCL 2.0 development headers

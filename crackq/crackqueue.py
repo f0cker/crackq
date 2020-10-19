@@ -1,6 +1,6 @@
+"""Queue handling class helper for CrackQ->RQ"""
 import logging
 import rq
-#import crackq.run_hashcat
 import sys
 import time
 import uuid
@@ -30,7 +30,7 @@ class Queuer(object):
         # password=rconf['password'])
         #self.redis_con = Redis()
 
-    def q_add(self, q_obj, arg_dict):
+    def q_add(self, q_obj, arg_dict, timeout=1209600):
         """
         This method adds a new crack job to the queue
 
@@ -51,7 +51,7 @@ class Queuer(object):
         logger.info('Adding task to job queue: '
                     '{:s}'.format(arg_dict['job_id']))
         q_obj.enqueue_call(func=arg_dict['func'], job_id=arg_dict['job_id'],
-                           kwargs=arg_dict['kwargs'], timeout=1209600,
+                           kwargs=arg_dict['kwargs'], timeout=timeout,
                            result_ttl=-1)
         return
 
@@ -106,17 +106,18 @@ class Queuer(object):
         job_dict: dictionary
             dictionary containing job stats and meta data
         """
-        #status_dict = 'None'
-        job_dict = {
-                    'Status': job.get_status(),
-                    'Time started': str(job.started_at),
-                    'Time finished': str(job.ended_at),
-                    #'State': status_dict,
-                    'Result': job.result,
-                    #'Description': job.description,
-                    'State': job.meta,
-                   }
-        return job_dict
+        if job:
+            job_dict = {
+                        'Status': job.get_status(),
+                        'Time started': str(job.started_at),
+                        'Time finished': str(job.ended_at),
+                        #'State': status_dict,
+                        'Result': job.result,
+                        #'Description': job.description,
+                        'State': job.meta,
+                       }
+            return job_dict
+        return None
 
     def q_connect(self, queue='default'):
         """
@@ -134,8 +135,6 @@ class Queuer(object):
         object
             redis connection object
         """
-        #redis_con = Redis()
-        # use default queue for now
         rqueue = Queue(queue, connection=self.redis_con)
         return rqueue
 
@@ -203,7 +202,6 @@ if __name__ == '__main__':
     crack_q = Queuer()
     crack = run_hashcat.Crack()
     job_id = uuid.uuid4().hex 
-    #hash_file = job_id + '.hashes'
     hash_file = 'deadbeef.hashes'
     outfile = job_id + '.cracked'
     hc_args = {
@@ -221,13 +219,7 @@ if __name__ == '__main__':
             }
     wordlist = hc_args['wordlist']
     q = crack_q.q_connect()
-    #print(q_args)
-    #print(q)
     crack_q.q_add(q, q_args)
-    #print(dir(q))
-    #redis_con = Redis()
-    #print(dir(redis_con))
-    #qee = Queue(connection=redis_con) 
     job_id = uuid.uuid4().hex 
     hc_args = {
              'crack': crack,
@@ -246,19 +238,6 @@ if __name__ == '__main__':
     try:
         while True:
             time.sleep(10)
-            #print('started:')
-            #print(rq.registry.StartedJobRegistry('default',
-            #      connection=redis_con).get_job_ids())
-            print('monitor')
-            print(crack_q.q_monitor(q))
-            #print(crack_q.check_failed())
     except KeyboardInterrupt:
         print('User exit')
         exit(0)
-
-    #restore_write(restore_file, '0')
-    #restore = restore_read(restore_file)
-    #logger.debug('Hashcat restore point: {:s}'.format(restore))
-
-
-    #crack_q.add(job)
