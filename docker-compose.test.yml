@@ -28,8 +28,8 @@ services:
         tty: true        
         command:
                 sh -c "./benchmark.sh &&
-                pip3 install . --user && cd ./crackq &&
-                /usr/local/bin/circusd /opt/crackq/build/circus.ini"
+                && python3 -c 'from crackq import hash_modes; hash_modes.HModes.update_modes()'
+                && /usr/local/bin/circusd /opt/crackq/build/circus.ini"
 
 #nginx:
 #    build:

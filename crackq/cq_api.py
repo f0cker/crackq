@@ -6,6 +6,7 @@ import os
 import re
 import rq
 import saml2
+import threading
 import time
 import uuid
 
@@ -160,24 +161,25 @@ def get_jobdetails(job_details):
     deets_dict = {}
     if 'Benchmark' in job_details:
         deet_match_list = [
-                'name',
-                'benchmark',
-                'benchmark_all'
-                ]
+            'name',
+            'benchmark',
+            'benchmark_all'
+            ]
     else:
         deet_match_list = [
-                'hash_mode',
-                'attack_mode',
-                'mask',
-                'wordlist',
-                'rules',
-                'name',
-                'username',
-                'increment',
-                'increment_min',
-                'increment_max',
-                'disable_brain',
-                'restore']
+            'hash_mode',
+            'attack_mode',
+            'mask',
+            'wordlist',
+            'rules',
+            'name',
+            'username',
+            'increment',
+            'increment_min',
+            'increment_max',
+            'disable_brain',
+            'brain_check',
+            'restore']
     ###***make this less ugly
     ###***review stripping here for improvement
     #review rules processing
@@ -434,6 +436,16 @@ def email_check(email):
         return True
     else:
         return False
+
+
+def del_job(job):
+    """
+    Function to delete a job. Used to spawn a thread
+    and wait for jobs to cleanup hashcat proc
+    """
+    time.sleep(22)
+    logger.debug('Thread: deleting job')
+    job.delete()
 
 
 @login_manager.user_loader
@@ -1036,9 +1048,20 @@ class Queuing(Resource):
             started = rq.registry.StartedJobRegistry('default',
                                                      connection=self.redis_con)
             cur_list = started.get_job_ids()
+            speed_q = Queue('speed_check', connection=self.redis_con)
+            speed_session = '{}_speed'.format(job_id)
+            speed_job = speed_q.fetch_job(speed_session)
+            if speed_job:
+                logger.debug('Deleting Speed Job')
+                speed_job.meta['CrackQ State'] = 'Delete'
+                speed_job.save_meta()
+                if speed_job.get_status() != 'started':
+                    speed_job.delete()
             if job_id in cur_list:
                 job.meta['CrackQ State'] = 'Delete'
                 job.save_meta()
+                del_thread = threading.Thread(target=del_job, args=(job,))
+                del_thread.start()
                 return {'msg': 'Deleted Job'}, 204
             job.delete()
             started.cleanup()
@@ -1064,12 +1087,12 @@ class Options(Resource):
     @login_required
     def get(self):
         """
-        Method to get config information 
+        Method to get config information
 
 
         Returns
         ------
-        hc_dict: dictionary 
+        hc_dict: dictionary
             crackq config options for rules/wordlists
 
 
@@ -1079,20 +1102,19 @@ class Options(Resource):
         hc_maskfiles = [maskfile for maskfile in CRACK_CONF['masks']]
         hc_modes = dict(hash_modes.HModes.modes_dict())
         hc_att_modes = {
-                        '0': 'Straight',
-                        '1': 'Combination',
-                        '3': 'Brute-Force',
-                        '6': 'Hybrid Wordlist + Mask',
-                        '7': 'Hybrid Mask + Wordlist',
-                        #'9': '',
-                    }
+            '0': 'Straight',
+            '1': 'Combination',
+            '3': 'Brute-Force',
+            '6': 'Hybrid Wordlist + Mask',
+            '7': 'Hybrid Mask + Wordlist',
+            }
         hc_dict = {
-                    'Rules': hc_rules,
-                    'Wordlists': hc_words,
-                    'Mask Files': hc_maskfiles,
-                    'Hash Modes': hc_modes,
-                    'Attack Modes': hc_att_modes,
-                }
+            'Rules': hc_rules,
+            'Wordlists': hc_words,
+            'Mask Files': hc_maskfiles,
+            'Hash Modes': hc_modes,
+            'Attack Modes': hc_att_modes,
+            }
         return hc_dict, 200
 
 
@@ -1312,9 +1334,7 @@ class Adder(Resource):
                     if job_id in q_dict['Queued Jobs'].keys():
                         logger.error('Job is already queued')
                         return {'msg': 'Job is already queued'}, 500
-                    ###***SET THIS TO CHECK MATCHES IN A DICT RATHER THAN DIRECT
-                    ###***REVIEW ALL CONCATINATION
-                    ###***taking input here, review
+                    ###***Appy pahtlib validation here
                     outfile = '{}{}.cracked'.format(self.log_dir, job_id)
                     hash_file = '{}{}.hashes'.format(self.log_dir, job_id)
                     pot_path = '{}crackq.pot'.format(self.log_dir)
@@ -1355,12 +1375,10 @@ class Adder(Resource):
                         'increment': job_deets['increment'] if 'increment' in job_deets else None,
                         'increment_min': job_deets['increment_min'] if 'increment_min' in job_deets else None,
                         'increment_max': job_deets['increment_max'] if 'increment_max' in job_deets else None,
-                        ###**8check this works correctly
                         'brain': False if 'disable_brain' in job_deets else True,
                         'name': job_deets['name'] if 'name' in job_deets else None,
                         'pot_path': pot_path,
                         }
-                    #self.q.enqueue_job(job)
                     job = self.q.fetch_job(job_id)
                     job.meta['CrackQ State'] = 'Run/Restored'
                     job.save_meta()
@@ -1394,7 +1412,6 @@ class Adder(Resource):
                 check_m = self.mode_check(args['hash_mode'])
             except KeyError:
                 check_m = False
-
             logger.debug('Hash mode check: {}'.format(check_m))
             ###***change to if check_m
             if check_m is not False:
@@ -1460,20 +1477,6 @@ class Adder(Resource):
             except KeyError as err:
                 logger.debug('Name value not provided')
                 name = None
-            """
-            try:
-                marsh_schema = parse_json_schema().load({'name': job_id})
-                if len(marsh_schema.errors) > 0:
-                    logger.debug('Validation error: {}'.format(marsh_schema.errors))
-                    return marsh_schema.errors, 500
-                else:
-                    ###***check this
-                    #name = marsh_schema.data['name']
-                    name = args['name']
-            except KeyError as err:
-                logger.debug('Name value not provided')
-                name = None
-            """
             hc_args = {
                 'crack': self.crack,
                 'hash_file': hash_file,

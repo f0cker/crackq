@@ -25,18 +25,22 @@ Feature List
 ------------
 
 * REST API
+* Remote Python client or JS GUI
 * Cracked passwords analysis and reporting
 * Uses Hashcat API directly via libhashcat, no shell commands
+* Easy installation using docker containers
 * SQL, LDAP or SAML2 Authentication
 * Multi-user support with privilege separation for jobs
 * Job queues with pause/restore/move
-* Detailed job stats/charts for active jobs
-* Always supports the latest Hashcat version
+* Always supports the latest Hashcat version and algorithms
 * Email notifications when a hash cracks or job finishes
-* Automated Brain integration, Brain activates when it becomes efficient
-* Remote Python client
+* Intelligent queuing, new jobs added to the queue undergo a speed/show check immediately and will instantly show previously cracked hashes from the pot file without waiting
+* Automated Brain integration, Brain activates when it becomes efficient (uses above speed check)
+* Detailed job stats/charts for active jobs
+* Preconfigured rate-limiting
 * Markov stats pre-configured
 * Sample mask files included
+* Hashcat benchmark visualisations
 
 
 Requirements
