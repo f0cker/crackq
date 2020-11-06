@@ -1,19 +1,18 @@
 """Init file for CrackQ. Initialized Flask App"""
 from flask import Flask
 from flask_cors import CORS
-from flask_restful import Api
-from crackq import cq_api, crackqueue, hash_modes, run_hashcat, auth
+from crackq import cq_api, crackqueue, run_hashcat, auth
 from crackq.conf import hc_conf
 from crackq.db import db
 from crackq.models import User
 from flask_login import (
-                         LoginManager,
-                         login_required,
-                         login_user,
-                         logout_user,
-                         UserMixin,
-                         current_user
-                         )
+    LoginManager,
+    login_required,
+    login_user,
+    logout_user,
+    UserMixin,
+    current_user
+    )
 from flask_migrate import Migrate
 from flask_session import Session
 from flask_seasurf import SeaSurf
@@ -46,9 +45,16 @@ def create_app():
     admin_view = cq_api.Admin.as_view('admin')
     profile_view = cq_api.Profile.as_view('profile')
     bench_view = cq_api.Benchmark.as_view('benchmark')
+    login_view = cq_api.Login.as_view('login')
+    logout_view = cq_api.Logout.as_view('logout')
+    sso_view = cq_api.Sso.as_view('sso')
+    options_view = cq_api.Options.as_view('options')
+    queuing_view = cq_api.Queuing.as_view('queuing')
+    add_view = cq_api.Adder.as_view('adder')
+    report_view = cq_api.Reports.as_view('reports')
     app.add_url_rule('/api/admin/', defaults={'user_id': None},
                      view_func=admin_view, methods=['POST', 'GET'])
-    app.add_url_rule('/api/admin/<int:user_id>',
+    app.add_url_rule('/api/admin/<uuid:user_id>',
                      view_func=admin_view, methods=['GET', 'DELETE', 'PUT', 'PATCH'])
     app.add_url_rule('/api/admin/',
                      view_func=admin_view, methods=['POST'])
@@ -56,14 +62,20 @@ def create_app():
                      view_func=profile_view, methods=['GET', 'POST'])
     app.add_url_rule('/api/benchmark/',
                      view_func=bench_view, methods=['GET', 'POST'])
-    api = Api(app)
-    api.add_resource(cq_api.Login, '/api/login')
-    api.add_resource(cq_api.Sso, '/api/sso')
-    api.add_resource(cq_api.Logout, '/api/logout')
-    api.add_resource(cq_api.Options, '/api/options')
-    api.add_resource(cq_api.Queuing, '/api/queuing/<job_id>')
-    api.add_resource(cq_api.Adder, '/api/add')
-    api.add_resource(cq_api.Reports, '/api/reports')
+    app.add_url_rule('/api/login',
+                     view_func=login_view, methods=['GET', 'POST'])
+    app.add_url_rule('/api/sso',
+                     view_func=sso_view, methods=['GET', 'POST'])
+    app.add_url_rule('/api/logout',
+                     view_func=logout_view, methods=['GET'])
+    app.add_url_rule('/api/options',
+                     view_func=options_view, methods=['GET'])
+    app.add_url_rule('/api/queuing/<string:job_id>',
+                     view_func=queuing_view, methods=['GET', 'DELETE', 'PUT', 'PATCH'])
+    app.add_url_rule('/api/add',
+                     view_func=add_view, methods=['POST'])
+    app.add_url_rule('/api/reports',
+                     view_func=report_view, methods=['GET', 'POST'])
     login_manager.init_app(app)
     session = Session(app)
     session.init_app(app)

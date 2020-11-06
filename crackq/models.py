@@ -1,4 +1,8 @@
+"""SQL database models for user management"""
+
 import json
+import uuid
+
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, Column, ForeignKey
@@ -10,13 +14,15 @@ from sqlalchemy.types import (
     String,
     Unicode,
     )
+from sqlalchemy_utils import UUIDType
 from crackq.db import db
 
 
 class User(db.Model):
     """Flask-login User model for session management"""
     __tablename__ = 'user'
-    id = Column(Integer(), primary_key=True, index=True)
+    id = Column(UUIDType(binary=True), default=uuid.uuid4().hex, primary_key=True,
+                index=True)
     __table_args__ = {'extend_existing': True}
     active = Column(Boolean())
     username = Column(String(255), unique=True)

@@ -63,3 +63,6 @@ It is recommended to have a hefty server build with ample RAM/CPU power. However
 
 See the [Wiki](https://github.com/f0cker/crackq/wiki) or INSTALL.md for installation guides.
 
+Join the Discord channel:
+https://discord.gg/fSxjtt8VZs
+

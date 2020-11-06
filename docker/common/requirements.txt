@@ -1,6 +1,5 @@
 configparser==3.5.0
 Flask==1.1.2
-Flask-RESTful==0.3.6
 redis==3.0.1
 rq==1.4
 marshmallow==2.19.2
@@ -10,6 +9,7 @@ flake8==3.7.9
 python-ldap==3.2.0
 Flask-Sessionstore==0.4.5
 Flask-SQLAlchemy==2.4.0
+SQLAlchemy-Utils==0.36.8
 flask-talisman==0.7.0
 pysaml2==5.0.0
 flask-Login==0.4.1

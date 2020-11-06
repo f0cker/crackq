@@ -17,6 +17,7 @@ from crackq import crackqueue, hash_modes, run_hashcat, auth
 from crackq.conf import hc_conf
 from datetime import datetime
 from flask import (
+    abort,
     Flask,
     redirect,
     request,
@@ -34,7 +35,6 @@ from flask_login import (
     UserMixin,
     current_user)
 from flask_session import Session
-from flask_restful import reqparse, abort, Resource
 from functools import wraps
 from logging.config import fileConfig
 from marshmallow import Schema, fields, validate, ValidationError
@@ -105,7 +105,7 @@ class parse_json_schema(Schema):
         "name": "Invalid input characters",
         "username": "Invalid input characters",
         }
-    job_id = fields.UUID(allow_none=False)# validate=Length(min=1, max=32))
+    job_id = fields.UUID(allow_none=False)
     batch_job = fields.List(fields.Dict(fields.UUID(), fields.Int(min=0, max=1000)))
     place = fields.Int(validate=Range(min=1, max=100))
     hash_list = fields.List(fields.String(validate=StringContains(
@@ -455,7 +455,7 @@ def load_user(user_id):
     return User.query.filter_by(username=user_id).first()
 
 
-class Sso(Resource):
+class Sso(MethodView):
     """
     SAML2 Single Sign On Class
 
@@ -556,7 +556,7 @@ class Sso(Resource):
             return {"msg": "Bad username or password"}, 401
 
 
-class Login(Resource):
+class Login(MethodView):
     """
     Authentication handler
 
@@ -633,7 +633,7 @@ class Login(Resource):
             return 'Method not supported', 405
 
 
-class Logout(Resource):
+class Logout(MethodView):
     """
     Session Logout
 
@@ -652,7 +652,7 @@ class Logout(Resource):
         return 'Logged Out', 200
 
 
-class Queuing(Resource):
+class Queuing(MethodView):
     """
     Class to interact with the crackqueue module
 
@@ -709,7 +709,7 @@ class Queuing(Resource):
 
     def get_comp_dict(self, comp_list, session=False):
         """
-        Function to get comlete queue information
+        Function to get complete queue information
 
         Arguments
         ---------
@@ -735,7 +735,7 @@ class Queuing(Resource):
             if job:
                 comp_dict[job_id] = {}
                 job_deets = get_jobdetails(job.description)
-                if job.meta and 'HC State' in job.meta.keys():
+                try:
                     if isinstance(job.meta['HC State'], dict):
                         cracked = str(job.meta['HC State']['Cracked Hashes'])
                         total = str(job.meta['HC State']['Total Hashes'])
@@ -747,17 +747,23 @@ class Queuing(Resource):
                             comp_dict[job_id]['Name'] = 'No name'
                         except AttributeError:
                             comp_dict[job_id]['Name'] = 'No name'
-                    else:
-                        comp_dict[job_id]['Name'] = job_deets['name']
-                        comp_dict[job_id]['Cracked'] = 'All'
-                        ###**update to redis job time?
-                        comp_dict[job_id]['Running Time'] = '0'
-                else:
-                    comp_dict[job_id]['Name'] = job_deets['name']
-                    comp_dict[job_id]['Cracked'] = None
-                    comp_dict[job_id]['Running Time'] = None
+                except KeyError:
+                    logger.debug('No HC state, checking state file')
+                    job_file = Path(self.log_dir).joinpath('{}.json'.format(job_id))
+                    try:
+                        with open(job_file, 'r') as jobfile_fh:
+                            job_deets = json.loads(jobfile_fh.read().strip())
+                            comp_dict[job_id]['Name'] = job_deets['name']
+                            cracked = job_deets['Cracked Hashes']
+                            total = job_deets['Total Hashes']
+                            comp_dict[job_id]['Cracked'] = '{}/{}'.format(cracked, total)
+                            comp_dict[job_id]['Running Time'] = '0'
+                    except FileNotFoundError as err:
+                        logger.error('Failed to open job file: {}'.format(err))
+                except Exception as err:
+                    logger.error('Failed to open job file: {}'.format(err))
             else:
-                logger.error('job.meta is missing for job: {}'.format(job_id))
+                logger.error('Job is missing: {}'.format(job_id))
         return comp_dict
 
     @login_required
@@ -819,7 +825,7 @@ class Queuing(Resource):
                     job_name = 'No name'
                 # just a single job for now
                 last_comp = [{'job_name': job_name,
-                             'job_id': latest}]
+                              'job_id': latest}]
         else:
             last_comp = [{'job_name': 'None'}]
         q_dict['Last Complete'] = last_comp
@@ -838,7 +844,7 @@ class Queuing(Resource):
                         job.save()
                 if job:
                     if 'HC State' in job.meta:
-                        ###***small issue here when job is added initially?
+                        ###***remove this?
                         if isinstance(job.meta['HC State'], dict):
                             job_details = get_jobdetails(job.description)
                             try:
@@ -1071,7 +1077,7 @@ class Queuing(Resource):
             return {'msg': 'Invalid Job ID'}, 404
 
 
-class Options(Resource):
+class Options(MethodView):
     """
     Class for pulling option information, such as a list of available
     rules and wordlists
@@ -1118,7 +1124,7 @@ class Options(Resource):
         return hc_dict, 200
 
 
-class Adder(Resource):
+class Adder(MethodView):
     """
     Separate class for adding jobs
 
@@ -1189,7 +1195,9 @@ class Adder(Resource):
             except IOError as err:
                 logger.warning('Restore file Error: {}'.format(err))
                 return False
-            except json.decoder.JSONDecodeError as err:
+            #except json.decoder.JSONDecodeError as err:
+            ###***make explicit
+            except Exception as err:
                 logger.warning('Restore file Error: {}'.format(err))
                 return False
         else:
@@ -1274,6 +1282,7 @@ class Adder(Resource):
             speed_args['wordlist'] = q_args['kwargs']['wordlist']
             speed_args['hash_mode'] = q_args['kwargs']['hash_mode']
             speed_args['username'] = q_args['kwargs']['username']
+            speed_args['name'] = q_args['kwargs']['name']
             speed_args['brain'] = q_args['kwargs']['brain']
             ###***change these to see if there's a difference when the modes are
             ###***different
@@ -1364,7 +1373,6 @@ class Adder(Resource):
                         'session': job_id,
                         'wordlist': wordlist,
                         'mask': mask,
-                        #'mask': job_deets['mask'] if 'mask' in job_deets else None,
                         'mask_file': True if mask_file else False,
                         'attack_mode': int(job_deets['attack_mode']),
                         'hash_mode': int(job_deets['hash_mode']),
@@ -1506,11 +1514,12 @@ class Adder(Resource):
             q = self.crack_q.q_connect()
             try:
                 if hc_args['restore'] > 0:
-                    logger.debug('Restored job, disabling speed check')
-                    ###***add a check here for previously failed speed_check
-                else:
-                    self.speed_check(q_args)
-                    time.sleep(3)
+                    job = self.q.fetch_job(job_id)
+                    if job.meta['brain_check'] is None:
+                        self.speed_check(q_args)
+                        time.sleep(3)
+                    else:
+                        logger.debug('Restored job, disabling speed check')
             except KeyError as err:
                 logger.debug('Job not a restore, queuing speed_check')
                 self.speed_check(q_args)
@@ -1520,7 +1529,10 @@ class Adder(Resource):
             logger.debug('Job Details: {}'.format(q_args))
             job = self.q.fetch_job(job_id)
             job.meta['email_count'] = 0
-            job.meta['notify'] = args['notify']
+            if 'notify' in args:
+                job.meta['notify'] = args['notify']
+            else:
+                job.meta['notify'] = False
             if current_user.email:
                 if email_check(current_user.email):
                     job.meta['email'] = str(current_user.email)
@@ -1554,7 +1566,7 @@ def reporter(cracked_path, report_path):
     return True
 
 
-class Reports(Resource):
+class Reports(MethodView):
     """
     Class for creating and serving HTML password analysis reports
 
@@ -1781,14 +1793,14 @@ class Admin(MethodView):
 
         Arguments
         ---------
-        user_id: int/None
+        user_id: uuid/None
             User's ID to view details (if None show all)
         """
         if user_id:
             result = {}
             try:
                 user = User.query.filter_by(id=user_id).first()
-                result['user_id'] = user.id
+                result['user_id'] = str(user.id)
                 result['user'] = user.username
                 result['admin'] = user.is_admin
                 result['email'] = user.email
@@ -1799,7 +1811,7 @@ class Admin(MethodView):
             users = User.query.all()
             for user in users:
                 entry = {}
-                entry['user_id'] = user.id
+                entry['user_id'] = str(user.id)
                 entry['user'] = user.username
                 entry['admin'] = user.is_admin
                 entry['email'] = user.email
