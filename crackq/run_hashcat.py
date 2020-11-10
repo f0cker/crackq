@@ -37,7 +37,7 @@ def del_check(job):
     Check if job is marked for delete/stop
     """
     try:
-        logger.debug('Checking for Stop/Delete notification')
+        #logger.debug('Checking for Stop/Delete notification')
         if any(s in job.meta['CrackQ State'] for s in ['Stop',
                                                        'Delete']):
             return True
@@ -214,30 +214,26 @@ class Crack(object):
                 speed_job = speed_q.fetch_job(speed_session)
             wait_count = 0
             if speed_job:
-                #job.meta['brain_check'] = True
-                #job.meta['brain_check'] = False
-                while len(speed_job.meta) < 1 and wait_count < 310:
+                while len(speed_job.meta) < 1 and wait_count < 410:
                     logger.debug('RUNNER loop')
                     logger.debug('Speed meta not populated, waiting...')
                     if job:
                         if del_check(job):
                             return hc
-                    if speed_job:
-                        if 'failed' in speed_job.get_status():
-                            logger.error('Speed check failed: {}'.format(speed_job.exc_info))
-                            if job:
-                                job.meta['brain_check'] = False
-                                job.save_meta()
-                            raise ValueError('Aborted, speed check failed: {}'.format(speed_job.exc_info))
-                        elif 'finished' in speed_job.get_status():
-                            logger.debug('Breaking runner loop speed check job has finished')
-                            if job:
-                                if del_check(job):
-                                    return hc
-                        elif 'CrackQ State' in speed_job.meta:
-                            if del_check(speed_job):
+                    if 'failed' in speed_job.get_status():
+                        logger.error('Speed check failed: {}'.format(speed_job.exc_info))
+                        if job:
+                            job.meta['brain_check'] = False
+                            job.save_meta()
+                        raise ValueError('Aborted, speed check failed: {}'.format(speed_job.exc_info))
+                    elif 'finished' in speed_job.get_status():
+                        logger.debug('Breaking runner loop speed check job has finished')
+                        if job:
+                            if del_check(job):
                                 return hc
-                        break
+                    elif 'CrackQ State' in speed_job.meta:
+                        if del_check(speed_job):
+                            return hc
                     time.sleep(5)
                     wait_count += 5
                     speed_job = speed_q.fetch_job(speed_session)
@@ -275,9 +271,6 @@ class Crack(object):
                             hc.brain_client_features = 3
                             ###***replace with random string
                             hc.brain_password = '425dafbb8e87fe18'
-                            #job.meta['brain_check'] = True
-                        #else:
-                        #    job.meta['brain_check'] = False
                     if not del_check(job):
                         job.meta['CrackQ State'] == 'Run/Restored'
                         job.save_meta()
@@ -360,7 +353,7 @@ class Crack(object):
                 job.meta['Warning'] = "Notification settings error"
                 job.save()
         else:
-            logger.error('Job error')
+            logger.debug('No job yet')
         if isinstance(status_dict, dict):
             self.write_result(status_dict, sender)
         else:
@@ -446,7 +439,7 @@ class Crack(object):
                 job.meta['Warning'] = "Notification settings error"
                 job.save()
         else:
-            logger.error('Job error')
+            logger.debug('No job yet')
         if isinstance(status_dict, dict):
             self.write_result(status_dict, sender)
         else:
@@ -526,6 +519,8 @@ class Crack(object):
         logger.debug('Callback Triggered: Any')
         hc_state = sender.status_get_status_string()
         logger.debug('Hashcat status: {}'.format(hc_state))
+        #if hc_state == 'Bypass':
+        #    sender.hashcat_session_quit()
         #if hc_state == "Aborted":
         #    event_log = sender.hashcat_status_get_log()
         #    raise ValueError('Aborted: {}'.format(event_log))
@@ -591,24 +586,23 @@ class Crack(object):
             try:
                 with open(result_file, 'r+') as result_fh:
                     job = redis_q.fetch_job(session)
-                    if 'Waiting' not in hc_state:
-                        if job and isinstance(hcat_status, dict):
-                            job.meta['HC State'] = hcat_status
-                            job.meta['Speed Array'] = self.circulator(job.meta['Speed Array'],
-                                                                      int(hcat_status['Speed Raw']), 180)
-                            job.save_meta()
-                            job_details = cq_api.get_jobdetails(job.description)
-                            job_details['restore'] = hcat_status['Restore Point']
-                            if 'brain_check' in job.meta:
-                                job_details['brain_check'] = job.meta['brain_check']
-                        else:
-                            result = result_fh.read()
-                            job_details = json.loads(result.strip())
-                        job_details['Cracked Hashes'] = sender.status_get_digests_done()
-                        job_details['Total Hashes'] = sender.status_get_digests_cnt()
-                        result_fh.seek(0)
-                        result_fh.write(json.dumps(job_details))
-                        result_fh.truncate()
+                    if job and isinstance(hcat_status, dict):
+                        job.meta['HC State'] = hcat_status
+                        job.meta['Speed Array'] = self.circulator(job.meta['Speed Array'],
+                                                                  int(hcat_status['Speed Raw']), 180)
+                        job.save_meta()
+                        job_details = cq_api.get_jobdetails(job.description)
+                        job_details['restore'] = hcat_status['Restore Point']
+                        if 'brain_check' in job.meta:
+                            job_details['brain_check'] = job.meta['brain_check']
+                    else:
+                        result = result_fh.read()
+                        job_details = json.loads(result.strip())
+                    job_details['Cracked Hashes'] = sender.status_get_digests_done()
+                    job_details['Total Hashes'] = sender.status_get_digests_cnt()
+                    result_fh.seek(0)
+                    result_fh.write(json.dumps(job_details))
+                    result_fh.truncate()
             except AttributeError as err:
                 logger.debug('Status update failure: {}'.format(err))
             except KeyError as err:
@@ -738,78 +732,69 @@ class Crack(object):
                         self.init_callback(hcat)
                         logger.debug('Hashcat initialized')
                     job = redis_q.fetch_job(str(hcat.session))
+                    speed_started = rq.registry.StartedJobRegistry('speed_check',
+                                                                   connection=redis_con)
+                    cur_speed = speed_started.get_job_ids()
                     if job:
-                        try:
-                            if job.meta['CrackQ State'] == 'Stop':
-                                logger.info('Stopping Job: {}'.format(hcat.session))
-                                hcat.hashcat_session_quit()
-                                return
-                            elif job.meta['CrackQ State'] == 'Delete':
-                                logger.info('Deleting Job: {}'.format(hcat.session))
-                                started = rq.registry.StartedJobRegistry('default',
-                                                                         connection=redis_con)
-                                speed_session = '{}_speed'.format(hcat.session)
-                                speed_q = Queue('speed_check', connection=redis_con)
-                                speed_job = speed_q.fetch_job(speed_session)
-                                if speed_job:
-                                    logger.debug('Deleting speed job')
+                        if job.meta['CrackQ State'] == 'Stop':
+                            logger.info('Stopping Job: {}'.format(hcat.session))
+                            hcat.hashcat_session_quit()
+                            return
+                        elif job.meta['CrackQ State'] == 'Delete':
+                            logger.info('Deleting Job: {}'.format(hcat.session))
+                            speed_session = '{}_speed'.format(hcat.session)
+                            speed_q = Queue('speed_check', connection=redis_con)
+                            speed_job = speed_q.fetch_job(speed_session)
+                            if speed_job:
+                                logger.debug('Deleting speed job')
+                                speed_status = speed_job.get_status()
+                                finished_states = ['finished',
+                                                   'failed']
+                                del_count = 0
+                                while (speed_status not in finished_states
+                                       and del_count < 100):
+                                    logger.debug('DELETE wait loop')
                                     speed_status = speed_job.get_status()
-                                    finished_states = ['finished',
-                                                       'failed']
-                                    del_count = 0
-                                    while (speed_status not in finished_states
-                                           and del_count < 100):
-                                        logger.debug('DELETE wait loop')
-                                        speed_status = speed_job.get_status()
-                                        del_count += 1
-                                    logger.debug('Breaking runner loop speed check job has finished')
-                                    speed_job.delete()
-                                hcat.hashcat_session_quit()
-                                hcat.reset()
-                                #job.delete()
-                                #started.cleanup()
-                                return
-                            elif job.meta['CrackQ State'] == 'Pause':
-                                hcat.hashcat_session_pause()
-                                pause_counter = 0
-                                logger.debug('Pausing job: {}'.format(hcat.session))
-                                while pause_counter < 400:
-                                    logger.debug('PAUSE loop')
+                                    del_count += 1
+                                logger.debug('Breaking runner loop speed check job has finished')
+                                speed_job.delete()
+                            hcat.hashcat_session_quit()
+                            hcat.reset()
+                            return
+                        elif job.meta['CrackQ State'] == 'Pause':
+                            hcat.hashcat_session_pause()
+                            pause_counter = 0
+                            logger.debug('Pausing job: {}'.format(hcat.session))
+                            logger.debug('PAUSE loop begin')
+                            while pause_counter < 400:
+                                if hcat.status_get_status_string() == 'Paused':
+                                    logger.info('Job Paused: {}'.format(hcat.session))
+                                    break
+                                elif del_check(job):
+                                    break
+                                pause_counter += 1
+                            logger.debug('PAUSE loop finished')
+                            if hcat.status_get_status_string() != 'Paused':
+                                logger.debug('Pause failed: {}'.format(hc_state))
+                            ###***below not needed?
+                            if len(cur_speed) < 1:
+                                if not del_check(job):
+                                    logger.debug('Stale paused job caught, resuming')
+                                    job.meta['CrackQ State'] == 'Run/Restored'
+                                    job.save_meta()
+                                    hcat.hashcat_session_resume()
+                        elif hc_state == 'Bypass':
+                            logger.debug('Error: Bypass not cleared')
+                        else:
+                            logger.debug('Haschat state: {}'.format(hc_state))
+                            if len(cur_speed) < 1:
+                                if not del_check(job):
                                     if hcat.status_get_status_string() == 'Paused':
-                                        logger.info('Job Paused: {}'.format(hcat.session))
-                                        break
-                                    elif del_check(job):
-                                        break
-                                    pause_counter += 1
-                                logger.debug('PAUSE loop finished')
-                                if hcat.status_get_status_string() != 'Paused':
-                                    logger.error('Pause failed: {}'.format(hc_state))
-                                # catch potential stale paused jobs
-                                speed_started = rq.registry.StartedJobRegistry('speed_check',
-                                                                               connection=redis_con)
-                                cur_speed = speed_started.get_job_ids()
-                                if len(cur_speed) < 1:
-                                    if not del_check(job):
                                         logger.debug('Stale paused job caught, resuming')
-                                        job.meta['CrackQ State'] == 'Run/Restored'
                                         job.save_meta()
                                         hcat.hashcat_session_resume()
-                            elif hc_state == 'Bypass':
-                                logger.debug('Error: Bypass not cleared')
-                            else:
-                                logger.debug('Haschat state: {}'.format(hc_state))
-                                #if not del_check(job):
-                                #    logger.debug('Stale paused job caught, resuming 1')
-                                #    job.meta['CrackQ State'] == 'Run/Restored'
-                                #    job.save_meta()
-                                #    #hcat.hashcat_session_resume()
-                        except Exception as err:
-                            ###***make try/excep more specific
-                            job.meta = {'CrackQ State': 'Loading'}
-                            job.save_meta()
-                            logger.warning('No CrackQ State set: {}'.format(err))
                     else:
-                        logger.debug('Error finding redis job')
+                        logger.error('Error finding redis job')
                 sleep(10)
                 main_counter += 10
         except KeyboardInterrupt:
@@ -879,9 +864,17 @@ class Crack(object):
         job_dict['hash_mode'] = hash_mode
         job_dict['attack_mode'] = attack_mode
         job_dict['mask'] = mask
-        job_dict['wordlist'] = wordlist
-        job_dict['rules'] = rules
-        job_dict['brain_check'] = None
+        job_dict['wordlist'] = [wl for wl, path in CRACK_CONF['wordlists'].items() if path == wordlist][0]
+        job_dict['rules'] = [rl for rl, path in CRACK_CONF['rules'].items() if path == rules]
+        if brain:
+            job_dict['brain_check'] = None
+        else:
+            logger.debug('Writing brain_check')
+            job_dict['brain_check'] = False
+            job = redis_q.fetch_job(speed_session[:-6])
+            if job:
+                job.meta['brain_check'] = False
+                speed_job.save_meta()
         job_dict['name'] = name
         job_dict['restore'] = 0
         job_dict['Cracked Hashes'] = 0
@@ -921,6 +914,7 @@ class Crack(object):
         hcat.hashcat_session_quit()
         hcat.reset()
         if brain:
+            logger.debug('Brain not disabled by user')
             hcat = self.runner(hash_file=hash_file, mask=mask,
                                wordlist=wordlist, speed=True,
                                attack_mode=attack_mode,
@@ -934,8 +928,8 @@ class Crack(object):
             salts = hcat.status_get_salts_cnt()
             logger.debug('Salts Count: {}'.format(salts))
             speed_counter = 0
+            logger.debug('SPEED loop')
             while counter < 180:
-                logger.debug('SPEED loop')
                 if hcat is None or isinstance(hcat, str):
                     return hcat
                 if 'CrackQ State' in speed_job.meta:
@@ -980,7 +974,7 @@ class Crack(object):
                 logger.debug('No hc_state')
                 time.sleep(1)
                 speed_counter += 1
-            logger.debug('SPEED counter expired')
+            logger.debug('SPEED loop finished')
             event_log = hcat.hashcat_status_get_log()
             hcat.status_reset()
             hcat.hashcat_session_quit()
@@ -991,19 +985,21 @@ class Crack(object):
             else:
                 cur_job = None
             if cur_job:
-                if cur_job.meta['CrackQ State'] == 'Pause': 
+                if cur_job.meta['CrackQ State'] == 'Pause':
                     cur_job.meta['CrackQ State'] = 'Run/Restored'
                     cur_job.save_meta()
                     logger.debug('Resuming active job')
             raise ValueError('Speed check error: {}'.format(event_log))
         else:
             logger.debug('Brain user-disabled')
+            job = redis_q.fetch_job(session)
+            if job:
+                cur_job.meta['brain_check'] = False
             if len(cur_list) > 0:
                 cur_job = redis_q.fetch_job(cur_list[0])
-            else:
-                cur_job = None
+            #else:
+            #    cur_job = None
             if cur_job:
-                cur_job.meta['brain_check'] = False
                 cur_job.meta['CrackQ State'] = 'Run/Restored'
                 cur_job.save_meta()
                 logger.debug('Resuming active job')

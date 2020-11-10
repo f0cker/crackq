@@ -782,7 +782,6 @@ class Queuing(MethodView):
         time_now = datetime.strptime(time_now, '%Y-%m-%d %H:%M')
         current_user.last_seen = time_now
         db.session.commit()
-        ###***clean this up, maybe remove crackqueue.py entirely?
         ###***re-add this for validation?
         #args = marsh_schema.data
         started = rq.registry.StartedJobRegistry('default',
@@ -831,13 +830,12 @@ class Queuing(MethodView):
         q_dict['Last Complete'] = last_comp
         logger.debug('Completed jobs: {}'.format(comp_list))
         logger.debug('q_dict: {}'.format(q_dict))
-        ###***check for race conditions here!!
-        ###***apply validation here
+        if not job_id.isalnum():
+            return {'msg': 'Invalid Job ID'}, 500
         if job_id == 'all':
             ###***definitely make these a function
             if len(cur_list) > 0:
                 job = self.q.fetch_job(cur_list[0])
-                #if len(json.loads(current_user.job_ids)) > 0:
                 if current_user.job_ids and job:
                     if cur_list[0] in json.loads(current_user.job_ids):
                         job.meta['email_count'] = 0
@@ -859,7 +857,6 @@ class Queuing(MethodView):
                     job_details = get_jobdetails(job.description)
                     q_dict['Queued Jobs'][qjob_id]['Job Details'] = job_details
             return q_dict, 200
-        ###***apply validation here
         elif job_id == 'failed':
             return failed_dict, 200
         elif job_id == 'failedless':
@@ -868,7 +865,6 @@ class Queuing(MethodView):
                 if check_jobid(job_id):
                     failess_dict[job_id] = failed_dict[job_id]
             return failess_dict, 200
-        ###***apply validation here
         elif job_id == 'complete':
             comp_dict = {}
             comp_dict = self.get_comp_dict(comp_list, session=False)
@@ -1471,7 +1467,6 @@ class Adder(MethodView):
                 logger.debug('Increment max value not provided')
                 increment_max = None
             try:
-                logger.debug(args)
                 if args['disable_brain']:
                     logger.debug('Brain disabled')
                     brain = False
@@ -1515,7 +1510,9 @@ class Adder(MethodView):
             try:
                 if hc_args['restore'] > 0:
                     job = self.q.fetch_job(job_id)
-                    if job.meta['brain_check'] is None:
+                    if job.meta['brain_check']:
+                        logger.debug('Brain check previously complete')
+                    elif job.meta['brain_check'] is None:
                         self.speed_check(q_args)
                         time.sleep(3)
                     else:
