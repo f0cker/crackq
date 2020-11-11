@@ -864,8 +864,10 @@ class Crack(object):
         job_dict['hash_mode'] = hash_mode
         job_dict['attack_mode'] = attack_mode
         job_dict['mask'] = mask
-        job_dict['wordlist'] = [wl for wl, path in CRACK_CONF['wordlists'].items() if path == wordlist][0]
-        job_dict['rules'] = [rl for rl, path in CRACK_CONF['rules'].items() if path == rules]
+        if wordlist:
+            job_dict['wordlist'] = [wl for wl, path in CRACK_CONF['wordlists'].items() if path == wordlist][0]
+        if rules:
+            job_dict['rules'] = [rl for rl, path in CRACK_CONF['rules'].items() if path == rules]
         if brain:
             job_dict['brain_check'] = None
         else:
