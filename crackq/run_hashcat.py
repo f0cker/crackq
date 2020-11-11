@@ -37,7 +37,7 @@ def del_check(job):
     Check if job is marked for delete/stop
     """
     try:
-        #logger.debug('Checking for Stop/Delete notification')
+        # logger.debug('Checking for Stop/Delete notification')
         if any(s in job.meta['CrackQ State'] for s in ['Stop',
                                                        'Delete']):
             return True
@@ -223,7 +223,7 @@ class Crack(object):
                     if 'failed' in speed_job.get_status():
                         logger.error('Speed check failed: {}'.format(speed_job.exc_info))
                         if job:
-                            job.meta['brain_check'] = False
+                            job.meta['brain_check'] = None
                             job.save_meta()
                         raise ValueError('Aborted, speed check failed: {}'.format(speed_job.exc_info))
                     elif 'finished' in speed_job.get_status():
@@ -723,7 +723,7 @@ class Crack(object):
                     logger.debug('Hashcat Abort status returned')
                     event_log = hcat.hashcat_status_get_log()
                     raise ValueError('Aborted: {}'.format(event_log))
-                elif main_counter > 1200 and hc_state != 'Running' and mask_file == False:
+                elif main_counter > 2000 and hc_state != 'Running' and mask_file == False:
                     logger.debug('Reseting job, seems to be hung')
                     raise ValueError('Error: Hashcat hung - Initialize timeout')
                 else:

@@ -125,9 +125,9 @@ class Queuer(object):
                             }
                         job_dict['State']['HC State'] = state_dict
                 except IOError as err:
-                    logger.error('Failed to open job file: {}'.format(err))
+                    logger.debug('Failed to open job file: {}'.format(err))
                 except Exception as err:
-                    logger.error('Failed to open job file: {}'.format(err))
+                    logger.debug('Failed to open job file: {}'.format(err))
             return job_dict
         return None
 
@@ -178,7 +178,15 @@ class Queuer(object):
                         err_split = j.exc_info.split('\n')
                         logger.debug('Failed job {}: {}'.format(job, j.exc_info))
                         if 'Traceback' in err_split[0]:
-                            failed_dict[job]['Error'] = j.exc_info.split(':')[-1].strip()
+                            for err in err_split:
+                                if 'Error' in err and 'raise' not in err:
+                                    failed_dict[job]['Error'] = ':'.join(err.split(':')[1:])
+                                    break
+                            else:
+                                if 'Error' in j.exc_info.split(':')[0].strip():
+                                    failed_dict[job]['Error'] = j.exc_info.split(':')[0].strip()
+                                else:
+                                    failed_dict[job]['Error'] = j.exc_info.split(':')[-1].strip()
                         else:
                             failed_dict[job]['Error'] = err_split[0]
                         try:

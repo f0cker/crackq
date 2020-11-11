@@ -759,9 +759,9 @@ class Queuing(MethodView):
                             comp_dict[job_id]['Cracked'] = '{}/{}'.format(cracked, total)
                             comp_dict[job_id]['Running Time'] = '0'
                     except FileNotFoundError as err:
-                        logger.error('Failed to open job file: {}'.format(err))
+                        logger.debug('Failed to open job file: {}'.format(err))
                 except Exception as err:
-                    logger.error('Failed to open job file: {}'.format(err))
+                    logger.debug('Failed to open job file: {}'.format(err))
             else:
                 logger.error('Job is missing: {}'.format(job_id))
         return comp_dict
