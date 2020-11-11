@@ -121,10 +121,12 @@ class Ldap():
             try:
                 query = 'cn={}'.format(username)
                 result = conn.search_s(bind_base, 2,
-                    query, ['mail'])
+                                       query, ['mail'])
                 email = str(result[0][1]['mail'][0], 'utf-8')
                 logger.debug('Found email address in LDAP attributes')
             except ldap.NO_SUCH_OBJECT as err:
+                logger.debug('Failed to get email address from LDAP: {}'.format(err))
+            except KeyError as err:
                 logger.debug('Failed to get email address from LDAP: {}'.format(err))
             conn.unbind_s()
             ###***fix this shit to make it more secures

@@ -6,6 +6,7 @@ services:
     redis:
         image: "redis:latest"
         container_name: "redis"
+        hostname: "redis"
         networks:
             - crackq_net
         ports:
@@ -22,6 +23,7 @@ services:
         networks:
             - crackq_net
         container_name: "crackq"
+        hostname: "crackq"
         volumes:
             - /var/crackq/:/var/crackq
             - ./crackq:/opt/crackq/build/crackq/
@@ -34,9 +36,9 @@ services:
                 MAIL_USERNAME: ${MAIL_USERNAME}
                 MAIL_PASSWORD: ${MAIL_PASSWORD}
         command:
-            sh -c "./benchmark.sh &&
-            pip3 install -e . --user && cd ./crackq &&
-            /usr/local/bin/circusd /opt/crackq/build/circus.ini"
+                sh -c "pip3 install . --user ./ && cd ./crackq
+                && python3 -c 'from crackq import hash_modes; hash_modes.HModes.update_modes()'
+                && /usr/local/bin/circusd /opt/crackq/build/circus.ini"
             
     nginx:
         build:
@@ -47,57 +49,16 @@ services:
         depends_on:
                 - crackq 
         container_name: "nginx"
+        hostname: "nginx"
         ports:
              - "443:443"
         volumes:
              - /var/crackq/files/nginx/conf.d:/etc/nginx/conf.d
-             #- /var/crackq/files/nginx/:/etc/nginx/
-        stdin_open: true
-        tty: true
+             - /var/crackq/logs/nginx/:/var/log/nginx/
+        cap_add:
+                - NET_ADMIN      
         networks:
             - crackq_net
-
-#    openldap:
-#        image: osixia/openldap:1.2.4 
-#        environment:
-#               LDAP_LOG_LEVEL: "256"
-#        LDAP_ORGANISATION: "Example Inc."
-#                LDAP_DOMAIN: "example.org"
-#                LDAP_BASE_DN: ""
-#                LDAP_ADMIN_PASSWORD: "chu437hnjdG8LmsEchsdfu7u4283915fdJ"
-#                LDAP_CONFIG_PASSWORD: "config"
-#                LDAP_READONLY_USER: "false"
-#                LDAP_RFC2307BIS_SCHEMA: "false"
-#                LDAP_BACKEND: "mdb"
-#                LDAP_TLS: "true"
-#                LDAP_TLS_CRT_FILENAME: "ldap.crt"
-#                LDAP_TLS_KEY_FILENAME: "ldap.key"
-#                LDAP_TLS_DH_PARAM_FILENAME: "dhparam.pem"
-#                LDAP_TLS_CA_CRT_FILENAME: "ca.crt"
-#                LDAP_TLS_ENFORCE: "false"
-#                LDAP_TLS_CIPHER_SUITE: "SECURE256:-VERS-SSL3.0"
-#                LDAP_TLS_PROTOCOL_MIN: "3.1"
-#                LDAP_TLS_VERIFY_CLIENT: "try"
-#                LDAP_REPLICATION: "false"
-#                KEEP_EXISTING_CONFIG: "True"
-#                LDAP_REMOVE_CONFIG_AFTER_SETUP: "true"
-#                LDAP_SSL_HELPER_PREFIX: "ldap"
-#        tty: true
-#        stdin_open: true
-#        volumes:
-#                - /var/lib/ldap
-#                - /etc/ldap/slapd.d
-#                - /container/service/slapd/assets/certs/
-#                - ./docker/openldap/bootstrap:/container/service/slapd/assets/config/bootstrap/ldif/custom
-#        command: --copy-service --loglevel debug
-#        container_name: "ldap.crackq.org"
-#        hostname: "ldap.crackq.org"
-#        domainname: "ldap.crackq.org"
-#        ports:
-#             - "127.0.0.1:389:389"
-#             - "127.0.0.1:636:636"
-#        networks:
-#            - crackq_net
 
 
 networks:

@@ -1,7 +1,8 @@
+#!/bin/bash
 # Installation script to get Docker setup. Provide single
 # argument: driver type and os (Ubuntu or Centos supported)
 # in the following format docker/nvidia/ubuntu
-#!/bin/bash
+
 
 if [ $# -lt 1 ]
 	then
@@ -25,6 +26,7 @@ if [ ! -d /var/crackq/files/masks ]
                 mkdir /var/crackq/files/
                 mkdir /var/crackq/logs/
                 mkdir /var/crackq/logs/reports/
+                mkdir /var/crackq/logs/nginx/
                 mkdir /var/crackq/files/masks/
                 mkdir /var/crackq/files/nginx/
                 mkdir /var/crackq/files/nginx/conf.d/
@@ -48,9 +50,12 @@ if [ $TESTS ]
 		rm /var/crackq/files/crackq.conf
 		cp crackq.conf /var/crackq/files/
 fi
-if [[ ! $( groups crackq) == *"crackq"* ]]
+if grep -q crackq /etc/group
 then 
-        groupadd -g 1111 -r crackq && useradd -u 1111 -r -g crackq crackq
+	echo 'crackq group already exists'
+else
+        groupadd -g 1111 -r crackq
+	useradd -u 1111 -r -g crackq crackq
 fi
 chown -R 1111:1111 /var/crackq/
 cp $1/* ./build

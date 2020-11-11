@@ -1,7 +1,8 @@
+"""Queue handling class helper for CrackQ->RQ"""
+import json
 import logging
+from pathlib import Path
 import rq
-#import crackq.run_hashcat
-import sys
 import time
 import uuid
 
@@ -23,14 +24,12 @@ class Queuer(object):
     """
     Queue handler class used to build and manage a queue of hashcat jobs
     """
-    ###***move all of this class to api.py?
     def __init__(self):
         rconf = CRACK_CONF['redis']
         self.redis_con = Redis(rconf['host'], rconf['port'])
-        # password=rconf['password'])
-        #self.redis_con = Redis()
+        self.log_dir = CRACK_CONF['files']['log_dir']
 
-    def q_add(self, q_obj, arg_dict):
+    def q_add(self, q_obj, arg_dict, timeout=1209600):
         """
         This method adds a new crack job to the queue
 
@@ -51,11 +50,11 @@ class Queuer(object):
         logger.info('Adding task to job queue: '
                     '{:s}'.format(arg_dict['job_id']))
         q_obj.enqueue_call(func=arg_dict['func'], job_id=arg_dict['job_id'],
-                           kwargs=arg_dict['kwargs'], timeout=1209600,
+                           kwargs=arg_dict['kwargs'], timeout=timeout,
                            result_ttl=-1)
         return
 
-    def q_monitor(self, q_obj, *kwargs):
+    def q_monitor(self, q_obj):
         """
         Method to monitor jobs in queue
 
@@ -74,23 +73,20 @@ class Queuer(object):
         qstate_dict: dictionary
                 dictionary containing job details and hashcat status
         """
-        jobstate_dict = {job.id: self.q_jobstate(q_obj, job) for job in
+        jobstate_dict = {job.id: self.q_jobstate(job) for job in
                          q_obj.jobs}
-        #print('jobstate')
-        #print(jobstate_dict)
+
         cur_jobs = StartedJobRegistry('default',
                                       connection=self.redis_con).get_job_ids()
-        #print(cur_jobs)
-        cur_job_dict = {job: self.q_jobstate(q_obj,
-                                             q_obj.fetch_job(job)) for job in cur_jobs}
+        cur_job_dict = {job: self.q_jobstate(q_obj.fetch_job(job)) for job in cur_jobs}
         qstate_dict = {
-                       'Queue Size': q_obj.count,
-                       'Queued Jobs': jobstate_dict,
-                       'Current Job': cur_job_dict,
-                      }
+            'Queue Size': q_obj.count,
+            'Queued Jobs': jobstate_dict,
+            'Current Job': cur_job_dict,
+            }
         return qstate_dict
 
-    def q_jobstate(self, q_obj, job, hcat_obj=None):
+    def q_jobstate(self, job):
         """
         Method to pull info for specified job
 
@@ -106,17 +102,34 @@ class Queuer(object):
         job_dict: dictionary
             dictionary containing job stats and meta data
         """
-        #status_dict = 'None'
-        job_dict = {
-                    'Status': job.get_status(),
-                    'Time started': str(job.started_at),
-                    'Time finished': str(job.ended_at),
-                    #'State': status_dict,
-                    'Result': job.result,
-                    #'Description': job.description,
-                    'State': job.meta,
-                   }
-        return job_dict
+        logger.debug('Getting job state')
+        if job:
+            job_dict = {
+                'Status': job.get_status(),
+                'Time started': str(job.started_at),
+                'Time finished': str(job.ended_at),
+                'Result': job.result,
+                'State': job.meta,
+                }
+            if 'HC State' not in job.meta:
+                try:
+                    logger.debug('No HC state, checking state file')
+                    job_id = str(job.id)
+                    job_file = Path(self.log_dir).joinpath('{}.json'.format(job_id))
+                    with open(job_file, 'r') as jobfile_fh:
+                        job_deets = json.loads(jobfile_fh.read().strip())
+                        state_dict = {
+                            'Cracked Hashes': job_deets['Cracked Hashes'],
+                            'Total Hashes': job_deets['Total Hashes'],
+                            'Progress': 0
+                            }
+                        job_dict['State']['HC State'] = state_dict
+                except IOError as err:
+                    logger.debug('Failed to open job file: {}'.format(err))
+                except Exception as err:
+                    logger.debug('Failed to open job file: {}'.format(err))
+            return job_dict
+        return None
 
     def q_connect(self, queue='default'):
         """
@@ -134,8 +147,6 @@ class Queuer(object):
         object
             redis connection object
         """
-        #redis_con = Redis()
-        # use default queue for now
         rqueue = Queue(queue, connection=self.redis_con)
         return rqueue
 
@@ -167,7 +178,15 @@ class Queuer(object):
                         err_split = j.exc_info.split('\n')
                         logger.debug('Failed job {}: {}'.format(job, j.exc_info))
                         if 'Traceback' in err_split[0]:
-                            failed_dict[job]['Error'] = j.exc_info.split(':')[-1].strip()
+                            for err in err_split:
+                                if 'Error' in err and 'raise' not in err:
+                                    failed_dict[job]['Error'] = ':'.join(err.split(':')[1:])
+                                    break
+                            else:
+                                if 'Error' in j.exc_info.split(':')[0].strip():
+                                    failed_dict[job]['Error'] = j.exc_info.split(':')[0].strip()
+                                else:
+                                    failed_dict[job]['Error'] = j.exc_info.split(':')[-1].strip()
                         else:
                             failed_dict[job]['Error'] = err_split[0]
                         try:
@@ -198,67 +217,3 @@ class Queuer(object):
                                                     connection=self.redis_con).get_job_ids()
         return comp_list
 
-
-if __name__ == '__main__':
-    crack_q = Queuer()
-    crack = run_hashcat.Crack()
-    job_id = uuid.uuid4().hex 
-    #hash_file = job_id + '.hashes'
-    hash_file = 'deadbeef.hashes'
-    outfile = job_id + '.cracked'
-    hc_args = {
-             'crack': crack,
-             'hash_file': hash_file,
-             'session': job_id,
-             'wordlist': '/home/dan/tw_leaks.txt',
-             'attack_mode': '0',
-             'outfile': outfile,
-             }
-    q_args = {
-            'func': crack.hc_worker,
-            'job_id': job_id,
-            'kwargs': hc_args,
-            }
-    wordlist = hc_args['wordlist']
-    q = crack_q.q_connect()
-    #print(q_args)
-    #print(q)
-    crack_q.q_add(q, q_args)
-    #print(dir(q))
-    #redis_con = Redis()
-    #print(dir(redis_con))
-    #qee = Queue(connection=redis_con) 
-    job_id = uuid.uuid4().hex 
-    hc_args = {
-             'crack': crack,
-             'hash_file': hash_file,
-             'session': job_id,
-             'outfile': outfile,
-             'attack_mode': '3',
-             'mask': '?a?a?a?a?a?a?a',
-             }
-    q_args = {
-            'func': crack.hc_worker,
-            'job_id': job_id,
-            'kwargs': hc_args,
-            }
-    crack_q.q_add(q, q_args)
-    try:
-        while True:
-            time.sleep(10)
-            #print('started:')
-            #print(rq.registry.StartedJobRegistry('default',
-            #      connection=redis_con).get_job_ids())
-            print('monitor')
-            print(crack_q.q_monitor(q))
-            #print(crack_q.check_failed())
-    except KeyboardInterrupt:
-        print('User exit')
-        exit(0)
-
-    #restore_write(restore_file, '0')
-    #restore = restore_read(restore_file)
-    #logger.debug('Hashcat restore point: {:s}'.format(restore))
-
-
-    #crack_q.add(job)

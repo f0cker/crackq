@@ -16,5 +16,6 @@ job = redis_q.fetch_job(sys.argv[2])
 
 print('Description: {}'.format(job.description))
 print('Result: {}'.format(job.result))
+print('Status: {}'.format(job.get_status()))
 print('Execution info: {}'.format(job.exc_info))
 print('Meta {}'.format(job.meta))

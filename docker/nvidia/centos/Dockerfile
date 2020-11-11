@@ -1,7 +1,7 @@
 FROM nvidia/opencl:runtime-centos7
 
-RUN yum update -y && yum install -y epel-release && yum install -y gcc make clinfo opencl-headers &&\
-yum install -y python36 python36-libs python36-devel python36-pip git circus wget openldap-devel && yum update -y &&\
+RUN yum update -y && yum install -y epel-release && yum install -y gcc-c++ make clinfo opencl-headers &&\
+yum install -y python36 python36-libs python36-devel python36-pip git circus wget openldap-devel minizip-devel &&\
 yum install -y xmlsec1 xmlsec1-openssl
  
 ENV DOCKYARD=/opt/crackq/build
@@ -18,10 +18,7 @@ EXPOSE 8080
 ENV LANG "en_US.UTF-8"
 ENV LC_ALL "en_US.UTF-8"
 
-RUN groupadd -g 1111 -r crackq && useradd -u 1111 -d /home/crackq/ -r -g crackq crackq
-RUN mkdir /home/crackq/ && chown 1111:1111 /home/crackq/
 RUN chown -R 1111:1111 $DOCKYARD/
-#RUN chown -R 1111:1111 /opt/crackq/build/crackq/
 USER crackq
 WORKDIR $DOCKYARD/
 CMD ["/usr/local/bin/circusd", "/opt/crackq/build/circus.ini"]
