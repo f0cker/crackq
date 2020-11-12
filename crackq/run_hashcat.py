@@ -260,7 +260,7 @@ class Crack(object):
                     if job:
                         job.meta['brain_check'] = None
                         if not del_check(job):
-                            job.meta['CrackQ State'] == 'Run/Restored'
+                            job.meta['CrackQ State'] = 'Run/Restored'
                             job.save_meta()
             else:
                 logger.error('No speed job to check')
@@ -272,7 +272,7 @@ class Crack(object):
                             ###***replace with random string
                             hc.brain_password = '425dafbb8e87fe18'
                     if not del_check(job):
-                        job.meta['CrackQ State'] == 'Run/Restored'
+                        job.meta['CrackQ State'] = 'Run/Restored'
                         job.save_meta()
         ###*** update this to config file path and try/except
         hc.markov_hcstat2 = "/var/crackq/files/crackq.hcstat"
