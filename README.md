@@ -61,8 +61,13 @@ This tool has the following requirements:
 
 It is recommended to have a hefty server build with ample RAM/CPU power. However, the application has been tested on a VM with 8 cores and 4GB RAM so there should not be any issues with resources given that the server will need a good amount of resources for cracking anyway.
 
-See the [Wiki](https://github.com/f0cker/crackq/wiki) or INSTALL.md for installation guides.
+See the [Wiki](https://github.com/f0cker/crackq/wiki) for installation and guides.
 
-Join the Discord channel:
-https://discord.gg/fSxjtt8VZs
+
+## Official Discord Channel
+
+Come hang out on Discord!
+
+[![Porchetta Industries](https://discordapp.com/api/guilds/736724457258745996/widget.png?style=banner3)]
+(https://discord.gg/fSxjtt8VZs)
 

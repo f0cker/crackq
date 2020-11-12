@@ -206,19 +206,21 @@ def get_jobdetails(job_details):
         deets_dict['rules'] = rule_names
     else:
         deets_dict['rules'] = None
-    if deets_dict['mask'] and deets_dict['mask'] != '':
-        mask = deets_dict['mask']
-        for key, mask_file in dict(CRACK_CONF['masks']).items():
-            if mask in mask_file:
-                deets_dict['mask'] = key
-    if deets_dict['wordlist'] != 'None' and deets_dict['wordlist'] != '':
-        wordlist = deets_dict['wordlist']
-        for key, word in dict(CRACK_CONF['wordlists']).items():
-            if wordlist in word:
-                deets_dict['wordlist'] = key
-                break
-            else:
-                deets_dict['wordlist'] = None
+    if 'mask' in deets_dict:
+        if deets_dict['mask']:
+            mask = deets_dict['mask']
+            for key, mask_file in dict(CRACK_CONF['masks']).items():
+                if mask in mask_file:
+                    deets_dict['mask'] = key
+    if 'wordlist' in deets_dict:
+        if deets_dict['wordlist']:
+            wordlist = deets_dict['wordlist']
+            for key, word in dict(CRACK_CONF['wordlists']).items():
+                if wordlist in word:
+                    deets_dict['wordlist'] = key
+                    break
+                else:
+                    deets_dict['wordlist'] = None
     return deets_dict
 
 
@@ -912,7 +914,7 @@ class Queuing(MethodView):
                 else:
                     return 'Not Found', 404
             else:
-                return 401
+                return 'Unauthorized', 401
 
     @login_required
     def put(self, job_id):
