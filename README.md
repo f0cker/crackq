@@ -68,6 +68,4 @@ See the [Wiki](https://github.com/f0cker/crackq/wiki) for installation and guide
 
 Come hang out on Discord!
 
-[![Porchetta Industries](https://discordapp.com/api/guilds/736724457258745996/widget.png?style=banner3)]
-(https://discord.gg/fSxjtt8VZs)
-
+[![Porchetta Industries](https://discordapp.com/api/guilds/736724457258745996/widget.png?style=banner3)](https://discord.gg/fSxjtt8VZs)
