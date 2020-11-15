@@ -60,7 +60,7 @@ def test_init_check():
 def test_bf():
     job_id = '63ece9904eb8478896baf3300a2c9513'
     hash_file = 'tests/deadbeef.hashes'
-    outfile = job_id + '.cracked'
+    outfile = '{}{}.cracked'.format(log_dir, job_id)
     hc_args = {
              'crack': crack,
              'hash_mode': 1000,
@@ -133,7 +133,7 @@ def test_del():
 def test_wl():
     job_id = '0b7b91482fc24274b7d04fc0d6e61a96'
     hash_file = 'tests/deadbeef.hashes'
-    outfile = job_id + '.cracked'
+    outfile = '{}{}.cracked'.format(log_dir, job_id)
     hc_args = {
         'crack': crack,
         'hash_mode': 1000,

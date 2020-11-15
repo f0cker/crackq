@@ -276,12 +276,6 @@ class Crack(object):
             else:
                 logger.error('No speed job to check')
                 if job:
-                    if 'brain_check' in job.meta:
-                        if job.meta['brain_check'] is True:
-                            hc.brain_client = True
-                            hc.brain_client_features = 3
-                            ###***replace with random string
-                            hc.brain_password = '425dafbb8e87fe18'
                     if not del_check(job):
                         job.meta['CrackQ State'] = 'Run/Restored'
                         job.save_meta()
