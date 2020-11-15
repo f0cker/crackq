@@ -40,6 +40,8 @@ cp ./cfg/crackq_nginx.conf /var/crackq/files/nginx/conf.d/
 cp ./cfg/crackq.hcstat /var/crackq/files/crackq.hcstat
 cp ./masks/* /var/crackq/files/masks/
 cp -r ./rules/ /var/crackq/files/
+wget https://github.com/praetorian-inc/Hob0Rules/raw/master/wordlists/rockyou.txt.gz
+mv rockyou.txt.gz /var/crackq/files/
 # check if running tests
 if [ $TESTS ]
 	then
@@ -62,11 +64,5 @@ cp $1/* ./build
 cp docker/common/* ./build
 cp setup.py ./build/
 cp ./crackq/log_config.ini ./build
-#cp -r ./crackq/ ./build
 cd ./build/
-#docker build -t "$DRIVER-$OS" . --no-cache
 docker build -t "$DRIVER-crackq" . 
-#echo 'To run the application now use:\n\
-#docker network create crackq_net\n\
-#docker run --network crackq_net -d --name redis redis\n\
-#docker run --runtime=nvidia --name crackq -p8080:8080 -v /var/crackq/:/var/crackq --network crackq_net -it "$DRIVER-$OS"'

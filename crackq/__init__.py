@@ -28,6 +28,7 @@ def create_app():
     #                             'supports_credentials': True},
     #                    })
     #app.config['DEBUG'] = True
+    app.config['JSON_SORT_KEYS'] = False
     app.config['SESSION_TYPE'] = aconf['SESSION_TYPE']
     app.config['SQLALCHEMY_DATABASE_URI'] = aconf['SQLALCHEMY_DATABASE_URI']
     app.config['SESSION_COOKIE_HTTPONLY'] = aconf['SESSION_COOKIE_HTTPONLY']
@@ -36,9 +37,9 @@ def create_app():
     app.config['SESSION_PERMANENT'] = True
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    csrf = SeaSurf()
+    #csrf = SeaSurf()
     app.config['CSRF_COOKIE_NAME'] = 'csrftoken'
-    csrf.init_app(app)
+    #csrf.init_app(app)
     db.init_app(app)
     with app.app_context():
         db.create_all()

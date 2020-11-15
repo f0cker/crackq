@@ -22,9 +22,7 @@ crack_q = crackqueue.Queuer()
 crack = crackq.run_hashcat.Crack()
 rconf = CRACK_CONF['redis']
 redis_con = Redis(rconf['host'], rconf['port'])
-                               # password=rconf['password'])
 q = crack_q.q_connect()
-#redis_con = Redis()
 log_dir = '/var/crackq/logs/'
 
 
@@ -77,6 +75,8 @@ def test_bf():
             'job_id': job_id,
             'kwargs': hc_args,
             }
+    crackq.cq_api.Adder.speed_check(q_args)
+    time.sleep(3)
     crack_q.q_add(q, q_args)
     time.sleep(20)
     started_list = rq.registry.StartedJobRegistry('default',
@@ -149,6 +149,8 @@ def test_wl():
         'job_id': job_id,
         'kwargs': hc_args,
         }
+    crackq.cq_api.Adder.speed_check(q_args)
+    time.sleep(3)
     crack_q.q_add(q, q_args)
     time.sleep(15)
     started_list = rq.registry.StartedJobRegistry('default',

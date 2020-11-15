@@ -19,6 +19,7 @@ from datetime import datetime
 from flask import (
     abort,
     Flask,
+    jsonify,
     redirect,
     request,
     session,
@@ -113,6 +114,8 @@ class parse_json_schema(Schema):
                             allow_none=True, error_messages=error_messages)
     wordlist = fields.Str(allow_none=True, validate=[StringContains(r'[\W]\-'),
                                                      Length(min=1, max=60)])
+    wordlist2 = fields.Str(allow_none=True, validate=[StringContains(r'[\W]\-'),
+                                                     Length(min=1, max=60)])
     attack_mode = fields.Int(allow_none=True, validate=Range(min=0, max=9))
     rules = fields.List(fields.String(validate=[StringContains(r'[\W]\-'),
                                                 Length(min=1, max=60)]),
@@ -171,6 +174,7 @@ def get_jobdetails(job_details):
             'attack_mode',
             'mask',
             'wordlist',
+            'wordlist2',
             'rules',
             'name',
             'username',
@@ -198,7 +202,7 @@ def get_jobdetails(job_details):
             deets_dict[deet] = deets.strip().split('=')[1].strip().rstrip("'").lstrip("'")
     if 'Benchmark' in job_details:
         return deets_dict
-    if rules_list and rules_list != '':
+    if rules_list:
         rule_names = []
         for key, rule in dict(CRACK_CONF['rules']).items():
             if rule in rules_list:
@@ -221,6 +225,15 @@ def get_jobdetails(job_details):
                     break
                 else:
                     deets_dict['wordlist'] = None
+    if 'wordlist2' in deets_dict:
+        if deets_dict['wordlist2']:
+            wordlist = deets_dict['wordlist2']
+            for key, word in dict(CRACK_CONF['wordlists']).items():
+                if wordlist in word:
+                    deets_dict['wordlist2'] = key
+                    break
+                else:
+                    deets_dict['wordlist2'] = None
     return deets_dict
 
 
@@ -453,7 +466,6 @@ def del_job(job):
 @login_manager.user_loader
 def load_user(user_id):
     """user_loader function requried as part of Flask login-manager"""
-    #return User.query.get(user_id)
     return User.query.filter_by(username=user_id).first()
 
 
@@ -473,7 +485,6 @@ class Sso(MethodView):
             self.saml_auth = auth.Saml2(self.meta_url,
                                         self.meta_file, self.entity_id)
             self.saml_client = self.saml_auth.s_client()
-            #self.reqid = None
 
     def get(self):
         """
@@ -484,7 +495,7 @@ class Sso(MethodView):
             self.reqid, info = self.saml_client.prepare_for_authenticate()
             redirect_url = None
             for key, value in info['headers']:
-                if key is 'Location':
+                if key == 'Location':
                     redirect_url = value
             response = redirect(redirect_url, code=302)
             return response
@@ -584,9 +595,9 @@ class Login(MethodView):
             username = args['user']
             password = args['password']
             if not username:
-                return {"msg": "Missing username parameter"}, 400
+                return jsonify({"msg": "Missing username parameter"}), 400
             if not password:
-                return {"msg": "Missing password parameter"}, 400
+                return jsonify({"msg": "Missing password parameter"}), 400
             ldap_uri = CRACK_CONF['auth']['ldap_server']
             ldap_base = CRACK_CONF['auth']['ldap_base']
             authn = auth.Ldap.authenticate(ldap_uri, username, password,
@@ -616,13 +627,13 @@ class Login(MethodView):
                     login_user(user)
                 else:
                     logging.error('No user object loaded')
-                    return {"msg": "Bad username or password"}, 401
+                    return jsonify({"msg": "Bad username or password"}), 401
                 return 'OK', 200
-            elif authn[0] is "Invalid Credentials":
-                return {"msg": "Bad username or password"}, 401
+            elif authn[0] == "Invalid Credentials":
+                return jsonify({"msg": "Bad username or password"}), 401
             else:
                 logger.info('Login error: {}'.format(authn))
-                return {"msg": "Bad username or password"}, 401
+                return jsonify({"msg": "Bad username or password"}), 401
         if CRACK_CONF['auth']['type'] == 'sql':
             user = User.query.filter_by(username=args['user']).first()
             if isinstance(user, User):
@@ -630,7 +641,7 @@ class Login(MethodView):
                     crackq.app.session_interface.regenerate(session)
                     login_user(user)
                     return 'OK', 200
-            return {"msg": "Bad username or password"}, 401
+            return jsonify({"msg": "Bad username or password"}), 401
         else:
             return 'Method not supported', 405
 
@@ -833,7 +844,7 @@ class Queuing(MethodView):
         logger.debug('Completed jobs: {}'.format(comp_list))
         logger.debug('q_dict: {}'.format(q_dict))
         if not job_id.isalnum():
-            return {'msg': 'Invalid Job ID'}, 500
+            return jsonify({'msg': 'Invalid Job ID'}), 500
         if job_id == 'all':
             ###***definitely make these a function
             if len(cur_list) > 0:
@@ -858,23 +869,23 @@ class Queuing(MethodView):
                     job = self.q.fetch_job(qjob_id)
                     job_details = get_jobdetails(job.description)
                     q_dict['Queued Jobs'][qjob_id]['Job Details'] = job_details
-            return q_dict, 200
+            return jsonify(q_dict), 200
         elif job_id == 'failed':
-            return failed_dict, 200
+            return jsonify(failed_dict), 200
         elif job_id == 'failedless':
             failess_dict = {}
             for job_id in failed_dict:
                 if check_jobid(job_id):
                     failess_dict[job_id] = failed_dict[job_id]
-            return failess_dict, 200
+            return jsonify(failess_dict), 200
         elif job_id == 'complete':
             comp_dict = {}
             comp_dict = self.get_comp_dict(comp_list, session=False)
-            return comp_dict, 200
+            return jsonify(comp_dict), 200
         elif job_id == 'completeless':
             comp_dict = {}
             comp_dict = self.get_comp_dict(comp_list, session=True)
-            return comp_dict, 200
+            return jsonify(comp_dict), 200
         else:
             marsh_schema = parse_json_schema().load({'job_id': job_id})
             if len(marsh_schema.errors) > 0:
@@ -910,11 +921,11 @@ class Queuing(MethodView):
                             job_dict['Cracked'] = [crack.strip() for crack in cracked_fh]
                     except IOError as err:
                         logger.debug('Cracked file does not exist: {}'.format(err))
-                    return job_dict, 200
+                    return jsonify(job_dict), 200
                 else:
-                    return 'Not Found', 404
+                    return abort(404)
             else:
-                return 'Unauthorized', 401
+                return abort(401)
 
     @login_required
     def put(self, job_id):
@@ -1278,6 +1289,7 @@ class Adder(MethodView):
             speed_args['speed_session'] = speed_session
             speed_args['session'] = q_args['kwargs']['session']
             speed_args['wordlist'] = q_args['kwargs']['wordlist']
+            speed_args['wordlist2'] = q_args['kwargs']['wordlist2']
             speed_args['hash_mode'] = q_args['kwargs']['hash_mode']
             speed_args['username'] = q_args['kwargs']['username']
             speed_args['name'] = q_args['kwargs']['name']
@@ -1296,7 +1308,7 @@ class Adder(MethodView):
         return False
 
     @login_required
-    def post(self, job_id=None):
+    def post(self):
         """
         Method to post a new job to the queue
 
@@ -1337,10 +1349,10 @@ class Adder(MethodView):
                     q_dict = self.crack_q.q_monitor(self.q)
                     if job_id in cur_list:
                         logger.error('Job is already running')
-                        return {'msg': 'Job is already running'}, 500
+                        return jsonify({'msg': 'Job is already running'}), 500
                     if job_id in q_dict['Queued Jobs'].keys():
                         logger.error('Job is already queued')
-                        return {'msg': 'Job is already queued'}, 500
+                        return jsonify({'msg': 'Job is already queued'}), 500
                     ###***Appy pahtlib validation here
                     outfile = '{}{}.cracked'.format(self.log_dir, job_id)
                     hash_file = '{}{}.hashes'.format(self.log_dir, job_id)
@@ -1349,19 +1361,24 @@ class Adder(MethodView):
                     job = self.q.fetch_job(job_id)
                     if not job_deets:
                         logger.debug('Job restor error. Never started')
-                        return {'msg': 'Error restoring job'}, 500
+                        return jsonify({'msg': 'Error restoring job'}), 500
                     elif not job_deets['restore']:
                         logger.debug('Job not previously started, restore = 0')
-                        job_deets['restore'] == 0
+                        job_deets['restore'] = 0
                     elif job_deets['restore'] == 0:
                         logger.debug('Job not previously started, restore = 0')
                     if job_deets['wordlist'] in CRACK_CONF['wordlists']:
                         wordlist = CRACK_CONF['wordlists'][job_deets['wordlist']]
                     else:
                         wordlist = None
+                    if job_deets['wordlist2']:
+                        if job_deets['wordlist2'] in CRACK_CONF['wordlists']:
+                            wordlist2 = CRACK_CONF['wordlists'][job_deets['wordlist2']]
+                    else:
+                        wordlist2 = None
                     rules = check_rules(job_deets['rules'])
                     if rules is False:
-                        return {'msg': 'Invalid rules selected'}, 500
+                        return jsonify({'msg': 'Invalid rules selected'}), 500
                     mask_file = check_mask(job_deets['mask'])
                     # this is just set to use the first mask file in the list for now
                     mask = mask_file if mask_file else job_deets['mask']
@@ -1370,6 +1387,7 @@ class Adder(MethodView):
                         'hash_file': hash_file,
                         'session': job_id,
                         'wordlist': wordlist,
+                        'wordlist2': wordlist2,
                         'mask': mask,
                         'mask_file': True if mask_file else False,
                         'attack_mode': int(job_deets['attack_mode']),
@@ -1389,9 +1407,9 @@ class Adder(MethodView):
                     job.meta['CrackQ State'] = 'Run/Restored'
                     job.save_meta()
                 else:
-                    return {'msg': 'Invalid Job ID'}, 500
+                    return jsonify({'msg': 'Invalid Job ID'}), 500
             else:
-                return {'msg': 'Invalid Job ID'}, 500
+                return ({'msg': 'Invalid Job ID'}), 500
         else:
             logger.debug('Creating new session')
             job_id = uuid.uuid4().hex
@@ -1412,7 +1430,7 @@ class Adder(MethodView):
                         hash_fh.write(hash_l.rstrip() + '\n')
             except KeyError as err:
                 logger.debug('No hash list provided: {}'.format(err))
-                return {'msg': 'No hashes provided'}, 500
+                return jsonify({'msg': 'No hashes provided'}), 500
             try:
                 args['hash_mode']
                 check_m = self.mode_check(args['hash_mode'])
@@ -1426,15 +1444,22 @@ class Adder(MethodView):
                 except TypeError as err:
                     logger.error('Incorrect type supplied for hash_mode:'
                                  '\n{}'.format(err))
-                    return {'msg': 'Invalid hash mode selected'}, 500
+                    return jsonify({'msg': 'Invalid hash mode selected'}), 500
             else:
-                return {'msg': 'Invalid hash mode selected'}, 500
-            ###***add checks??
+                return jsonify({'msg': 'Invalid hash mode selected'}), 500
             if attack_mode != 3:
                 if args['wordlist'] in CRACK_CONF['wordlists']:
                     wordlist = CRACK_CONF['wordlists'][args['wordlist']]
                 else:
-                    return {'msg': 'Invalid wordlist selected'}, 500
+                    return jsonify({'msg': 'Invalid wordlist selected'}), 500
+            if attack_mode == 1:
+                if 'wordlist2' in args:
+                    if args['wordlist2'] in CRACK_CONF['wordlists']:
+                        wordlist2 = CRACK_CONF['wordlists'][args['wordlist2']]
+                    else:
+                        return jsonify({'msg': 'Combinator mode requires 2 wordlists'}), 500
+            else:
+                wordlist2 = None
             try:
                 mask_file = check_mask(args['mask_file'])
             except KeyError:
@@ -1487,6 +1512,7 @@ class Adder(MethodView):
                 'hash_file': hash_file,
                 'session': job_id,
                 'wordlist': wordlist if attack_mode != 3 else None,
+                'wordlist2': wordlist2 if attack_mode == 1 else None,
                 'mask': mask if attack_mode > 2 else None,
                 'mask_file': True if mask_file else False,
                 'attack_mode': attack_mode,
@@ -1619,10 +1645,10 @@ class Reports(MethodView):
             if job_id.isalnum():
                 check_job = check_jobid(job_id)
                 if not check_job:
-                    return 401
+                    return abort(401)
                 if self.adder.session_check(self.log_dir, job_id):
                     logger.debug('Valid session found')
-                    report = '{}_report.html'.format(job_id)
+                    # report = '{}_report.html'.format(job_id)
                     report_path = Path('{}{}.json'.format(self.report_dir,
                                                           job_id))
                     try:
@@ -1720,7 +1746,7 @@ class Profile(MethodView):
             result['email'] = current_user.email
         except AttributeError:
             abort(404)
-        return json.dumps(result), 200
+        return jsonify(result), 200
 
     @login_required
     def post(self):
@@ -1778,7 +1804,7 @@ class Profile(MethodView):
                     #    return {'msg': 'Invalid Email'}, 500
             if ret:
                 db.session.commit()
-                return json.dumps(ret), 200
+                return jsonify(ret), 200
         return {'msg': 'Invalid Request'}, 500
 
 
@@ -1815,7 +1841,7 @@ class Admin(MethodView):
                 entry['admin'] = user.is_admin
                 entry['email'] = user.email
                 result.append(entry)
-        return json.dumps(result), 200
+        return jsonify(result), 200
 
     @admin_required
     @login_required
@@ -1949,7 +1975,7 @@ class Admin(MethodView):
             if ret:
                 db.session.commit()
                 ###***logout any sessions belonging user here
-                return json.dumps(ret), 200
+                return jsonify(ret), 200
             return {'msg': 'Nothing to update'}, 200
         return {'msg': 'Error'}, 500
 
@@ -1978,7 +2004,7 @@ class Benchmark(MethodView):
             abort(404)
         except Exception as err:
             logger.error('Benchmark read erorr: {}'.format(err))
-        return json.dumps(result), 200
+        return jsonify(result), 200
 
     @login_required
     def post(self, benchmark_all=False):
