@@ -180,7 +180,6 @@ class Queuer(object):
                         if 'Traceback' in err_split[0]:
                             for err in err_split:
                                 if 'Error' in err and 'raise' not in err:
-                                    print('TEST')
                                     failed_dict[job]['Error'] = ':'.join(err.split(':')[1:])
                                     break
                             else:
