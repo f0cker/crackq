@@ -159,6 +159,7 @@ def test_wl():
         'rules': ['tests/d3ad0ne.rule'],
         'attack_mode': 0,
         'outfile': outfile,
+        'mask': None,
         }
     q_args = {
         'func': crack.hc_worker,
