@@ -84,6 +84,10 @@ def test_bf():
     adder.speed_check(q_args)
     time.sleep(5)
     crack_q.q_add(q, q_args)
+    job = q.fetch_job(job_id)
+    job.meta['CrackQ State'] = 'Run/Restored'
+    job.meta['Speed Array'] = []
+    job.save_meta()
     time.sleep(20)
     started_list = rq.registry.StartedJobRegistry('default',
                                                   connection=redis_con).get_job_ids()
@@ -162,9 +166,13 @@ def test_wl():
         'kwargs': hc_args,
         }
     adder = crackq.cq_api.Adder()
-    adder().speed_check(q_args)
+    adder.speed_check(q_args)
     time.sleep(3)
     crack_q.q_add(q, q_args)
+    job = q.fetch_job(job_id)
+    job.meta['CrackQ State'] = 'Run/Restored'
+    job.meta['Speed Array'] = []
+    job.save_meta()
     time.sleep(15)
     started_list = rq.registry.StartedJobRegistry('default',
                                                   connection=redis_con).get_job_ids()
