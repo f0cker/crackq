@@ -82,13 +82,13 @@ def test_bf():
             }
     adder = crackq.cq_api.Adder()
     adder.speed_check(q_args)
-    time.sleep(5)
+    time.sleep(1)
     crack_q.q_add(q, q_args)
     job = q.fetch_job(job_id)
     job.meta['CrackQ State'] = 'Run/Restored'
     job.meta['Speed Array'] = []
     job.save_meta()
-    time.sleep(20)
+    time.sleep(30)
     started_list = rq.registry.StartedJobRegistry('default',
                                                   connection=redis_con).get_job_ids()
     assert job_id in started_list

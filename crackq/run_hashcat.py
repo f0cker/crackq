@@ -359,10 +359,7 @@ class Crack(object):
                 job.save()
         else:
             logger.debug('No job yet')
-        if isinstance(status_dict, dict):
-            self.write_result(sender)
-        else:
-            self.write_result(sender)
+        self.write_result(sender)
 
     def bench_callback(self, sender):
         """
@@ -445,10 +442,7 @@ class Crack(object):
                 job.save()
         else:
             logger.debug('No job yet')
-        if isinstance(status_dict, dict):
-            self.write_result(sender)
-        else:
-            self.write_result(sender)
+        self.write_result(sender)
         if sender.benchmark:
             sender.status_reset()
 
@@ -1000,7 +994,7 @@ class Crack(object):
             logger.debug('Brain user-disabled')
             job = redis_q.fetch_job(session)
             if job:
-                cur_job.meta['brain_check'] = False
+                job.meta['brain_check'] = False
             if len(cur_list) > 0:
                 cur_job = redis_q.fetch_job(cur_list[0])
             else:
