@@ -906,7 +906,7 @@ class Crack(object):
                 break
             elif hc_state == 'Aborted':
                 event_log = hcat.hashcat_status_get_log()
-                raise ValueError('Speed check error: {}'.format(event_log))
+                raise ValueError(event_log)
             time.sleep(1)
             counter += 1
         logger.debug('SHOW loop complete, quitting hashcat')

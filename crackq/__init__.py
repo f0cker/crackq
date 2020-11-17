@@ -37,9 +37,9 @@ def create_app():
     app.config['SESSION_PERMANENT'] = True
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    #csrf = SeaSurf()
+    csrf = SeaSurf()
     app.config['CSRF_COOKIE_NAME'] = 'csrftoken'
-    #csrf.init_app(app)
+    csrf.init_app(app)
     db.init_app(app)
     with app.app_context():
         db.create_all()

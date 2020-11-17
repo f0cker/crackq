@@ -1,0 +1,6 @@
+python:
+  index:
+    exclude:
+      - utils/
+      - crackq/tests/
+

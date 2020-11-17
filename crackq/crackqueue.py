@@ -150,6 +150,32 @@ class Queuer(object):
         rqueue = Queue(queue, connection=self.redis_con)
         return rqueue
 
+    def error_parser(self, job):
+        """
+        Method to parse traceback errors from crackq and hashcat/pyhashcat
+
+        Arguments
+        ---------
+        job: object
+            RQ job object
+
+        Returns
+        -------
+        err_msg: string
+            Readble error string without the guff, for users
+        """
+        if job is not None:
+            logger.debug('Parsing error message: {}'.format(job.exc_info))
+            err_split = job.exc_info.strip().split('\n')
+            if 'Traceback' in err_split[0]:
+                err_msg = err_split[-1].strip().split(':')[-1]
+            else:
+                err_msg = job.exc_info.strip()
+            logger.debug('Parsed error: {}'.format(err_msg))
+            return err_msg
+        else:
+            return None
+
     def check_failed(self):
         """
         This method checks the failed queue and print info to a log file
@@ -163,38 +189,23 @@ class Queuer(object):
         -------
         success : boolean
         """
-        ###***finish this
         try:
             failed_dict = {}
             failed_reg = rq.registry.FailedJobRegistry('default',
                                                        connection=self.redis_con)
             if failed_reg.count > 0:
                 q = failed_reg.get_queue()
-                for job in failed_reg.get_job_ids():
-                    failed_dict[job] = {}
-                    j = q.fetch_job(job)
-                    ###***make this better, use some other method for splitting
-                    if j is not None:
-                        err_split = j.exc_info.split('\n')
-                        logger.debug('Failed job {}: {}'.format(job, j.exc_info))
-                        if 'Traceback' in err_split[0]:
-                            for err in err_split:
-                                if 'Error' in err and 'raise' not in err:
-                                    failed_dict[job]['Error'] = ':'.join(err.split(':')[1:])
-                                    break
-                            else:
-                                if 'Error' in j.exc_info.split(':')[0].strip():
-                                    failed_dict[job]['Error'] = j.exc_info.split(':')[0].strip()
-                                else:
-                                    failed_dict[job]['Error'] = j.exc_info.split(':')[-1].strip()
-                        else:
-                            failed_dict[job]['Error'] = err_split[0]
-                        try:
-                            failed_dict[job]['Name'] = cq_api.get_jobdetails(j.description)['name']
-                        except KeyError:
-                            failed_dict[job]['Name'] = 'No name'
-                        except AttributeError:
-                            failed_dict[job]['Name'] = 'No name'
+                for job_id in failed_reg.get_job_ids():
+                    failed_dict[job_id] = {}
+                    job = q.fetch_job(job_id)
+                    failed_dict[job_id]['Error'] = self.error_parser(job)
+                    try:
+                        name = cq_api.get_jobdetails(job.description)['name']
+                        failed_dict[job_id]['Name'] = name
+                    except KeyError:
+                        failed_dict[job_id]['Name'] = 'No name'
+                    except AttributeError:
+                        failed_dict[job_id]['Name'] = 'No name'
             logger.debug('Failed dict: {}'.format(failed_dict))
             return failed_dict
         except AttributeError as err:

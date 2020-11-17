@@ -68,9 +68,7 @@ logger = logging.getLogger()
 login_manager = LoginManager()
 # Setup Flask App
 app = Flask(__name__)
-###***move this to __init__?
 csrf = SeaSurf()
-csrf.init_app(app)
 bcrypt = Bcrypt(app)
 CRACK_CONF = hc_conf()
 
