@@ -275,8 +275,7 @@ class Crack(object):
                             job.save_meta()
             else:
                 logger.error('No speed job to check')
-                if job:
-                    if not del_check(job):
+                if job and not del_check(job):
                         job.meta['CrackQ State'] = 'Run/Restored'
                         job.save_meta()
         ###*** update this to config file path and try/except

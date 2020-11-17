@@ -72,6 +72,9 @@ csrf = SeaSurf()
 bcrypt = Bcrypt(app)
 CRACK_CONF = hc_conf()
 
+# Define HTTP messages
+ERR_INVAL_JID = {'msg': 'Invalid Job ID'}
+
 
 class StringContains(validate.Regexp):
     """
@@ -224,14 +227,13 @@ def get_jobdetails(job_details):
                 else:
                     deets_dict['wordlist'] = None
     if 'wordlist2' in deets_dict:
-        if deets_dict['wordlist2']:
-            wordlist = deets_dict['wordlist2']
-            for key, word in dict(CRACK_CONF['wordlists']).items():
-                if wordlist in word:
-                    deets_dict['wordlist2'] = key
-                    break
-                else:
-                    deets_dict['wordlist2'] = None
+        wordlist = deets_dict['wordlist2']
+        for key, word in dict(CRACK_CONF['wordlists']).items():
+            if wordlist in word:
+                deets_dict['wordlist2'] = key
+                break
+            else:
+                deets_dict['wordlist2'] = None
     return deets_dict
 
 
@@ -842,7 +844,7 @@ class Queuing(MethodView):
         logger.debug('Completed jobs: {}'.format(comp_list))
         logger.debug('q_dict: {}'.format(q_dict))
         if not job_id.isalnum():
-            return jsonify({'msg': 'Invalid Job ID'}), 500
+            return ERR_INVAL_JID, 500
         if job_id == 'all':
             ###***definitely make these a function
             if len(cur_list) > 0:
@@ -1030,7 +1032,7 @@ class Queuing(MethodView):
                 return 'Stopped Job', 200
         except AttributeError as err:
             logger.debug('Failed to stop job: {}'.format(err))
-            return 'Invalid Job ID', 404
+            return ERR_INVAL_JID, 404
 
     @login_required
     def delete(self, job_id):
@@ -1081,7 +1083,7 @@ class Queuing(MethodView):
             return {'msg': 'Deleted Job'}, 200
         except AttributeError as err:
             logger.error('Failed to delete job: {}'.format(err))
-            return {'msg': 'Invalid Job ID'}, 404
+            return ERR_INVAL_JID, 404
 
 
 class Options(MethodView):
@@ -1405,9 +1407,9 @@ class Adder(MethodView):
                     job.meta['CrackQ State'] = 'Run/Restored'
                     job.save_meta()
                 else:
-                    return jsonify({'msg': 'Invalid Job ID'}), 500
+                    return ERR_INVAL_JID, 500
             else:
-                return ({'msg': 'Invalid Job ID'}), 500
+                return ERR_INVAL_JID, 500
         else:
             logger.debug('Creating new session')
             job_id = uuid.uuid4().hex
@@ -1646,7 +1648,6 @@ class Reports(MethodView):
                     return abort(401)
                 if self.adder.session_check(self.log_dir, job_id):
                     logger.debug('Valid session found')
-                    # report = '{}_report.html'.format(job_id)
                     report_path = Path('{}{}.json'.format(self.report_dir,
                                                           job_id))
                     try:
@@ -1657,7 +1658,7 @@ class Reports(MethodView):
                         return {'msg': 'No report generated for'
                                        'this job'}, 500
         else:
-            return {'msg': 'Invalid Job ID'}, 404
+            return ERR_INVAL_JID, 404
 
     @login_required
     def post(self):
@@ -1725,7 +1726,7 @@ class Reports(MethodView):
                         logger.debug('No cracked passwords found for this job')
                         return {'msg': 'No report available for Job ID'}, 404
         else:
-            return {'msg': 'Invalid Job ID'}, 404
+            return ERR_INVAL_JID, 404
 
 
 class Profile(MethodView):
