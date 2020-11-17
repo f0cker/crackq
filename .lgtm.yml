@@ -1,6 +1,7 @@
-python:
-  index:
-    exclude:
-      - utils/
-      - crackq/tests/
+extraction:
+  python:
+    index:
+      exclude:
+        - utils/
+        - crackq/tests/
 
