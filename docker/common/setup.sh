@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Setup crackq user
-#usermod -a -G crackq crackq
 groupadd -g 1111 -r crackq && useradd -u 1111 -r -g crackq crackq
 mkdir /home/crackq && chown crackq:crackq /home/crackq
 
@@ -30,8 +29,6 @@ python3 -m pip install gunicorn
 
 #Download and compile pyhashcat & Hashcat
 #git clone https://github.com/f0cker/pyhashcat.git
-#git clone https://github.com/f0cker/pyhashcat.git --branch hashcat6.0
-#git clone https://github.com/f0cker/pyhashcat.git --branch dev_temp
 git clone https://github.com/f0cker/pyhashcat.git --branch status_reset
 cd ./pyhashcat/pyhashcat
 

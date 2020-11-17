@@ -28,6 +28,7 @@ def create_app():
     #                             'supports_credentials': True},
     #                    })
     #app.config['DEBUG'] = True
+    app.config['JSON_SORT_KEYS'] = False
     app.config['SESSION_TYPE'] = aconf['SESSION_TYPE']
     app.config['SQLALCHEMY_DATABASE_URI'] = aconf['SQLALCHEMY_DATABASE_URI']
     app.config['SESSION_COOKIE_HTTPONLY'] = aconf['SESSION_COOKIE_HTTPONLY']
