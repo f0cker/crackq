@@ -223,15 +223,8 @@ class Crack(object):
                         if del_check(job):
                             return hc
                     if 'failed' in speed_job.get_status():
-                        err_split = speed_job.exc_info.split('\n')
-                        for err in err_split:
-                            if 'Error' in err:
-                                error = ':'.join(err.split(':')[1:])
-                                break
-                        if error:
-                            err_msg = error
-                        else:
-                            err_msg = speed_job.exc_info
+                        crack_q = crackqueue.Queuer()
+                        err_msg = crack_q.error_parser(speed_job)
                         logger.error('Speed check failed: {}'.format(err_msg))
                         if job:
                             job.meta['brain_check'] = None
