@@ -8,7 +8,6 @@ import time
 import rq
 import smtplib
 import ssl
-import uuid
 
 from crackq import crackqueue, hash_modes, cq_api
 from crackq.conf import hc_conf
@@ -157,7 +156,6 @@ class Crack(object):
         hc.session = session
         if benchmark:
             logger.debug('Running in benchmark mode')
-            hash_mode = None
             hc.benchmark = True
             if benchmark_all:
                 hc.benchmark_all = True
@@ -718,7 +716,6 @@ class Crack(object):
                     if 'Initializing' not in hc_state:
                         self.init_callback(hcat)
                         logger.debug('Hashcat initialized')
-                    job = redis_q.fetch_job(str(hcat.session))
                     speed_started = rq.registry.StartedJobRegistry('speed_check',
                                                                    connection=redis_con)
                     cur_speed = speed_started.get_job_ids()

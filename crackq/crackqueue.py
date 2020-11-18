@@ -3,10 +3,8 @@ import json
 import logging
 from pathlib import Path
 import rq
-import time
-import uuid
 
-from crackq import run_hashcat, cq_api
+from crackq import cq_api
 from crackq.conf import hc_conf
 from logging.config import fileConfig
 from redis import Redis

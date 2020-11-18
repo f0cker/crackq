@@ -22,8 +22,7 @@ from flask import (
     jsonify,
     redirect,
     request,
-    session,
-    url_for)
+    session)
 from flask.views import MethodView
 from flask_bcrypt import Bcrypt
 from flask_seasurf import SeaSurf
@@ -33,9 +32,7 @@ from flask_login import (
     login_required,
     login_user,
     logout_user,
-    UserMixin,
     current_user)
-from flask_session import Session
 from functools import wraps
 from logging.config import fileConfig
 from marshmallow import Schema, fields, validate, ValidationError
@@ -46,7 +43,6 @@ from pypal import pypal
 from redis import Redis
 from rq import use_connection, Queue
 from saml2 import BINDING_HTTP_POST
-from saml2 import BINDING_HTTP_REDIRECT
 from saml2 import sigver
 from sqlalchemy.orm import scoped_session, sessionmaker, exc
 from sqlalchemy.types import (
@@ -74,6 +70,8 @@ CRACK_CONF = hc_conf()
 
 # Define HTTP messages
 ERR_INVAL_JID = {'msg': 'Invalid Job ID'}
+ERR_METH_NOT = {'msg': 'Method not supported'}
+ERR_BAD_CREDS = {"msg": "Bad username or password"}
 
 
 class StringContains(validate.Regexp):
@@ -500,7 +498,7 @@ class Sso(MethodView):
             response = redirect(redirect_url, code=302)
             return response
         else:
-            return 'Method not supported', 405
+            return jsonify(ERR_METH_NOT), 405
 
     @csrf.exempt
     def post(self):
@@ -508,7 +506,7 @@ class Sso(MethodView):
         Handle returned SAML reponse
         """
         if not CRACK_CONF['auth']['type'] == 'saml2':
-            return 'Method not supported', 405
+            return jsonify(ERR_METH_NOT), 405
         ###***validate
         ###***readd/fix reqid verification
         saml_resp = request.form['SAMLResponse']
@@ -542,10 +540,10 @@ class Sso(MethodView):
                 else:
                     logger.info('No groups returned in SAML response')
                     return 'User is not authorised to use this service', 401
-            try:
-                username
-            except UnboundLocalError:
-                return {'msg': 'No user returned in SAML response'}, 500
+            #try:
+            #    username
+            #except UnboundLocalError:
+            #    return {'msg': 'No user returned in SAML response'}, 500
             logging.info('Authenticated: {}'.format(username))
             user = load_user(username)
             if user:
@@ -561,12 +559,12 @@ class Sso(MethodView):
                 login_user(user)
             else:
                 logging.error('No user object loaded')
-                return {"msg": "Bad username or password"}, 401
+                return jsonify(ERR_BAD_CREDS), 401 
             return redirect('/')
         else:
             ###***add error output to debug
             logger.info('Login error')
-            return {"msg": "Bad username or password"}, 401
+            return jsonify(ERR_BAD_CREDS), 401
 
 
 class Login(MethodView):
@@ -600,25 +598,24 @@ class Login(MethodView):
                 return jsonify({"msg": "Missing password parameter"}), 400
             ldap_uri = CRACK_CONF['auth']['ldap_server']
             ldap_base = CRACK_CONF['auth']['ldap_base']
-            authn = auth.Ldap.authenticate(ldap_uri, username, password,
-                                           ldap_base=ldap_base)
+            auther = auth.Ldap()
+            authn = auther.authenticate(ldap_uri, username, password,
+                                        ldap_base=ldap_base)
             logger.debug('LDAP reply: {}'.format(authn))
             if authn[0] == "Success":
                 logging.info('Authenticated: {}'.format(username))
-                if email_check(username):
-                    logger.debug('Email address found, using for notify')
-                    email = username
                 user = load_user(username)
                 if user:
                     crackq.app.session_interface.regenerate(session)
                     login_user(user)
                 else:
-                    if authn[1]:
+                    if len(authn) > 1:
                         email = authn[1]
-                        if email_check(email):
-                            create_user(username, email=email)
-                        else:
-                            create_user(username)
+                    else:
+                        email = username
+                    if email_check(email):
+                        logger.debug('Email address found, using for notify')
+                        create_user(username, email=email)
                     else:
                         create_user(username)
                     user = load_user(username)
@@ -627,13 +624,13 @@ class Login(MethodView):
                     login_user(user)
                 else:
                     logging.error('No user object loaded')
-                    return jsonify({"msg": "Bad username or password"}), 401
+                    return jsonify(ERR_BAD_CREDS), 401
                 return 'OK', 200
             elif authn[0] == "Invalid Credentials":
-                return jsonify({"msg": "Bad username or password"}), 401
+                return jsonify(ERR_BAD_CREDS), 401
             else:
                 logger.info('Login error: {}'.format(authn))
-                return jsonify({"msg": "Bad username or password"}), 401
+                return jsonify(ERR_BAD_CREDS), 401
         if CRACK_CONF['auth']['type'] == 'sql':
             user = User.query.filter_by(username=args['user']).first()
             if isinstance(user, User):
@@ -641,9 +638,9 @@ class Login(MethodView):
                     crackq.app.session_interface.regenerate(session)
                     login_user(user)
                     return 'OK', 200
-            return jsonify({"msg": "Bad username or password"}), 401
+            return jsonify(ERR_BAD_CREDS), 401
         else:
-            return 'Method not supported', 405
+            return jsonify(ERR_METH_NOT)
 
 
 class Logout(MethodView):
@@ -656,8 +653,6 @@ class Logout(MethodView):
     def get(self):
         logger.info('User logged out: {}'.format(current_user.username))
         user = User.query.filter_by(username=current_user.username).first()
-        #sid = request.cookies.get(app.session_cookie_name)
-        #sid = request.cookies.get(crackq.app.session_cookie_name)
         crackq.app.session_interface.destroy(session)
         user.active = False
         db.session.commit()
@@ -844,7 +839,7 @@ class Queuing(MethodView):
         logger.debug('Completed jobs: {}'.format(comp_list))
         logger.debug('q_dict: {}'.format(q_dict))
         if not job_id.isalnum():
-            return ERR_INVAL_JID, 500
+            return jsonify(ERR_INVAL_JID), 500
         if job_id == 'all':
             ###***definitely make these a function
             if len(cur_list) > 0:
@@ -1032,7 +1027,7 @@ class Queuing(MethodView):
                 return 'Stopped Job', 200
         except AttributeError as err:
             logger.debug('Failed to stop job: {}'.format(err))
-            return ERR_INVAL_JID, 404
+            return jsonify(ERR_INVAL_JID), 404
 
     @login_required
     def delete(self, job_id):
@@ -1083,7 +1078,7 @@ class Queuing(MethodView):
             return {'msg': 'Deleted Job'}, 200
         except AttributeError as err:
             logger.error('Failed to delete job: {}'.format(err))
-            return ERR_INVAL_JID, 404
+            return jsonify(ERR_INVAL_JID), 404
 
 
 class Options(MethodView):
@@ -1407,9 +1402,9 @@ class Adder(MethodView):
                     job.meta['CrackQ State'] = 'Run/Restored'
                     job.save_meta()
                 else:
-                    return ERR_INVAL_JID, 500
+                    return jsonify(ERR_INVAL_JID), 500
             else:
-                return ERR_INVAL_JID, 500
+                return jsonify(ERR_INVAL_JID), 500
         else:
             logger.debug('Creating new session')
             job_id = uuid.uuid4().hex
@@ -1658,14 +1653,13 @@ class Reports(MethodView):
                         return {'msg': 'No report generated for'
                                        'this job'}, 500
         else:
-            return ERR_INVAL_JID, 404
+            return jsonify(ERR_INVAL_JID), 404
 
     @login_required
     def post(self):
         """
         Method to trigger report generation
         """
-        ###***make this a decorator??
         logger.debug('User requesting report')
         marsh_schema = parse_json_schema().load(request.json)
         if len(marsh_schema.errors) > 0:
@@ -1726,7 +1720,7 @@ class Reports(MethodView):
                         logger.debug('No cracked passwords found for this job')
                         return {'msg': 'No report available for Job ID'}, 404
         else:
-            return ERR_INVAL_JID, 404
+            return jsonify(ERR_INVAL_JID), 404
 
 
 class Profile(MethodView):
