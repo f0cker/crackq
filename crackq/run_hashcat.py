@@ -267,8 +267,8 @@ class Crack(object):
             else:
                 logger.error('No speed job to check')
                 if job and not del_check(job):
-                        job.meta['CrackQ State'] = 'Run/Restored'
-                        job.save_meta()
+                    job.meta['CrackQ State'] = 'Run/Restored'
+                    job.save_meta()
         ###*** update this to config file path and try/except
         hc.markov_hcstat2 = "/var/crackq/files/crackq.hcstat"
         hc.custom_charset_1 = '?l?d'
@@ -716,6 +716,7 @@ class Crack(object):
                     if 'Initializing' not in hc_state:
                         self.init_callback(hcat)
                         logger.debug('Hashcat initialized')
+                    job = redis_q.fetch_job(str(hcat.session))
                     speed_started = rq.registry.StartedJobRegistry('speed_check',
                                                                    connection=redis_con)
                     cur_speed = speed_started.get_job_ids()

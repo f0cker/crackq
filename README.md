@@ -16,6 +16,7 @@ Python 3 REST API & JS GUI for managing hashcat crack jobs in a queuing system.
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/f0cker/crackq.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/f0cker/crackq/context:python)
 [![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/f0cker/crackq.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/f0cker/crackq/context:javascript)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=f0cker_crackq&metric=alert_status)](https://sonarcloud.io/api/project_badges/measure?project=f0cker_crackq&metric=alert_status)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=f0cker_crackq&metric=security_rating)](https://sonarcloud.io/dashboard?id=f0cker_crackq)
 ![Blackhat Arsenal Europe 2019](https://img.shields.io/badge/Black%20Hat%20Arsenal-Europe%202019-blue.svg)
 
 

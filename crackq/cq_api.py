@@ -1371,9 +1371,12 @@ class Adder(MethodView):
                             wordlist2 = CRACK_CONF['wordlists'][job_deets['wordlist2']]
                     else:
                         wordlist2 = None
-                    rules = check_rules(job_deets['rules'])
-                    if rules is False:
-                        return jsonify({'msg': 'Invalid rules selected'}), 500
+                    if 'rules' in job_deets:
+                        rules = check_rules(job_deets['rules'])
+                        if rules is False:
+                            return jsonify({'msg': 'Invalid rules selected'}), 500
+                    else:
+                        rules = None
                     mask_file = check_mask(job_deets['mask'])
                     # this is just set to use the first mask file in the list for now
                     mask = mask_file if mask_file else job_deets['mask']

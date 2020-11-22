@@ -7,6 +7,7 @@ crackq.log
 .DS*
 .mypy*
 crackq/brain*
+crackq/core*
 docker/build/
 *egg-info*
 *build*

@@ -46,7 +46,7 @@ def test_init_check():
                 time.sleep(5)
                 counter += 2
             job.delete()
-            time.sleep(11)
+            time.sleep(21)
             comp_list = crack_q.check_complete()
             assert job_id not in comp_list
             assert len(cur_list) < 1
@@ -106,7 +106,7 @@ def test_stop():
         if job_id in cur_list:
             job.meta['CrackQ State'] = 'Stop'
             job.save_meta()
-        time.sleep(20)
+        time.sleep(21)
         while wait_counter < 5 and not cur_list:
             time.sleep(15)
             cur_list = started.get_job_ids()
@@ -129,11 +129,11 @@ def test_del():
         if job_id in cur_list:
             job.meta['CrackQ State'] = 'Stop'
             job.save_meta()
-            time.sleep(10)
+            time.sleep(21)
         cur_list = started.get_job_ids()
         assert job_id not in cur_list
         job.delete()
-        time.sleep(4)
+        time.sleep(20)
         comp_list = crack_q.check_complete()
         assert job_id not in comp_list
     except AttributeError as err:
@@ -174,7 +174,7 @@ def test_wl():
     job.meta['CrackQ State'] = 'Run/Restored'
     job.meta['Speed Array'] = []
     job.save_meta()
-    time.sleep(15)
+    time.sleep(30)
     started_list = rq.registry.StartedJobRegistry('default',
                                                   connection=redis_con).get_job_ids()
     assert job_id in started_list
@@ -193,7 +193,7 @@ def test_stop_wl():
             job.save_meta()
         wait_counter = 0
         while wait_counter < 5:
-            time.sleep(15)
+            time.sleep(21)
             cur_list = started.get_job_ids()
             wait_counter += 1
         cur_list = started.get_job_ids()
@@ -246,27 +246,6 @@ def test_restore():
         assert job_id in cur_list
     except:
         print('exception')
-
-def test_stop_wl():
-    job_id = '0b7b91482fc24274b7d04fc0d6e61a96'
-    try:
-        logger.info('Stopping job: {:s}'.format(job_id))
-        job = q.fetch_job(job_id)
-        started = rq.registry.StartedJobRegistry('default',
-                                                 connection=redis_con)
-        cur_list = started.get_job_ids()
-        if job_id in cur_list:
-            job.meta['CrackQ State'] = 'Stop'
-            job.save_meta()
-        wait_counter = 0
-        while wait_counter < 5:
-            time.sleep(15)
-            cur_list = started.get_job_ids()
-            wait_counter += 1
-        cur_list = started.get_job_ids()
-        assert job_id not in cur_list
-    except AttributeError as err:
-        logger.error('Failed to stop job: {}'.format(err))
 
 def test_wl_del():
     job_id = '0b7b91482fc24274b7d04fc0d6e61a96'
