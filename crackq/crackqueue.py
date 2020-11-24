@@ -27,7 +27,7 @@ class Queuer(object):
         self.redis_con = Redis(rconf['host'], rconf['port'])
         self.log_dir = CRACK_CONF['files']['log_dir']
 
-    def q_add(self, q_obj, arg_dict, timeout=1209600):
+    def q_add(self, q_obj, arg_dict, timeout=30240):
         """
         This method adds a new crack job to the queue
 
@@ -37,8 +37,10 @@ class Queuer(object):
                 uuid string corresponding to job ID
         q_obj: object
                 queue object to use (returned from q_connect)
-        q_post: int?
-        new position for job in queue
+        arg_dict: dict
+                hc_worker function arguments to run hashcat
+        timeout: int
+                number of seconds before job will time out
 
         Returns
         -------

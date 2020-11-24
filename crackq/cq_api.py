@@ -145,6 +145,7 @@ class parse_json_schema(Schema):
                        validate=StringContains(r'[^\w\@\^\-\+\./]'))
     admin = fields.Bool(allow_none=True)
     benchmark_all = fields.Bool(allow_none=True)
+    timeout = fields.Int(validate=Range(min=1, max=28800000), allow_none=True)
 
 
 def get_jobdetails(job_details):
@@ -185,7 +186,6 @@ def get_jobdetails(job_details):
             'restore']
     ###***make this less ugly
     ###***review stripping here for improvement
-    #review rules processing
     logger.debug('Parsing job details:\n{}'.format(job_details))
     # Process rules list separately as workaround for splitting on comma
     if '[' in job_details:
@@ -1118,12 +1118,20 @@ class Options(MethodView):
             '6': 'Hybrid Wordlist + Mask',
             '7': 'Hybrid Mask + Wordlist',
             }
+        if 'jobtimeout' in CRACK_CONF:
+            timeout_info = CRACK_CONF['jobtimeout']
+        else:
+            timeout_info = {
+                'Value': 1814400,
+                'Modify': False,
+                }
         hc_dict = {
             'Rules': hc_rules,
             'Wordlists': hc_words,
             'Mask Files': hc_maskfiles,
             'Hash Modes': hc_modes,
             'Attack Modes': hc_att_modes,
+            'timeout': timeout_info,
             }
         return hc_dict, 200
 
@@ -1289,8 +1297,6 @@ class Adder(MethodView):
             speed_args['username'] = q_args['kwargs']['username']
             speed_args['name'] = q_args['kwargs']['name']
             speed_args['brain'] = q_args['kwargs']['brain']
-            ###***change these to see if there's a difference when the modes are
-            ###***different
             speed_args['attack_mode'] = q_args['kwargs']['attack_mode']
             speed_args['mask'] = '?a?a?a?a?a?a' if q_args['kwargs']['mask'] else None
             speed_args['pot_path'] = q_args['kwargs']['pot_path']
@@ -1353,7 +1359,7 @@ class Adder(MethodView):
                     hash_file = '{}{}.hashes'.format(self.log_dir, job_id)
                     pot_path = '{}crackq.pot'.format(self.log_dir)
                     job_deets = self.get_restore(self.log_dir, job_id)
-                    job = self.q.fetch_job(job_id)
+                    job = self.q.fetch_job(job_id)  # lgtm
                     if not job_deets:
                         logger.debug('Job restor error. Never started')
                         return jsonify({'msg': 'Error restoring job'}), 500
@@ -1424,11 +1430,13 @@ class Adder(MethodView):
                 logger.debug('Writing hashes to file: {}'.format(hash_file))
                 with open(hash_file, 'w') as hash_fh:
                     for hash_l in args['hash_list']:
-                        ###***REVIEW THIS
                         hash_fh.write(hash_l.rstrip() + '\n')
             except KeyError as err:
                 logger.debug('No hash list provided: {}'.format(err))
                 return jsonify({'msg': 'No hashes provided'}), 500
+            except IOError as err:
+                logger.debug('Unable to write to hash file: {}'.format(err))
+                return jsonify({'msg': 'System error'}), 500
             try:
                 args['hash_mode']
                 check_m = self.mode_check(args['hash_mode'])
@@ -1505,6 +1513,17 @@ class Adder(MethodView):
             except KeyError as err:
                 logger.debug('Name value not provided')
                 name = None
+            try:
+                timeout = args['timeout']
+                if 'timeout' in CRACK_CONF:
+                    if not CRACK_CONF['jobtimeout']['Modify']:
+                        logger.debug('Timeout modification not permitted')
+                        timeout = CRACK_CONF['jobtimeout']['Value']
+                else:
+                    timeout = 1814400
+            except KeyError as err:
+                logger.debug('Timeout value not provided')
+                timeout = CRACK_CONF['jobtimeout']['Value']
             hc_args = {
                 'crack': self.crack,
                 'hash_file': hash_file,
@@ -1517,7 +1536,6 @@ class Adder(MethodView):
                 'hash_mode': mode,
                 'outfile': outfile,
                 'rules': rules,
-                #'#restore': True if restore else None,
                 'username': username,
                 'increment': increment,
                 'increment_min': increment_min,
@@ -1547,7 +1565,7 @@ class Adder(MethodView):
                 logger.debug('Job not a restore, queuing speed_check')
                 self.speed_check(q_args)
                 time.sleep(3)
-            self.crack_q.q_add(q, q_args)
+            self.crack_q.q_add(q, q_args, timeout=timeout)
             logger.info('API Job {} added to queue'.format(job_id))
             logger.debug('Job Details: {}'.format(q_args))
             job = self.q.fetch_job(job_id)
