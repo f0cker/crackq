@@ -28,7 +28,7 @@ services:
         user: crackq
         tty: true        
         command:
-                sh -c "pip3 install . --user ./ && cd ./crackq
+                sh -c "pip3 install . --user && cd ./crackq
                 && python3 -c 'from crackq import hash_modes; hash_modes.HModes.update_modes()'
                 && /usr/local/bin/circusd /opt/crackq/build/circus.ini"
 

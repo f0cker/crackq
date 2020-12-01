@@ -576,7 +576,7 @@ class Crack(object):
                         job.meta['Speed Array'] = self.circulator(job.meta['Speed Array'],
                                                                   int(hcat_status['Speed Raw']), 180)
                         job.save_meta()
-                        job_details = cq_api.get_jobdetails(job.description)
+                        job_details = cq_api.get_jobdetails(job)
                         job_details['restore'] = hcat_status['Restore Point']
                         if 'brain_check' in job.meta:
                             job_details['brain_check'] = job.meta['brain_check']
@@ -585,6 +585,7 @@ class Crack(object):
                         job_details = json.loads(result.strip())
                     job_details['Cracked Hashes'] = sender.status_get_digests_done()
                     job_details['Total Hashes'] = sender.status_get_digests_cnt()
+                    job_details['timeout'] = job.timeout
                     result_fh.seek(0)
                     result_fh.write(json.dumps(job_details))
                     result_fh.truncate()
@@ -745,6 +746,7 @@ class Crack(object):
                                 speed_job.delete()
                             hcat.hashcat_session_quit()
                             hcat.reset()
+                            cq_api.del_jobid(hcat.session)
                             return
                         elif job.meta['CrackQ State'] == 'Pause':
                             hcat.hashcat_session_pause()
