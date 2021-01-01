@@ -39,7 +39,6 @@ class HModes(object):
         hc.session = 'usage'
         hc.backend_info = True
         hc.quiet = True
-        # logger.debug('test')
         print("[+] Running hashcat")
         if hc.hashcat_session_execute() >= 0:
             hashm_dict = hc.hashcat_list_hashmodes()

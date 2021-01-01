@@ -1,21 +1,15 @@
 """CrackQ Authentication handler module"""
 
 import ldap
-import logging
 import requests
 
-from logging.config import fileConfig
+from crackq.logger import logger
 from flask import url_for
 from saml2 import BINDING_HTTP_POST
 from saml2 import BINDING_HTTP_REDIRECT
 from saml2 import entity
 from saml2.client import Saml2Client
 from saml2.config import Config as Saml2Config
-
-
-# Setup logging
-fileConfig('log_config.ini')
-logger = logging.getLogger()
 
 
 class Saml2():
@@ -57,12 +51,9 @@ class Saml2():
                 try:
                     res = requests.get(self.meta_url)
                     with open(self.meta_file, 'w') as meta_fh:
-                              meta_fh.write(res.text)
-                ###***fix
+                        meta_fh.write(res.text)
                 except Exception as err:
-                    logger.error('Invalid SAML metadata file/s provided:\n{}'.format(
-                        err))
-                    logger.error('Invalid SAML metadata file/s provided')
+                    logger.error('Invalid SAML metadata file/s provided:\n{}'.format(err))
         except FileNotFoundError as err:
             res = requests.get(self.meta_url)
             with open(self.meta_file, 'w') as meta_fh:
@@ -136,7 +127,6 @@ class Ldap():
             except KeyError as err:
                 logger.debug('Failed to get email address from LDAP: {}'.format(err))
             conn.unbind_s()
-            ###***fix this shit to make it more secures
             return ("Success", email) if 97 in bind else ("Failed", email)
         except ldap.INVALID_CREDENTIALS:
             return ("Invalid Credentials", email)
@@ -144,4 +134,3 @@ class Ldap():
             return ("Server down", email)
         except ldap.LDAPError as err:
             return "Other LDAP error: {}".format(err)
-        #return ("Error", email)

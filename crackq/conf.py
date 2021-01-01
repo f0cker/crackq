@@ -2,13 +2,9 @@
 Helper function for parsing config file
 """
 import configparser
-import logging
 
-from logging.config import fileConfig
+from crackq.logger import logger
 
-# Setup logging
-fileConfig('log_config.ini')
-logger = logging.getLogger()
 conf_file = '/var/crackq/files/crackq.conf'
 
 

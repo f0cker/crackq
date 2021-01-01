@@ -1,6 +1,39 @@
 Changelog
 =========
 
+v0.0.1
+------------
+
+- Added sql-based auth and admin interface. 
+- Removed benchmark requirement for brain calculation
+- Added show/speed check on initial job creation for new brain calculation
+- Added benchmark page
+- Added combinator mode
+- Added rate limiting to NGinx config Setup
+- add disable_brain option to gui 
+- fixed delete bug
+- Migrate from flask-restful 
+- update progress/cracked in queue when job hasn’t run but has cracked hashes from pot 
+- setup sonarcloud/lgtm
+- fixed admin modal overlapping text 
+- updated all gui libs 
+- add loading icon on job add
+- Updated python libs, modified styling, fixed timeout bug and others.
+- Fixed #16, adding user supplied job timeout. 
+- Fixed broken sso link
+- Improved GUI look. 
+- Remove duplication & cleanup. 
+- Improved error messages. 
+- Fixed admin modal overlapping text
+- Update readme, cleanup, moar bug fixes, flask-cors version bump.
+- Improved error display for jobs failed during speed_check. 
+- Set min complexity for passwords and added js validation to login page add
+- Updating nvidia/centos dockerfile. 
+- Added increment-min/max. 
+- Updated GUI JS libs Added increment. 
+- Added email to LDAP schema and query when account is created. 
+- Fixed issue stopping job before it has initialized. 
+
 
 v0.0.1b
 ------------

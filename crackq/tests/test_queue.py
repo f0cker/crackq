@@ -1,36 +1,26 @@
-from crackq import cq_api, crackqueue
-import json
-import logging
+from crackq import cq_api, crackqueue, run_hashcat
 import rq
 import crackq.run_hashcat
-import sys
 import time
-import uuid
 
-from logging.config import fileConfig
+from crackq.logger import logger
 from redis import Redis
 from rq import use_connection, Queue
 from rq.registry import StartedJobRegistry
 
-#Setup logging
-fileConfig('log_config.ini')
-logger = logging.getLogger()
 
 CRACK_CONF = crackq.conf.hc_conf()
 
 crack_q = crackqueue.Queuer()
-crack = crackq.run_hashcat.Crack()
 rconf = CRACK_CONF['redis']
 redis_con = Redis(rconf['host'], rconf['port'])
 q = crack_q.q_connect()
 log_dir = '/var/crackq/logs/'
 
 
-
 def test_init_check():
     """Check the queue is empty first"""
-    cur_list = rq.registry.StartedJobRegistry('default',
-                                              connection=redis_con).get_job_ids()
+    cur_list = rq.registry.StartedJobRegistry(queue=q).get_job_ids()
     if len(cur_list) > 0:
         try:
             job_id = cur_list[0]
@@ -41,13 +31,12 @@ def test_init_check():
             time.sleep(5)
             counter = 0
             while len(cur_list) > 0 and counter < 9:
-                cur_list = rq.registry.StartedJobRegistry('default',
-                                                          connection=redis_con).get_job_ids()
+                cur_list = rq.registry.StartedJobRegistry(queue=q).get_job_ids()
                 time.sleep(5)
                 counter += 2
             job.delete()
             time.sleep(21)
-            comp_list = crack_q.check_complete()
+            comp_list = crack_q.check_complete(q)
             assert job_id not in comp_list
             assert len(cur_list) < 1
         except AttributeError as err:
@@ -61,22 +50,20 @@ def test_bf():
     outfile = '{}{}.cracked'.format(log_dir, job_id)
     pot_path = '{}crackq.pot'.format(log_dir)
     hc_args = {
-             'crack': crack,
-             'hash_mode': 1000,
-             'hash_file': hash_file,
-             'name': 'tests',
-             'brain': False,
-             'pot_path': pot_path,
-             'session': job_id,
-             'username': False,
-             'wordlist': None,
-             'wordlist2': None,
-             'outfile': outfile,
-             'attack_mode': 3,
-             'mask': '?a?a?a?a?a?a?a',
-             }
+        'hash_mode': 1000,
+        'hash_file': hash_file,
+        'name': 'tests',
+        'brain': False,
+        'pot_path': pot_path,
+        'session': job_id,
+        'username': False,
+        'wordlist': None,
+        'wordlist2': None,
+        'outfile': outfile,
+        'attack_mode': 3,
+        'mask': '?a?a?a?a?a?a?a',
+        }
     q_args = {
-            'func': crack.hc_worker,
             'job_id': job_id,
             'kwargs': hc_args,
             }
@@ -89,8 +76,7 @@ def test_bf():
     job.meta['Speed Array'] = []
     job.save_meta()
     time.sleep(30)
-    started_list = rq.registry.StartedJobRegistry('default',
-                                                  connection=redis_con).get_job_ids()
+    started_list = rq.registry.StartedJobRegistry(queue=q).get_job_ids()
     assert job_id in started_list
 
 
@@ -99,8 +85,7 @@ def test_stop():
     try:
         logger.info('Stopping job: {:s}'.format(job_id))
         job = q.fetch_job(job_id)
-        started = rq.registry.StartedJobRegistry('default',
-                                                 connection=redis_con)
+        started = rq.registry.StartedJobRegistry(queue=q)
         cur_list = started.get_job_ids()
         wait_counter = 0
         if job_id in cur_list:
@@ -123,8 +108,7 @@ def test_del():
     try:
         logger.info('Deleting job: {:s}'.format(job_id))
         job = q.fetch_job(job_id)
-        started = rq.registry.StartedJobRegistry('default',
-                                                 connection=redis_con)
+        started = rq.registry.StartedJobRegistry(queue=q)
         cur_list = started.get_job_ids()
         if job_id in cur_list:
             job.meta['CrackQ State'] = 'Stop'
@@ -134,7 +118,7 @@ def test_del():
         assert job_id not in cur_list
         job.delete()
         time.sleep(20)
-        comp_list = crack_q.check_complete()
+        comp_list = crack_q.check_complete(q)
         assert job_id not in comp_list
     except AttributeError as err:
         logger.error('Failed to delete job: {}'.format(err))
@@ -146,7 +130,6 @@ def test_wl():
     outfile = '{}{}.cracked'.format(log_dir, job_id)
     pot_path = '{}crackq.pot'.format(log_dir)
     hc_args = {
-        'crack': crack,
         'hash_mode': 1000,
         'hash_file': hash_file,
         'username': False,
@@ -162,7 +145,6 @@ def test_wl():
         'mask': None,
         }
     q_args = {
-        'func': crack.hc_worker,
         'job_id': job_id,
         'kwargs': hc_args,
         }
@@ -175,8 +157,7 @@ def test_wl():
     job.meta['Speed Array'] = []
     job.save_meta()
     time.sleep(30)
-    started_list = rq.registry.StartedJobRegistry('default',
-                                                  connection=redis_con).get_job_ids()
+    started_list = rq.registry.StartedJobRegistry(queue=q).get_job_ids()
     assert job_id in started_list
 
 
@@ -185,8 +166,7 @@ def test_stop_wl():
     try:
         logger.info('Stopping job: {:s}'.format(job_id))
         job = q.fetch_job(job_id)
-        started = rq.registry.StartedJobRegistry('default',
-                                                 connection=redis_con)
+        started = rq.registry.StartedJobRegistry(queue=q).get_job_ids()
         cur_list = started.get_job_ids()
         if job_id in cur_list:
             job.meta['CrackQ State'] = 'Stop'
@@ -220,7 +200,7 @@ def test_restore():
         job_deets = crackq.cq_api.Adder().get_restore(log_dir, job_id)
         assert job_deets != 0
         hc_args = {
-            'crack': crack,
+            #'crack': crack,
             'hash_file': hash_file,
             'session': job_id,
             'wordlist': job_deets['wordlist'],
@@ -238,9 +218,8 @@ def test_restore():
         job = q.fetch_job(job_id)
         job.meta['CrackQ State'] = 'Run/Restored'
         job.save_meta()
-        hcat = crack.hc_worker(hc_args)
-        started = rq.registry.StartedJobRegistry('default',
-                                                 connection=redis_con)
+        hcat = run_hashcat.hc_worker(hc_args)
+        started = rq.registry.StartedJobRegistry(queue=q)
         time.sleep(7)
         cur_list = started.get_job_ids()
         assert job_id in cur_list
@@ -252,8 +231,7 @@ def test_wl_del():
     try:
         logger.info('Deleting job: {:s}'.format(job_id))
         job = q.fetch_job(job_id)
-        started = rq.registry.StartedJobRegistry('default',
-                                                 connection=redis_con)
+        started = rq.registry.StartedJobRegistry(queue=q)
         cur_list = started.get_job_ids()
         if job_id in cur_list:
             job.meta['CrackQ State'] = 'Stop'
@@ -263,7 +241,7 @@ def test_wl_del():
         assert job_id not in cur_list
         job.delete()
         time.sleep(10)
-        comp_list = crack_q.check_complete()
+        comp_list = crack_q.check_complete(q)
         assert job_id not in comp_list
     except AttributeError as err:
         logger.error('Failed to delete job: {}'.format(err))

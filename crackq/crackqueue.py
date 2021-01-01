@@ -1,19 +1,16 @@
 """Queue handling class helper for CrackQ->RQ"""
 import json
-import logging
-from pathlib import Path
 import rq
 
-from crackq import cq_api
+from crackq import cq_api, run_hashcat
 from crackq.conf import hc_conf
-from logging.config import fileConfig
+from crackq.logger import logger
+from pathlib import Path
 from redis import Redis
 from rq import use_connection, Queue
 from rq.registry import StartedJobRegistry
+from rq.serializers import JSONSerializer
 
-# Setup logging
-fileConfig('log_config.ini')
-logger = logging.getLogger()
 
 CRACK_CONF = hc_conf()
 
@@ -49,9 +46,14 @@ class Queuer(object):
         """
         logger.info('Adding task to job queue: '
                     '{:s}'.format(arg_dict['job_id']))
-        q_obj.enqueue_call(func=arg_dict['func'], job_id=arg_dict['job_id'],
-                           kwargs=arg_dict['kwargs'], timeout=timeout,
-                           result_ttl=-1)
+        if 'speed_session' in arg_dict['kwargs']:
+            q_obj.enqueue_call(func=run_hashcat.show_speed, job_id=arg_dict['job_id'],
+                               kwargs=arg_dict['kwargs'], timeout=timeout,
+                               result_ttl=-1)
+        else:
+            q_obj.enqueue_call(func=run_hashcat.hc_worker, job_id=arg_dict['job_id'],
+                               kwargs=arg_dict['kwargs'], timeout=timeout,
+                               result_ttl=-1)
         return
 
     def q_monitor(self, q_obj):
@@ -76,8 +78,7 @@ class Queuer(object):
         jobstate_dict = {job.id: self.q_jobstate(job) for job in
                          q_obj.jobs}
 
-        cur_jobs = StartedJobRegistry('default',
-                                      connection=self.redis_con).get_job_ids()
+        cur_jobs = StartedJobRegistry(queue=q_obj).get_job_ids()
         cur_job_dict = {job: self.q_jobstate(q_obj.fetch_job(job)) for job in cur_jobs}
         qstate_dict = {
             'Queue Size': q_obj.count,
@@ -147,7 +148,8 @@ class Queuer(object):
         object
             redis connection object
         """
-        rqueue = Queue(queue, connection=self.redis_con)
+        rqueue = Queue(queue, connection=self.redis_con,
+                       serializer=JSONSerializer)
         return rqueue
 
     def error_parser(self, job):
@@ -176,7 +178,7 @@ class Queuer(object):
         else:
             return None
 
-    def check_failed(self):
+    def check_failed(self, q_obj):
         """
         This method checks the failed queue and print info to a log file
 
@@ -191,13 +193,11 @@ class Queuer(object):
         """
         try:
             failed_dict = {}
-            failed_reg = rq.registry.FailedJobRegistry('default',
-                                                       connection=self.redis_con)
+            failed_reg = rq.registry.FailedJobRegistry(queue=q_obj)
             if failed_reg.count > 0:
-                q = failed_reg.get_queue()
                 for job_id in failed_reg.get_job_ids():
                     failed_dict[job_id] = {}
-                    job = q.fetch_job(job_id)
+                    job = q_obj.fetch_job(job_id)
                     failed_dict[job_id]['Error'] = self.error_parser(job)
                     try:
                         name = cq_api.get_jobdetails(job.description)['name']
@@ -212,7 +212,7 @@ class Queuer(object):
             logger.warning('Error getting failed queue: {}'.format(err))
             return {}
 
-    def check_complete(self):
+    def check_complete(self, q_obj):
         """
         This method checks the completed queue and print info to a log file
 
@@ -224,7 +224,6 @@ class Queuer(object):
         comp_list: rq.registry
             Finished job registry
         """
-        comp_list = rq.registry.FinishedJobRegistry('default',
-                                                    connection=self.redis_con).get_job_ids()
+        comp_list = rq.registry.FinishedJobRegistry(queue=q_obj).get_job_ids()
         return comp_list
 

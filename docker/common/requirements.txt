@@ -1,7 +1,7 @@
 configparser==5.0.1
 Flask==1.1.2
 redis==3.5.3
-rq==1.6.1
+#rq==1.7.1
 marshmallow==3.9.1
 pytest==6.1.2
 pytest-cov==2.10.1
@@ -18,3 +18,4 @@ Flask-SeaSurf==0.2.2
 Flask-Migrate==2.5.3
 bcrypt==3.2.0
 Flask-Bcrypt==0.7.1
+pathvalidate==2.3.1
