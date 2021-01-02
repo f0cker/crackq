@@ -26,6 +26,7 @@ os.umask(0o077)
 
 CRACK_CONF = hc_conf()
 log_dir = CRACK_CONF['files']['log_dir']
+file_dir = CRACK_CONF['files']['file_dir']
 rconf = CRACK_CONF['redis']
 redis_con = Redis(rconf['host'], rconf['port'])
 redis_q = Queue('default', connection=redis_con, serializer=JSONSerializer)
@@ -257,8 +258,7 @@ def runner(hash_file=None, hash_mode=1000,
             if job and not del_check(job):
                 job.meta['CrackQ State'] = 'Run/Restored'
                 job.save_meta()
-    log_dir = CRACK_CONF['files']['log_dir']
-    markov_file = str(valid.val_filepath(path_string=log_dir,
+    markov_file = str(valid.val_filepath(path_string=file_dir,
                                          file_string='crackq.hcstat'))
     hc.markov_hcstat2 = markov_file
     hc.custom_charset_1 = '?l?d'

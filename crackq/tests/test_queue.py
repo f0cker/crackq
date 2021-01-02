@@ -68,7 +68,7 @@ def test_bf():
             'kwargs': hc_args,
             }
     adder = crackq.cq_api.Adder()
-    adder.speed_check(q_args)
+    adder.speed_check(q_args=q_args)
     time.sleep(1)
     crack_q.q_add(q, q_args)
     job = q.fetch_job(job_id)
@@ -149,7 +149,7 @@ def test_wl():
         'kwargs': hc_args,
         }
     adder = crackq.cq_api.Adder()
-    adder.speed_check(q_args)
+    adder.speed_check(q_args=q_args)
     time.sleep(3)
     crack_q.q_add(q, q_args)
     job = q.fetch_job(job_id)
@@ -166,7 +166,7 @@ def test_stop_wl():
     try:
         logger.info('Stopping job: {:s}'.format(job_id))
         job = q.fetch_job(job_id)
-        started = rq.registry.StartedJobRegistry(queue=q).get_job_ids()
+        started = rq.registry.StartedJobRegistry(queue=q)
         cur_list = started.get_job_ids()
         if job_id in cur_list:
             job.meta['CrackQ State'] = 'Stop'

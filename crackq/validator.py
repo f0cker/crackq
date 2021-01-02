@@ -27,7 +27,7 @@ class FileValidation(object):
             str_path = pv.sanitize_filepath(path_string, platform='auto')
             return str_path
         except ValueError as err:
-            logger.error('Invalid filepath provided: {}'.format(err))
+            logger.error('Invalid filepath provided')
             return False
 
     @classmethod
@@ -47,7 +47,7 @@ class FileValidation(object):
             else:
                 raise Exception('Invalid $HOME env variable detected')
         except ValueError as err:
-            logger.error('Invalid $HOME env variable detected {}'.format(err))
+            logger.error('Invalid $HOME env variable detected')
             return False
 
     @classmethod
@@ -75,12 +75,14 @@ class FileValidation(object):
         if fullfile_string:
             file_string = Path(fullfile_string).name
             path_string = Path(fullfile_string).parents[0]
-        if not all([path_string, file_string]):
+        elif not all([path_string, file_string]):
             return False
         logger.debug('Validating filename')
         file_string = FileValidation.val_file(file_string)
         logger.debug('Validating filepath')
         path_string = FileValidation.val_path(path_string)
+        if False in [path_string, file_string, fullfile_string]:
+            return False
         return Path.joinpath(Path(path_string), file_string)
 
     @classmethod
@@ -103,5 +105,5 @@ class FileValidation(object):
             str_file = pv.sanitize_filename(file_string, platform='auto')
             return str_file
         except ValueError as err:
-            logger.error('Invalid file name: {} \n{} '.format(file_string, err))
+            logger.error('Invalid file name')
             return False

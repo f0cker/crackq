@@ -8,6 +8,8 @@ def test_valid_filepath():
     assert res
 
 def test_invalid_filepath():
-    invalid_file_sanitize = '/var/../../*!)(*&^^$$@!/crackq/logs/val_test.txt'
-    res = val.val_filepath(fullfile_string=invalid_file_sanitize)
-    assert res == '/var/crackq/logs/val_test.txt'
+    invalid_path = '/var/crackq/logs/'
+    invalid_file = '../../val_test.txt'
+    res = str(val.val_filepath(path_string=invalid_path, file_string=invalid_file))
+    assert res
+
