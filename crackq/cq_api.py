@@ -249,33 +249,32 @@ def add_jobid(job_id):
     logger.debug('user.job_ids: {}'.format(user.job_ids))
 
 
-def del_jobid(job_id, user):
+def del_jobid(job_id):
     """Delete job_id from job_ids column in user table"""
-    if user.job_ids:
-        jobs = json.loads(user.job_ids)
-        logger.debug('Registered jobs: {}'.format(jobs))
-    else:
-        logger.debug('No job_ids registered with current user')
+    with crackq.app.app_context():
+        for user in User.query.all():
+            if user.job_ids and job_id in user.job_ids:
+                jobs = json.loads(user.job_ids)
+                logger.debug('Registered jobs: {}'.format(jobs))
+                if isinstance(jobs, list):
+                    logger.info('Unregistering job_id: {}'.format(job_id))
+                    if job_id in jobs:
+                        jobs.remove(job_id)
+                        user.job_ids = json.dumps(jobs)
+                        db.session.commit()
+                        logger.debug('user.job_ids: {}'.format((user.job_ids)))
+                        return True
+                else:
+                    logger.error('Error removing job_id')
+            else:
+                logger.debug('Job ID not registered with user')
         return False
-    if isinstance(jobs, list):
-        logger.info('Unregistering job_id: {}'.format(job_id))
-        if job_id in jobs:
-            jobs.remove(job_id)
-        else:
-            return False
-    else:
-        logger.error('Error removing job_id')
-        return False
-    user.job_ids = json.dumps(jobs)
-    db.session.commit()
-    logger.debug('user.job_ids: {}'.format((user.job_ids)))
-    return True
 
 
 def check_jobid(job_id):
     """Check user owns the job_id"""
     logger.debug('Checking job_id: {} belongs to user: {}'.format(
-                job_id, current_user.username))
+                 job_id, current_user.username))
     user = User.query.filter_by(username=current_user.username).first()
     if user.job_ids:
         if job_id in user.job_ids:
@@ -442,7 +441,7 @@ def email_check(email):
         return False
 
 
-def del_job(job, user):
+def del_job(job):
     """
     Function to delete a job. Used to spawn a thread
     and wait for jobs to cleanup hashcat proc
@@ -450,7 +449,7 @@ def del_job(job, user):
     time.sleep(22)
     logger.debug('Thread: deleting job')
     job.delete()
-    del_jobid(job.id, user)
+    del_jobid(job.id)
 
 
 @login_manager.user_loader
@@ -784,7 +783,6 @@ class Queuing(MethodView):
         #args = marsh_schema.data
         started = rq.registry.StartedJobRegistry(queue=self.q)
         failed = rq.registry.FailedJobRegistry(queue=self.q)
-        #failed = get_failed_queue(connection=self.redis_con)
         cur_list = started.get_job_ids()
         ###**update all connections to user get_current_connection()??
         self.zombie_check(started, failed, cur_list)
@@ -1053,10 +1051,10 @@ class Queuing(MethodView):
             if job_id in cur_list:
                 job.meta['CrackQ State'] = 'Delete'
                 job.save_meta()
-                user = User.query.filter_by(username=current_user.username).first()
-                del_thread = threading.Thread(target=del_job, args=(job, user))
+                del_thread = threading.Thread(target=del_job, args=(job,))
                 del_thread.start()
                 return {'msg': 'Deleted Job'}, 204
+            del_jobid(job_id)
             job.delete()
             started.cleanup()
             return {'msg': 'Deleted Job'}, 200

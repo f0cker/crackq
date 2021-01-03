@@ -14,7 +14,6 @@ from crackq.logger import logger
 from crackq.validator import FileValidation as valid
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
-from pathlib import Path
 from time import sleep
 from pyhashcat import Hashcat
 from redis import Redis
@@ -313,11 +312,10 @@ def cracked_callback(sender):
                                                  '%Y-%m-%d %H:%M:%S')
                         inactive_time = timedelta(minutes=int(inactive_time))
                         activity = now - last
-                        if (activity > inactive_time
-                                        and job.meta['email_count'] < 1):
+                        if (activity > inactive_time and job.meta['email_count'] < 1):
                             sub = 'CrackQ: Hash cracked notification'
                             send_email(mail_server, mail_port,
-                                            email_src, user_email, sub, tls)
+                                       email_src, user_email, sub, tls)
                             job.meta['email_count'] += 1
                             job.save()
                     except ssl.SSLError as err:
@@ -714,9 +712,9 @@ def hc_worker(crack=None, hash_file=None, session=None,
                                 del_count += 1
                             logger.debug('Breaking runner loop speed check job has finished')
                             speed_job.delete()
+                        cq_api.del_jobid(hcat.session)
                         hcat.hashcat_session_quit()
                         hcat.reset()
-                        cq_api.del_jobid(hcat.session)
                         return
                     elif job.meta['CrackQ State'] == 'Pause':
                         hcat.hashcat_session_pause()
