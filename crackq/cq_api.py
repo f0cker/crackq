@@ -236,7 +236,7 @@ def add_jobid(job_id):
     else:
         logger.debug('No job_ids registered with current user')
         jobs = None
-    logger.info('Registering new job_id to current user: {}'.format(job_id))
+    logger.debug('Registering new job_id to current user: {}'.format(job_id))
     if isinstance(jobs, list):
         if job_id not in jobs:
             jobs.append(job_id)
@@ -257,7 +257,7 @@ def del_jobid(job_id):
                 jobs = json.loads(user.job_ids)
                 logger.debug('Registered jobs: {}'.format(jobs))
                 if isinstance(jobs, list):
-                    logger.info('Unregistering job_id: {}'.format(job_id))
+                    logger.debug('Unregistering job_id: {}'.format(job_id))
                     if job_id in jobs:
                         jobs.remove(job_id)
                         user.job_ids = json.dumps(jobs)
@@ -364,7 +364,7 @@ def admin_required(func):
                 return func(*args, **kwargs)
         except AttributeError as err:
             logger.debug(err)
-            logger.info('Anonymous user cant be admin')
+            logger.debug('Anonymous user cant be admin')
         return abort(401)
     return wrap
 
@@ -525,16 +525,16 @@ class Sso(MethodView):
             if self.group:
                 if len(groups) > 0:
                     if self.group not in groups:
-                        logger.info('User authorised, but not in valid domain group')
+                        logger.debug('User authorised, but not in valid domain group')
                         return 'User is not authorised to use this service', 401
                 else:
-                    logger.info('No groups returned in SAML response')
+                    logger.debug('No groups returned in SAML response')
                     return 'User is not authorised to use this service', 401
             #try:
             #    username
             #except UnboundLocalError:
             #    return {'msg': 'No user returned in SAML response'}, 500
-            logger.info('Authenticated: {}'.format(username))
+            logger.debug('Authenticated: {}'.format(username))
             user = load_user(username)
             if user:
                 crackq.app.session_interface.regenerate(session)
@@ -553,7 +553,7 @@ class Sso(MethodView):
             return redirect('/')
         else:
             ###***add error output to debug
-            logger.info('Login error')
+            logger.debug('Login error')
             return jsonify(ERR_BAD_CREDS), 401
 
 
@@ -593,7 +593,7 @@ class Login(MethodView):
                                         ldap_base=ldap_base)
             logger.debug('LDAP reply: {}'.format(authn))
             if authn[0] == "Success":
-                logger.info('Authenticated: {}'.format(username))
+                logger.debug('Authenticated: {}'.format(username))
                 user = load_user(username)
                 if user:
                     crackq.app.session_interface.regenerate(session)
@@ -619,7 +619,7 @@ class Login(MethodView):
             elif authn[0] == "Invalid Credentials":
                 return jsonify(ERR_BAD_CREDS), 401
             else:
-                logger.info('Login error: {}'.format(authn))
+                logger.debug('Login error: {}'.format(authn))
                 return jsonify(ERR_BAD_CREDS), 401
         if CRACK_CONF['auth']['type'] == 'sql':
             user = User.query.filter_by(username=args['user']).first()
@@ -641,7 +641,7 @@ class Logout(MethodView):
     """
     @login_required
     def get(self):
-        logger.info('User logged out: {}'.format(current_user.username))
+        logger.debug('User logged out: {}'.format(current_user.username))
         user = User.query.filter_by(username=current_user.username).first()
         crackq.app.session_interface.destroy(session)
         user.active = False
@@ -990,7 +990,7 @@ class Queuing(MethodView):
             logger.debug('Validation error: {}'.format(errors))
             return errors.messages, 500
         try:
-            logger.info('Stopping job: {:s}'.format(job_id))
+            logger.debug('Stopping job: {:s}'.format(job_id))
             job = self.q.fetch_job(job_id)
 
             started = rq.registry.StartedJobRegistry(queue=self.q)
@@ -1036,7 +1036,7 @@ class Queuing(MethodView):
             logger.debug('Validation error: {}'.format(errors))
             return errors.messages, 500
         try:
-            logger.info('Deleting job: {:s}'.format(job_id))
+            logger.debug('Deleting job: {:s}'.format(job_id))
             job = self.q.fetch_job(job_id)
             started = rq.registry.StartedJobRegistry(queue=self.q)
             cur_list = started.get_job_ids()
@@ -1072,7 +1072,6 @@ class Options(MethodView):
     def __init__(self):
         self.crack_q = crackqueue.Queuer()
         self.q = self.crack_q.q_connect()
-        #self.crack = run_hashcat.Crack()
         rconf = CRACK_CONF['redis']
         self.redis_con = Redis(rconf['host'], rconf['port'])
 
@@ -1169,7 +1168,7 @@ class Adder(MethodView):
             Restore number to be used with hashcat skip
             returns 0 on error
         """
-        logger.info('Checking for restore value')
+        logger.debug('Checking for restore value')
         if job_id.isalnum():
             job_file = valid.val_filepath(path_string=self.log_dir,
                                           file_string='{}.json'.format(job_id))
@@ -1216,7 +1215,7 @@ class Adder(MethodView):
         sess_id: bool
             True if session/job ID is valid and present
         """
-        logger.info('Checking for existing session')
+        logger.debug('Checking for existing session')
         log_dir = Path(log_dir)
         sess_id = False
         if job_id.isalnum():
@@ -1236,7 +1235,7 @@ class Adder(MethodView):
             logger.debug('Invalid session ID provided')
             sess_id = False
         if sess_id is not False:
-            logger.info('Existing session found')
+            logger.debug('Existing session found')
         return sess_id
 
     def speed_check(self, q_args=None):
@@ -1283,7 +1282,7 @@ class Adder(MethodView):
             speedq_args['kwargs'] = speed_args
             speedq_args['job_id'] = speed_session
             self.crack_q.q_add(self.speed_q, speedq_args, timeout=400)
-            logger.info('Queuing speed check')
+            logger.debug('Queuing speed check')
             return True
         return False
 
@@ -1553,7 +1552,7 @@ class Adder(MethodView):
                 self.speed_check(q_args=q_args)
                 time.sleep(3)
             self.crack_q.q_add(q, q_args, timeout=timeout)
-            logger.info('API Job {} added to queue'.format(job_id))
+            logger.debug('API Job {} added to queue'.format(job_id))
             logger.debug('Job Details: {}'.format(q_args))
             job = self.q.fetch_job(job_id)
             job.meta['email_count'] = 0
@@ -2031,7 +2030,7 @@ class Benchmark(MethodView):
                 'kwargs': hc_args,
                 }
             self.crack_q.q_add(q, q_args)
-            logger.info('API Job {} added to queue'.format(job_id))
+            logger.debug('API Job {} added to queue'.format(job_id))
             logger.debug('Job Details: {}'.format(q_args))
             job = self.q.fetch_job(job_id)
             job.meta['email_count'] = 0

@@ -368,7 +368,6 @@ def finished_callback(sender):
     #changed to just writing restul file for now
     """
     logger.debug('Callback Triggered: Cracking Finished')
-    #status_dict = status(sender)
     if CRACK_CONF['notify']:
         mail_server = CRACK_CONF['notify']['mail_server']
         mail_port = CRACK_CONF['notify']['mail_port']
