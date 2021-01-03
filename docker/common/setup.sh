@@ -27,6 +27,12 @@ python3 -m pip install circus
 # Install Gunicorn
 python3 -m pip install gunicorn
 
+# Install modified RQ version while waiting for merge
+git clone https://github.com/f0cker/rq.git
+cd ./rq
+python3 -m pip install .
+cd ../
+
 #Download and compile pyhashcat & Hashcat
 #git clone https://github.com/f0cker/pyhashcat.git
 git clone https://github.com/f0cker/pyhashcat.git --branch status_reset

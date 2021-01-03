@@ -1,10 +1,10 @@
 """Init file for CrackQ. Initialized Flask App"""
-from flask import Flask
-from flask_cors import CORS
-from crackq import cq_api, crackqueue, run_hashcat, auth
+from crackq import cq_api, crackqueue, run_hashcat
 from crackq.conf import hc_conf
 from crackq.db import db
 from crackq.models import User
+from flask import Flask
+from flask_cors import CORS
 from flask_login import (
     LoginManager,
     login_required,
@@ -16,6 +16,7 @@ from flask_login import (
 from flask_migrate import Migrate
 from flask_session import Session
 from flask_seasurf import SeaSurf
+
 
 CRACK_CONF = hc_conf()
 
@@ -56,7 +57,8 @@ def create_app():
     app.add_url_rule('/api/admin/', defaults={'user_id': None},
                      view_func=admin_view, methods=['POST', 'GET'])
     app.add_url_rule('/api/admin/<uuid:user_id>',
-                     view_func=admin_view, methods=['GET', 'DELETE', 'PUT', 'PATCH'])
+                     view_func=admin_view, methods=['GET', 'DELETE',
+                                                    'PUT', 'PATCH'])
     app.add_url_rule('/api/admin/',
                      view_func=admin_view, methods=['POST'])
     app.add_url_rule('/api/profile/',
@@ -72,7 +74,8 @@ def create_app():
     app.add_url_rule('/api/options',
                      view_func=options_view, methods=['GET'])
     app.add_url_rule('/api/queuing/<string:job_id>',
-                     view_func=queuing_view, methods=['GET', 'DELETE', 'PUT', 'PATCH'])
+                     view_func=queuing_view, methods=['GET', 'DELETE',
+                                                      'PUT', 'PATCH'])
     app.add_url_rule('/api/add',
                      view_func=add_view, methods=['POST'])
     app.add_url_rule('/api/reports',
