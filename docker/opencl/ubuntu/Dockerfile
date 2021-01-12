@@ -2,12 +2,7 @@ FROM ubuntu:18.04
 
 ENV DEBIAN_FRONTEND noninteractive
 
-# docker build -t opencl-ubuntu .
-# docker network create crackq_net
-# docker run --network crackq_net -d --name redis redis
-# docker run --runtime=nvidia --name crackq -p8080:8080 -v /var/crackq/:/var/crackq --network crackq_net -it opencl-ubuntu
-
-RUN apt-get update -q && apt-get install --no-install-recommends -yq alien wget unzip clinfo \
+RUN apt-get update -q && apt-get install --no-install-recommends -yq alien wget unzip clinfo libminizip-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Download the Intel OpenCL 2.0 development headers
@@ -40,16 +35,13 @@ ENV LD_LIBRARY_PATH $OCL_LIB:$LD_LIBRARY_PATH
 ENV DOCKYARD=/opt/crackq/build
 ENV PYTHONPATH=$DOCKYARD:/opt/crackq/build/crackq
 
-
-#RUN apt-get install python3 python3-libs python3-dev python3-pip
 # Update & install packages for installing hashcat
 RUN apt-get update && \
-    apt-get install -y wget p7zip make build-essential git libcurl4-openssl-dev libssl-dev zlib1g-dev python3.7 \
+    apt-get install -y wget p7zip gcc g++ make build-essential git libcurl4-openssl-dev libssl-dev zlib1g-dev python3.7 \
     python3.7-dev python3-pip libldap2-dev libsasl2-dev libssl-dev xmlsec1 libxmlsec1-openssl
 
 # Copy the code to the build dir
 COPY . $DOCKYARD
-#COPY ../../../crackq/ $DOCKYARD/crackq/
 # Run install script to setup hashcat/pyhashcat
 WORKDIR $DOCKYARD
 RUN $DOCKYARD/setup.sh
@@ -61,10 +53,7 @@ EXPOSE 8080
 ENV LANG "C.UTF-8"
 ENV LC_ALL "C.UTF-8"
 
-#RUN groupadd -g 1111 -r crackq && useradd -u 1111 -d /home/crackq/ -r -g crackq crackq
-#RUN mkdir /home/crackq/ && chown 1111:1111 /home/crackq/
 RUN chown -R 1111:1111 $DOCKYARD/
-# && chown -R 1111:1111 /var/crackq/
 USER crackq
 WORKDIR $DOCKYARD/
 CMD ["/usr/local/bin/circusd", "/opt/crackq/build/circus.ini"]

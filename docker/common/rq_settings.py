@@ -7,6 +7,5 @@
 # Start a worker using:
 # $ rq worker -c rq_settings
 
-REDIS_HOST = 'redis'  # redis OR localhost
+REDIS_HOST = 'redis'
 REDIS_PORT = 6379
-#QUEUES = ['default', 'reports']

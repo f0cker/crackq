@@ -1,6 +1,6 @@
 ###***add in args here and update to version 3 if it's possible with nvidia runtime
 
-version: '2.0'
+version: '2.3'
 services:
     redis:
         image: "redis:latest"
@@ -12,7 +12,7 @@ services:
         #volumes:
         #    - /var/crackq/:/var/crackq
     crackq:
-        image: "opencl-crackq"
+        image: "nvidia-crackq"
         ports:
                 - "127.0.0.1:8080:8080"
         depends_on:
@@ -20,6 +20,7 @@ services:
         networks:
             - crackq_net
         container_name: "crackq"
+        runtime: nvidia
         volumes:
             - /var/crackq/:/var/crackq
             #- ./crackq:/opt/crackq/build/crackq/
@@ -27,10 +28,9 @@ services:
         user: crackq
         tty: true        
         command:
-                sh -c "pip3 install . --user &&
-                cd ./crackq/ &&
-                python3 update_hashtypes.py &&
-                /usr/local/bin/circusd /opt/crackq/build/circus.ini"
+                sh -c "pip3 install . --user && cd ./crackq
+                && python3 -c 'from crackq import hash_modes; hash_modes.HModes.update_modes()'
+                && /usr/local/bin/circusd /opt/crackq/build/circus.ini"
 
 #nginx:
 #    build:
@@ -45,6 +45,7 @@ services:
 #             - "443:443"
 #        volumes:
 #             - /var/crackq/files/nginx/conf.d:/etc/nginx/conf.d
+#             - /var/crackq/logs/nginx/:/var/log/nginx/
 #        networks:
 #            - crackq_net
 
