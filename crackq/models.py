@@ -1,28 +1,32 @@
+"""SQL database models for user management"""
+
 import json
+import uuid
+
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
-from logging.config import fileConfig
 from sqlalchemy import create_engine, Column, ForeignKey
 from sqlalchemy.types import (
     Boolean,
     DateTime,
     Integer,
-    String,
-    TypeDecorator,
     JSON,
+    String,
+    Unicode,
     )
+from sqlalchemy_utils import UUIDType
 from crackq.db import db
 
 
 class User(db.Model):
     """Flask-login User model for session management"""
     __tablename__ = 'user'
-    #__abstract__ = True
-    #__table_args__ = {'extend_existing': True}
+    id = Column(UUIDType(binary=True), default=uuid.uuid4().hex, primary_key=True,
+                index=True)
+    __table_args__ = {'extend_existing': True}
     active = Column(Boolean())
-    username = Column(String(255), unique=True, index=True,
-                      primary_key=True)
-    email = Column(String(255), unique=True)
+    username = Column(String(255), unique=True)
+    email = Column(String(255))
     last_login_at = Column(DateTime())
     last_seen = Column(DateTime())
     current_login_at = Column(DateTime())
@@ -32,6 +36,7 @@ class User(db.Model):
     confirmed_at = Column(DateTime())
     job_ids = Column(JSON, unique=True)
     is_admin = Column(Boolean())
+    password = Column(Unicode(100))
 
     def is_active(self):
         """Required method for flask-login User class"""
@@ -39,7 +44,7 @@ class User(db.Model):
 
     def get_id(self):
         """Required method for flask-login User class"""
-        return self.username
+        return self.id
 
     def is_anonymous(self):
         """Required method for flask-login User class"""
@@ -56,5 +61,6 @@ class User(db.Model):
             'job_ids': self.job_ids,
             'email': self.email,
             'last_seen':  self.last_seen,
+            'password': self.password
             }
         return json.dumps(ret)

@@ -1,71 +1,65 @@
-
+"""Main Flask code handling REST API"""
 import json
-import logging
+import nltk
 import os
 import re
+import rq
+import saml2
+import threading
 import time
 import uuid
 
-import nltk
-import rq
-
-from crackq import crackqueue, hash_modes, run_hashcat, auth
+import crackq
+from crackq.db import db
+from crackq.logger import logger
+from crackq.models import User
+from crackq import crackqueue, hash_modes, auth
+from crackq.validator import FileValidation as valid
 from crackq.conf import hc_conf
 from datetime import datetime
-from flask import (Flask, redirect, request, session, make_response, url_for)
-from flask_restful import reqparse, abort, Resource
-from logging.config import fileConfig
+from flask import (
+    abort,
+    Flask,
+    jsonify,
+    redirect,
+    request,
+    session)
+from flask.views import MethodView
+from flask_bcrypt import Bcrypt
+from flask_seasurf import SeaSurf
+from flask_login import (
+    LoginManager,
+    login_required,
+    login_user,
+    logout_user,
+    current_user)
+from functools import wraps
 from marshmallow import Schema, fields, validate, ValidationError
-from marshmallow.validate import Length, Range, Regexp
+from marshmallow.validate import Length, Range
 from operator import itemgetter
 from pathlib import Path
 from pypal import pypal
 from redis import Redis
-from rq import use_connection, Queue
+from rq import Queue
+from rq.serializers import JSONSerializer
 from saml2 import BINDING_HTTP_POST
-from saml2 import BINDING_HTTP_REDIRECT
 from saml2 import sigver
-from flask_seasurf import SeaSurf
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, login_required, login_user, logout_user, UserMixin, current_user
-from flask_session import Session
-from crackq.models import User
-from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy import create_engine, Column, ForeignKey
-from sqlalchemy.orm import relationship, backref
-from sqlalchemy.types import (
-    Boolean,
-    DateTime,
-    Integer,
-    String,
-    TypeDecorator,
-    JSON,
-    )
-
-from sqlalchemy.ext.declarative import declarative_base
-#from crackq import create_app
-from crackq.db import db
-import crackq
-import saml2
-#from crackq import app
-#from wsgi import db, app
-#import crackq
-#from wsgi import app
+from sqlalchemy.orm import exc
 
 # set perms
 os.umask(0o077)
 
-# Setup logging
-fileConfig('log_config.ini')
-logger = logging.getLogger()
+# Setup Flask App
 login_manager = LoginManager()
-
 app = Flask(__name__)
-###***is it possible to move this to __init__?
 csrf = SeaSurf()
-csrf.init_app(app)
-
+bcrypt = Bcrypt(app)
 CRACK_CONF = hc_conf()
+
+# Define HTTP messages
+ERR_INVAL_JID = {'msg': 'Invalid Job ID'}
+ERR_METH_NOT = {'msg': 'Method not supported'}
+ERR_BAD_CREDS = {"msg": "Bad username or password"}
 
 
 class StringContains(validate.Regexp):
@@ -96,17 +90,21 @@ class parse_json_schema(Schema):
 
     """
     error_messages = {
-            "name": "Invalid input characters",
-            "username": "Invalid input characters",
-            }
-    job_id = fields.UUID(allow_none=False)# validate=Length(min=1, max=32))
-    batch_job = fields.List(fields.Dict(fields.UUID(), fields.Int(min=0, max=1000)))
-    place = fields.Int(validate=Range(min=1, max=100))
-    hash_list = fields.List(fields.String(validate=StringContains(r'[^A-Za-z0-9\*\$\@\/\\\.\:\-\_\+\.]+\~')),
+        "name": "Invalid input characters",
+        "username": "Invalid input characters",
+        }
+    job_id = fields.UUID(allow_none=False)
+    batch_job = fields.List(fields.Dict(keys=fields.Str(),
+                                        place=fields.Int(),
+                                        job_id=fields.UUID()))
+    hash_list = fields.List(fields.String(validate=StringContains(
+                            r'[^A-Za-z0-9\*\$\@\/\\\.\:\-\_\+\.]+\~')),
                             allow_none=True, error_messages=error_messages)
     wordlist = fields.Str(allow_none=True, validate=[StringContains(r'[\W]\-'),
                                                      Length(min=1, max=60)])
-    attack_mode = fields.Int(allow_none=True, validate=Range(min=0, max=7))
+    wordlist2 = fields.Str(allow_none=True, validate=[StringContains(r'[\W]\-'),
+                                                      Length(min=1, max=60)])
+    attack_mode = fields.Int(allow_none=True, validate=Range(min=0, max=9))
     rules = fields.List(fields.String(validate=[StringContains(r'[\W]\-'),
                                                 Length(min=1, max=60)]),
                         allow_none=True)
@@ -114,17 +112,32 @@ class parse_json_schema(Schema):
     notify = fields.Bool(allow_none=True)
     increment = fields.Bool(allow_none=True)
     disable_brain = fields.Bool(allow_none=True)
-    incement_min = fields.Int(allow_none=True, validate=Range(min=0, max=20))
+    increment_min = fields.Int(allow_none=True, validate=Range(min=0, max=20))
     increment_max = fields.Int(allow_none=True, validate=Range(min=0, max=20))
-    mask = fields.Str(allow_none=True, validate=StringContains(r'[^aldsu\?0-9a-zA-Z]'))
+    mask = fields.Str(allow_none=True,
+                      validate=StringContains(r'[^aldsu\?0-9a-zA-Z]'))
     mask_file = fields.List(fields.String(validate=[StringContains(r'[\W]\-'),
                                                     Length(min=1, max=60)]),
-                                allow_none=True)
-    name = fields.Str(allow_none=True, validate=StringContains(r'[\W]'), error_messages=error_messages)
+                            allow_none=True)
+    name = fields.Str(allow_none=True,
+                      validate=StringContains(r'[\W]'),
+                      error_messages=error_messages)
     hash_mode = fields.Int(allow_none=False, validate=Range(min=0, max=65535))
     restore = fields.Int(validate=Range(min=0, max=1000000000000))
     user = fields.Str(allow_none=False, validate=StringContains(r'[\W]'))
-    password = fields.Str(allow_none=False, validate=StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/]'))
+    password = fields.Str(allow_none=False,
+                          validate=StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/]'))
+    confirm_password = fields.Str(allow_none=True,
+                                  validate=[StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/]'),
+                                            Length(min=10, max=60)])
+    new_password = fields.Str(allow_none=True,
+                              validate=[StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/]'),
+                                        Length(min=10, max=60)])
+    email = fields.Str(allow_none=False,
+                       validate=StringContains(r'[^\w\@\^\-\+\./]'))
+    admin = fields.Bool(allow_none=True)
+    benchmark_all = fields.Bool(allow_none=True)
+    timeout = fields.Int(validate=Range(min=1, max=28800000), allow_none=True)
 
 
 def get_jobdetails(job_details):
@@ -141,22 +154,30 @@ def get_jobdetails(job_details):
 
     """
     deets_dict = {}
-    deet_match_list = [
-                    'hash_mode',
-                    'attack_mode',
-                    'mask',
-                    'wordlist',
-                    'rules',
-                    'name',
-                    'username',
-                    'increment',
-                    'increment_min',
-                    'increment_max',
-                    'disable_brain',
-                    'restore']
+    if 'Benchmark' in job_details:
+        deet_match_list = [
+            'name',
+            'benchmark',
+            'benchmark_all'
+            ]
+    else:
+        deet_match_list = [
+            'hash_mode',
+            'attack_mode',
+            'mask',
+            'wordlist',
+            'wordlist2',
+            'rules',
+            'name',
+            'username',
+            'increment',
+            'increment_min',
+            'increment_max',
+            'disable_brain',
+            'brain_check',
+            'restore']
     ###***make this less ugly
     ###***review stripping here for improvement
-    #review rules processing
     logger.debug('Parsing job details:\n{}'.format(job_details))
     # Process rules list separately as workaround for splitting on comma
     if '[' in job_details:
@@ -170,7 +191,9 @@ def get_jobdetails(job_details):
         deet = deets.split('=')[0].strip(' ')
         if deet in deet_match_list:
             deets_dict[deet] = deets.strip().split('=')[1].strip().rstrip("'").lstrip("'")
-    if rules_list and rules_list != '':
+    if 'Benchmark' in job_details:
+        return deets_dict
+    if rules_list:
         rule_names = []
         for key, rule in dict(CRACK_CONF['rules']).items():
             if rule in rules_list:
@@ -178,20 +201,29 @@ def get_jobdetails(job_details):
         deets_dict['rules'] = rule_names
     else:
         deets_dict['rules'] = None
-    if deets_dict['mask'] and deets_dict['mask'] != '':
-        mask = deets_dict['mask']
-        for key, mask_file in dict(CRACK_CONF['masks']).items():
-            if mask in mask_file:
-
-                deets_dict['mask'] = key
-    if deets_dict['wordlist'] != 'None' and deets_dict['wordlist'] != '':
-        wordlist = deets_dict['wordlist']
+    if 'mask' in deets_dict:
+        if deets_dict['mask']:
+            mask = deets_dict['mask']
+            for key, mask_file in dict(CRACK_CONF['masks']).items():
+                if mask in mask_file:
+                    deets_dict['mask'] = key
+    if 'wordlist' in deets_dict:
+        if deets_dict['wordlist']:
+            wordlist = deets_dict['wordlist']
+            for key, word in dict(CRACK_CONF['wordlists']).items():
+                if wordlist in word:
+                    deets_dict['wordlist'] = key
+                    break
+                else:
+                    deets_dict['wordlist'] = None
+    if 'wordlist2' in deets_dict:
+        wordlist = deets_dict['wordlist2']
         for key, word in dict(CRACK_CONF['wordlists']).items():
             if wordlist in word:
-                deets_dict['wordlist'] = key
+                deets_dict['wordlist2'] = key
                 break
             else:
-                deets_dict['wordlist'] = None
+                deets_dict['wordlist2'] = None
     return deets_dict
 
 
@@ -204,7 +236,7 @@ def add_jobid(job_id):
     else:
         logger.debug('No job_ids registered with current user')
         jobs = None
-    logger.info('Registering new job_id to current user: {}'.format(job_id))
+    logger.debug('Registering new job_id to current user: {}'.format(job_id))
     if isinstance(jobs, list):
         if job_id not in jobs:
             jobs.append(job_id)
@@ -219,32 +251,30 @@ def add_jobid(job_id):
 
 def del_jobid(job_id):
     """Delete job_id from job_ids column in user table"""
-    user = User.query.filter_by(username=current_user.username).first()
-    if user.job_ids:
-        jobs = json.loads(user.job_ids)
-        logger.debug('Registered jobs: {}'.format(jobs))
-    else:
-        logger.debug('No job_ids registered with current user')
+    with crackq.app.app_context():
+        for user in User.query.all():
+            if user.job_ids and job_id in user.job_ids:
+                jobs = json.loads(user.job_ids)
+                logger.debug('Registered jobs: {}'.format(jobs))
+                if isinstance(jobs, list):
+                    logger.debug('Unregistering job_id: {}'.format(job_id))
+                    if job_id in jobs:
+                        jobs.remove(job_id)
+                        user.job_ids = json.dumps(jobs)
+                        db.session.commit()
+                        logger.debug('user.job_ids: {}'.format((user.job_ids)))
+                        return True
+                else:
+                    logger.error('Error removing job_id')
+            else:
+                logger.debug('Job ID not registered with user')
         return False
-    if isinstance(jobs, list):
-        logger.info('Unregistering job_id: {}'.format(job_id))
-        if job_id in jobs:
-            jobs.remove(job_id)
-        else:
-            return False
-    else:
-        logger.error('Error removing job_id')
-        return False
-    user.job_ids = json.dumps(jobs)
-    db.session.commit()
-    logger.debug('user.job_ids: {}'.format((user.job_ids)))
-    return True
 
 
 def check_jobid(job_id):
     """Check user owns the job_id"""
     logger.debug('Checking job_id: {} belongs to user: {}'.format(
-                job_id, current_user.username))
+                 job_id, current_user.username))
     user = User.query.filter_by(username=current_user.username).first()
     if user.job_ids:
         if job_id in user.job_ids:
@@ -279,13 +309,13 @@ def check_rules(orig_rules):
                 if rule in CRACK_CONF['rules']:
                     logger.debug('Using rules file: {}'.format(CRACK_CONF['rules'][rule]))
                     rules.append(CRACK_CONF['rules'][rule])
-            return rules
         else:
             logger.debug('Invalid rules provided')
-            return False
+            rules = False
     except KeyError:
         logger.debug('Invalid rules provided')
-        return False
+        rules = False
+    return rules
 
 
 def check_mask(orig_masks):
@@ -324,16 +354,70 @@ def check_mask(orig_masks):
     #mask = mask_file[0] if mask_file else mask
 
 
-def create_user(username, email=None):
+def admin_required(func):
+    @wraps(func)
+    def wrap(*args, **kwargs):
+        """Decorator to check user is admin"""
+        try:
+            logger.debug('User authenticating {}'.format(current_user.username))
+            if current_user.is_admin:
+                return func(*args, **kwargs)
+        except AttributeError as err:
+            logger.debug(err)
+            logger.debug('Anonymous user cant be admin')
+        return abort(401)
+    return wrap
+
+
+def create_user(username, email=None, password=None):
+    """
+    Adds a new user to the SQLAlchemy datastore
+
+    Arguments
+    ---------
+    username: string
+        Username to create
+
+    Returns
+    -------
+    result: boolean
+        True/False indicating status of delete operation
+    """
     if User.query.filter_by(username=username).first():
         logger.debug('User already exists')
         return False
     else:
-        user = User(username=username, email=email, is_admin=False)
+        user = User(username=username, email=email,
+                    password=password, is_admin=False)
         db.session.add(user)
         db.session.commit()
         logger.debug('New user added')
         return True
+
+
+def del_user(user_id):
+    """
+    Delete a user from the SQLAlchemy datastore
+
+    Arguments
+    ---------
+    user_id: int
+        User ID number for the user to delete
+
+    Returns
+    -------
+    result: boolean
+        True/False indicating status of delete operation
+    """
+    try:
+        user = User.query.filter_by(id=user_id).first()
+        db.session.delete(user)
+        db.session.commit()
+        return True
+    except AttributeError:
+        return False
+    except exc.UnmappedInstanceError:
+        return False
 
 
 def email_check(email):
@@ -357,12 +441,24 @@ def email_check(email):
         return False
 
 
+def del_job(job):
+    """
+    Function to delete a job. Used to spawn a thread
+    and wait for jobs to cleanup hashcat proc
+    """
+    time.sleep(22)
+    logger.debug('Thread: deleting job')
+    job.delete()
+    del_jobid(job.id)
+
+
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(user_id)
+    """user_loader function requried as part of Flask login-manager"""
+    return User.query.filter_by(username=user_id).first()
 
 
-class Sso(Resource):
+class Sso(MethodView):
     """
     SAML2 Single Sign On Class
 
@@ -378,23 +474,21 @@ class Sso(Resource):
             self.saml_auth = auth.Saml2(self.meta_url,
                                         self.meta_file, self.entity_id)
             self.saml_client = self.saml_auth.s_client()
-            #self.reqid = None
 
     def get(self):
         """
         Login mechanism, using GET to redirect to SAML IDP.
         """
-        ###***validate
         if CRACK_CONF['auth']['type'] == 'saml2':
             self.reqid, info = self.saml_client.prepare_for_authenticate()
             redirect_url = None
             for key, value in info['headers']:
-                if key is 'Location':
+                if key == 'Location':
                     redirect_url = value
             response = redirect(redirect_url, code=302)
             return response
         else:
-            return 'Method not supported', 405
+            return jsonify(ERR_METH_NOT), 405
 
     @csrf.exempt
     def post(self):
@@ -402,7 +496,7 @@ class Sso(Resource):
         Handle returned SAML reponse
         """
         if not CRACK_CONF['auth']['type'] == 'saml2':
-            return 'Method not supported', 405
+            return jsonify(ERR_METH_NOT), 405
         ###***validate
         ###***readd/fix reqid verification
         saml_resp = request.form['SAMLResponse']
@@ -431,16 +525,16 @@ class Sso(Resource):
             if self.group:
                 if len(groups) > 0:
                     if self.group not in groups:
-                        logger.info('User authorised, but not in valid domain group')
+                        logger.debug('User authorised, but not in valid domain group')
                         return 'User is not authorised to use this service', 401
                 else:
-                    logger.info('No groups returned in SAML response')
+                    logger.debug('No groups returned in SAML response')
                     return 'User is not authorised to use this service', 401
-            try:
-                username
-            except UnboundLocalError:
-                return json.dumps({'msg': 'No user returned in SAML response'}), 500
-            logging.info('Authenticated: {}'.format(username))
+            #try:
+            #    username
+            #except UnboundLocalError:
+            #    return {'msg': 'No user returned in SAML response'}, 500
+            logger.debug('Authenticated: {}'.format(username))
             user = load_user(username)
             if user:
                 crackq.app.session_interface.regenerate(session)
@@ -454,16 +548,16 @@ class Sso(Resource):
                 crackq.app.session_interface.regenerate(session)
                 login_user(user)
             else:
-                logging.error('No user object loaded')
-                return {"msg": "Bad username or password"}, 401
+                logger.error('No user object loaded')
+                return jsonify(ERR_BAD_CREDS), 401 
             return redirect('/')
         else:
             ###***add error output to debug
-            logger.info('Login error')
-            return {"msg": "Bad username or password"}, 401
+            logger.debug('Login error')
+            return jsonify(ERR_BAD_CREDS), 401
 
 
-class Login(Resource):
+class Login(MethodView):
     """
     Authentication handler
 
@@ -479,40 +573,39 @@ class Login(Resource):
         Supply the following in the body: {"user": "xxx", "password": "xxx"}
 
         """
-        marsh_schema = parse_json_schema().loads(json.dumps(request.json))
-        if len(marsh_schema.errors) > 0:
-            logger.debug('Validation error: {}'.format(marsh_schema.errors))
-            return marsh_schema.errors, 500
-        else:
-            args = marsh_schema.data
+        try:
+            marsh_schema = parse_json_schema().load(request.json)
+            args = marsh_schema
+        except ValidationError as errors:
+            logger.debug('Validation error: {}'.format(errors))
+            return errors.messages, 500
         if CRACK_CONF['auth']['type'] == 'ldap':
             username = args['user']
             password = args['password']
             if not username:
-                return json.dumps({"msg": "Missing username parameter"}), 400
+                return jsonify({"msg": "Missing username parameter"}), 400
             if not password:
-                return json.dumps({"msg": "Missing password parameter"}), 400
+                return jsonify({"msg": "Missing password parameter"}), 400
             ldap_uri = CRACK_CONF['auth']['ldap_server']
             ldap_base = CRACK_CONF['auth']['ldap_base']
-            authn = auth.Ldap.authenticate(ldap_uri, username, password,
-                                           ldap_base=ldap_base)
+            auther = auth.Ldap()
+            authn = auther.authenticate(ldap_uri, username, password,
+                                        ldap_base=ldap_base)
             logger.debug('LDAP reply: {}'.format(authn))
             if authn[0] == "Success":
-                logging.info('Authenticated: {}'.format(username))
-                if email_check(username):
-                    logger.debug('Email address found, using for notify')
-                    email = username
+                logger.debug('Authenticated: {}'.format(username))
                 user = load_user(username)
                 if user:
                     crackq.app.session_interface.regenerate(session)
                     login_user(user)
                 else:
-                    if authn[1]:
+                    if len(authn) > 1:
                         email = authn[1]
-                        if email_check(email):
-                            create_user(username, email=email)
-                        else:
-                            create_user(username)
+                    else:
+                        email = username
+                    if email_check(email):
+                        logger.debug('Email address found, using for notify')
+                        create_user(username, email=email)
                     else:
                         create_user(username)
                     user = load_user(username)
@@ -520,19 +613,27 @@ class Login(Resource):
                     crackq.app.session_interface.regenerate(session)
                     login_user(user)
                 else:
-                    logging.error('No user object loaded')
-                    return json.dumps({"msg": "Bad username or password"}), 401
+                    logger.error('No user object loaded')
+                    return jsonify(ERR_BAD_CREDS), 401
                 return 'OK', 200
-            elif authn[0] is "Invalid Credentials":
-                return json.dumps({"msg": "Bad username or password"}), 401
+            elif authn[0] == "Invalid Credentials":
+                return jsonify(ERR_BAD_CREDS), 401
             else:
-                logger.info('Login error: {}'.format(authn))
-                return json.dumps({"msg": "Bad username or password"}), 401
+                logger.debug('Login error: {}'.format(authn))
+                return jsonify(ERR_BAD_CREDS), 401
+        if CRACK_CONF['auth']['type'] == 'sql':
+            user = User.query.filter_by(username=args['user']).first()
+            if isinstance(user, User):
+                if bcrypt.check_password_hash(user.password, args['password']):
+                    crackq.app.session_interface.regenerate(session)
+                    login_user(user)
+                    return 'OK', 200
+            return jsonify(ERR_BAD_CREDS), 401
         else:
-            return 'Method not supported', 405
+            return jsonify(ERR_METH_NOT)
 
 
-class Logout(Resource):
+class Logout(MethodView):
     """
     Session Logout
 
@@ -540,10 +641,8 @@ class Logout(Resource):
     """
     @login_required
     def get(self):
-        logger.info('User logged out: {}'.format(current_user.username))
+        logger.debug('User logged out: {}'.format(current_user.username))
         user = User.query.filter_by(username=current_user.username).first()
-        #sid = request.cookies.get(app.session_cookie_name)
-        sid = request.cookies.get(crackq.app.session_cookie_name)
         crackq.app.session_interface.destroy(session)
         user.active = False
         db.session.commit()
@@ -551,7 +650,7 @@ class Logout(Resource):
         return 'Logged Out', 200
 
 
-class Queuing(Resource):
+class Queuing(MethodView):
     """
     Class to interact with the crackqueue module
 
@@ -562,14 +661,12 @@ class Queuing(Resource):
     def __init__(self):
         self.crack_q = crackqueue.Queuer()
         self.q = self.crack_q.q_connect()
-        self.crack = run_hashcat.Crack()
         rconf = CRACK_CONF['redis']
         self.log_dir = CRACK_CONF['files']['log_dir']
-        #self.redis_con = Redis()
         self.redis_con = Redis(rconf['host'], rconf['port'])
-                               # password=rconf['password'])
         self.req_max = CRACK_CONF['misc']['req_max']
-        #self.report_dir = CRACK_CONF['reports']['dir']
+        self.speed_q = Queue('speed_check', connection=self.redis_con,
+                             serializer=JSONSerializer)
 
     def zombie_check(self, started, failed, cur_list):
         """
@@ -608,7 +705,7 @@ class Queuing(Resource):
 
     def get_comp_dict(self, comp_list, session=False):
         """
-        Function to get comlete queue information
+        Function to get complete queue information
 
         Arguments
         ---------
@@ -634,7 +731,7 @@ class Queuing(Resource):
             if job:
                 comp_dict[job_id] = {}
                 job_deets = get_jobdetails(job.description)
-                if job.meta and 'HC State' in job.meta.keys():
+                try:
                     if isinstance(job.meta['HC State'], dict):
                         cracked = str(job.meta['HC State']['Cracked Hashes'])
                         total = str(job.meta['HC State']['Total Hashes'])
@@ -646,17 +743,24 @@ class Queuing(Resource):
                             comp_dict[job_id]['Name'] = 'No name'
                         except AttributeError:
                             comp_dict[job_id]['Name'] = 'No name'
-                    else:
-                        comp_dict[job_id]['Name'] = job_deets['name']
-                        comp_dict[job_id]['Cracked'] = 'All'
-                        ###**update to redis job time?
-                        comp_dict[job_id]['Running Time'] = '0'
-                else:
-                    comp_dict[job_id]['Name'] = job_deets['name']
-                    comp_dict[job_id]['Cracked'] = None
-                    comp_dict[job_id]['Running Time'] = None
+                except KeyError:
+                    logger.debug('No HC state, checking state file')
+                    job_file = valid.val_filepath(path_string=self.log_dir,
+                                                  file_string='{}.json'.format(job_id))
+                    try:
+                        with open(job_file, 'r') as jobfile_fh:
+                            job_deets = json.loads(jobfile_fh.read().strip())
+                            comp_dict[job_id]['Name'] = job_deets['name']
+                            cracked = job_deets['Cracked Hashes']
+                            total = job_deets['Total Hashes']
+                            comp_dict[job_id]['Cracked'] = '{}/{}'.format(cracked, total)
+                            comp_dict[job_id]['Running Time'] = '0'
+                    except FileNotFoundError as err:
+                        logger.debug('Failed to open job file: {}'.format(err))
+                except Exception as err:
+                    logger.debug('Failed to open job file: {}'.format(err))
             else:
-                logger.error('job.meta is missing for job: {}'.format(job_id))
+                logger.error('Job is missing: {}'.format(job_id))
         return comp_dict
 
     @login_required
@@ -675,21 +779,17 @@ class Queuing(Resource):
         time_now = datetime.strptime(time_now, '%Y-%m-%d %H:%M')
         current_user.last_seen = time_now
         db.session.commit()
-        ###***clean this up, maybe remove crackqueue.py entirely?
         ###***re-add this for validation?
         #args = marsh_schema.data
-        started = rq.registry.StartedJobRegistry('default',
-                                                 connection=self.redis_con)
-        failed = rq.registry.FailedJobRegistry('default',
-                                               connection=self.redis_con)
-        #failed = get_failed_queue(connection=self.redis_con)
+        started = rq.registry.StartedJobRegistry(queue=self.q)
+        failed = rq.registry.FailedJobRegistry(queue=self.q)
         cur_list = started.get_job_ids()
         ###**update all connections to user get_current_connection()??
         self.zombie_check(started, failed, cur_list)
         q_dict = self.crack_q.q_monitor(self.q)
         logger.debug('Current jobs: {}'.format(cur_list))
-        failed_dict = self.crack_q.check_failed()
-        comp_list = self.crack_q.check_complete()
+        failed_dict = self.crack_q.check_failed(self.q)
+        comp_list = self.crack_q.check_complete(self.q)
         last_comp = []
         end_times = {}
         if len(comp_list) > 0:
@@ -718,26 +818,25 @@ class Queuing(Resource):
                     job_name = 'No name'
                 # just a single job for now
                 last_comp = [{'job_name': job_name,
-                             'job_id': latest}]
+                              'job_id': latest}]
         else:
             last_comp = [{'job_name': 'None'}]
         q_dict['Last Complete'] = last_comp
         logger.debug('Completed jobs: {}'.format(comp_list))
         logger.debug('q_dict: {}'.format(q_dict))
-        ###***check for race conditions here!!
-        ###***apply validation here
+        if not job_id.isalnum():
+            return jsonify(ERR_INVAL_JID), 500
         if job_id == 'all':
             ###***definitely make these a function
             if len(cur_list) > 0:
                 job = self.q.fetch_job(cur_list[0])
-                #if len(json.loads(current_user.job_ids)) > 0:
-                if current_user.job_ids:
+                if current_user.job_ids and job:
                     if cur_list[0] in json.loads(current_user.job_ids):
                         job.meta['email_count'] = 0
                         job.save()
                 if job:
                     if 'HC State' in job.meta:
-                        ###***small issue here when job is added initially?
+                        ###***remove this?
                         if isinstance(job.meta['HC State'], dict):
                             job_details = get_jobdetails(job.description)
                             try:
@@ -751,122 +850,63 @@ class Queuing(Resource):
                     job = self.q.fetch_job(qjob_id)
                     job_details = get_jobdetails(job.description)
                     q_dict['Queued Jobs'][qjob_id]['Job Details'] = job_details
-            return q_dict, 200
-        ###***apply validation here
+            return jsonify(q_dict), 200
         elif job_id == 'failed':
-            return failed_dict, 200
+            return jsonify(failed_dict), 200
         elif job_id == 'failedless':
             failess_dict = {}
             for job_id in failed_dict:
                 if check_jobid(job_id):
                     failess_dict[job_id] = failed_dict[job_id]
-            return failess_dict, 200
-        ###***apply validation here
+            return jsonify(failess_dict), 200
         elif job_id == 'complete':
             comp_dict = {}
             comp_dict = self.get_comp_dict(comp_list, session=False)
-            return comp_dict, 200
+            return jsonify(comp_dict), 200
         elif job_id == 'completeless':
             comp_dict = {}
             comp_dict = self.get_comp_dict(comp_list, session=True)
-            return comp_dict, 200
+            return jsonify(comp_dict), 200
         else:
-            marsh_schema = parse_json_schema().load({'job_id': job_id})
-            if len(marsh_schema.errors) > 0:
-                logger.debug('Validation error: {}'.format(marsh_schema.errors))
-                return marsh_schema.errors, 500
-            else:
-                job_id = marsh_schema.data['job_id'].hex
-            check_job = check_jobid(job_id)
-            if job_id in q_dict['Queued Jobs']:
-                if not check_job:
-                    ###***modify this to give better response?
-                    return 401
-
+            try:
+                marsh_schema = parse_json_schema().load({'job_id': job_id})
+                job_id = marsh_schema['job_id'].hex
+            except ValidationError as errors:
+                logger.debug('Validation error: {}'.format(errors))
+                return errors.messages, 500
+            if check_jobid(job_id):
                 job = self.q.fetch_job(job_id)
-                if job is not None:
-                    job_details = get_jobdetails(job.description)
-                    q_dict['Queued Jobs'][job_id]['Job Details'] = job_details
-                    ###***add cracked passwords key/value here from file
-                    ###***add place in queue info
-                    return q_dict['Queued Jobs'][job_id], 200
-            elif job_id in q_dict['Current Job']:
-                if not check_job:
-                    ###***modify this to give better response?
-                    return 401
-                ###***add results
-                ###***REFACTOR TO REMOVE USE OF FILE
-                ###***validate file path here?
-                ###***fix this up, why can't we pull the id from q_dict?
-                job = self.q.fetch_job(job_id)
-                if job is not None:
-                    job_details = get_jobdetails(job.description)
-                    job_dict = {
-                        'Status': job.get_status(),
-                        'Time started': str(job.started_at),
-                        'Time finished': str(job.ended_at),
-                        'Job Details': job_details,
-                        'Result': job.result,
-                        'HC State': job.meta,
-                        }
+                if job:
                     cracked_file = '{}{}.cracked'.format(self.log_dir, job_id)
+                    job_details = get_jobdetails(job.description)
+                    if job_id in q_dict['Queued Jobs']:
+                        job_dict = {
+                            'Status': 'Queued',
+                            'Time started': None,
+                            'Time finished': None,
+                            'Job Details': job_details,
+                            'Result': job.result,
+                            'HC State': job.meta,
+                            }
+                    else:
+                        job_dict = {
+                            'Status': job.get_status(),
+                            'Time started': str(job.started_at),
+                            'Time finished': str(job.ended_at),
+                            'Job Details': job_details,
+                            'Result': job.result,
+                            'HC State': job.meta,
+                            }
                     try:
                         with open(cracked_file, 'r') as cracked_fh:
                             job_dict['Cracked'] = [crack.strip() for crack in cracked_fh]
                     except IOError as err:
                         logger.debug('Cracked file does not exist: {}'.format(err))
-                    return job_dict, 200
+                    return jsonify(job_dict), 200
                 else:
-                    return 'Not Found', 404
-                ###***dead code??
-                print('TEST***')
-                result_file = '{}.json'.format(cur_list[0])
-                with open(result_file, 'r') as status_json:
-                    return (status_json.read(), q_dict['Current Job']), 200
-            elif job_id in comp_list:
-                if not check_job:
-                    ###***modify this to give better response?
-                    return 401
-                ###***VALIDATE??
-                job = self.q.fetch_job(job_id)
-                if job is not None:
-                    job_details = get_jobdetails(job.description)
-                    job_dict = {
-                        'Status': job.get_status(),
-                        'Time started': str(job.started_at),
-                        'Time finished': str(job.ended_at),
-                        'Job Details': job_details,
-                        'Result': job.result,
-                        'HC State': job.meta,
-                        }
-                    cracked_file = '{}{}.cracked'.format(self.log_dir, job_id)
-                    try:
-                        with open(cracked_file, 'r') as cracked_fh:
-                            job_dict['Cracked'] = [crack.strip() for crack in cracked_fh]
-                    except IOError as err:
-                        logger.debug('Cracked file does not exist: {}'.format(err))
-                    return job_dict, 200
-            elif job_id in failed_dict:
-                if not check_job:
-                    ###***modify this to give better response?
-                    return 401
-                job = self.q.fetch_job(job_id)
-                if job is not None:
-                    job_details = get_jobdetails(job.description)
-                    job_dict = {
-                        'Status': job.get_status(),
-                        'Time started': str(job.started_at),
-                        'Time finished': str(job.ended_at),
-                        'Job Details': job_details,
-                        'Result': job.result,
-                        'HC State': job.meta,
-                        }
-                    #if job_dict:
-                    return job_dict, 200
-                else:
-                    return 'Not Found', 404
+                    return abort(404)
             else:
-                return 'Not Found', 404
+                return abort(401)
 
     @login_required
     def put(self, job_id):
@@ -885,38 +925,36 @@ class Queuing(Resource):
         Returns
         ------
         """
-        marsh_schema = parse_json_schema().load(request.json)
-        if len(marsh_schema.errors) > 0:
-            logger.debug('Validation error: {}'.format(marsh_schema.errors))
-            return marsh_schema.errors, 500
-        comp = rq.registry.FinishedJobRegistry('default',
-                                               connection=self.redis_con)
+        try:
+            marsh_schema = parse_json_schema().load(request.json)
+        except ValidationError as errors:
+            logger.debug('Validation error: {}'.format(errors))
+            return jsonify({'msg': errors.messages}), 500
+        comp = rq.registry.FinishedJobRegistry(queue=self.q)
         ###***change this to match reports, validate job_id correctly
         if job_id == "reorder":
             logger.debug('Reorder queue command received')
-            logger.debug(marsh_schema.data['batch_job'])
+            logger.debug(marsh_schema['batch_job'])
             try:
                 adder = Adder()
-                for job in marsh_schema.data['batch_job']:
+                for job in marsh_schema['batch_job']:
                     job_id = job['job_id']
                     if adder.session_check(self.log_dir, job_id):
                         logger.debug('Valid session found')
-                        started = rq.registry.StartedJobRegistry('default',
-                                                                 connection=self.redis_con)
+                        started = rq.registry.StartedJobRegistry(queue=self.q)
                         cur_list = started.get_job_ids()
                         if job_id in cur_list:
                             logger.error('Job is already running')
                             return {'msg': 'Job is already running'}, 500
-                marsh_schema.data['batch_job'].sort(key=itemgetter('place'))
+                marsh_schema['batch_job'].sort(key=itemgetter('place'))
                 for job in self.q.jobs:
                     job.set_status('finished')
                     job.save()
                     comp.add(job, -1)
                     job.cleanup(-1)
-                for job in marsh_schema.data['batch_job']:
-                    Queue.dequeue_any(self.q, None, connection=self.redis_con)
-                    #adder.post(job_id=job['job_id'])
-                    #adder.post(job_id=job['job_id'])
+                for job in marsh_schema['batch_job']:
+                    Queue.dequeue_any(self.q, None, connection=self.redis_con,
+                                      serializer=JSONSerializer)
                     j = self.q.fetch_job(job['job_id'])
                     ###***check this covers case when job is in requeued state
                     self.q.enqueue_job(j)
@@ -945,21 +983,19 @@ class Queuing(Resource):
         HTTP 204
 
         """
-        marsh_schema = parse_json_schema().load({'job_id': job_id})
-        if len(marsh_schema.errors) > 0:
-            logger.debug('Validation error: {}'.format(marsh_schema.errors))
-            return marsh_schema.errors, 500
-        else:
-            job_id = marsh_schema.data['job_id'].hex
         try:
-            logger.info('Stopping job: {:s}'.format(job_id))
+            marsh_schema = parse_json_schema().load({'job_id': job_id})
+            job_id = marsh_schema['job_id'].hex
+        except ValidationError as errors:
+            logger.debug('Validation error: {}'.format(errors))
+            return errors.messages, 500
+        try:
+            logger.debug('Stopping job: {:s}'.format(job_id))
             job = self.q.fetch_job(job_id)
 
-            started = rq.registry.StartedJobRegistry('default',
-                                                     connection=self.redis_con)
+            started = rq.registry.StartedJobRegistry(queue=self.q)
             cur_list = started.get_job_ids()
-            comp = rq.registry.FinishedJobRegistry('default',
-                                                     connection=self.redis_con)
+            comp = rq.registry.FinishedJobRegistry(queue=self.q)
             if job_id in cur_list:
                 job.meta['CrackQ State'] = 'Stop'
                 job.save_meta()
@@ -969,13 +1005,12 @@ class Queuing(Resource):
                 job.save()
                 comp.add(job, -1)
                 job.cleanup(-1)
-                ###***look into why lpop fails but dequeue_any works, but only against the chosen job
-                #Queue.lpop([job_id], None, connection=self.redis_con)
-                Queue.dequeue_any(self.q, None, connection=self.redis_con)
+                Queue.dequeue_any(self.q, None, connection=self.redis_con,
+                                  serializer=JSONSerializer)
                 return 'Stopped Job', 200
         except AttributeError as err:
             logger.debug('Failed to stop job: {}'.format(err))
-            return 'Invalid Job ID', 404
+            return jsonify(ERR_INVAL_JID), 404
 
     @login_required
     def delete(self, job_id):
@@ -991,38 +1026,44 @@ class Queuing(Resource):
 
         Returns
         ------
-        HTTP 204
+        HTTP 200 or 204 depending on what state job is in
 
         """
-        marsh_schema = parse_json_schema().load({'job_id': job_id})
-        if len(marsh_schema.errors) > 0:
-            logger.debug('Validation error: {}'.format(marsh_schema.errors))
-            return marsh_schema.errors, 500
-        else:
-            job_id = marsh_schema.data['job_id'].hex
         try:
-            logger.info('Deleting job: {:s}'.format(job_id))
+            marsh_schema = parse_json_schema().load({'job_id': job_id})
+            job_id = marsh_schema['job_id'].hex
+        except ValidationError as errors:
+            logger.debug('Validation error: {}'.format(errors))
+            return errors.messages, 500
+        try:
+            logger.debug('Deleting job: {:s}'.format(job_id))
             job = self.q.fetch_job(job_id)
-
-            started = rq.registry.StartedJobRegistry('default',
-                                                     connection=self.redis_con)
+            started = rq.registry.StartedJobRegistry(queue=self.q)
             cur_list = started.get_job_ids()
+            speed_session = '{}_speed'.format(job_id)
+            speed_job = self.speed_q.fetch_job(speed_session)
+            if speed_job:
+                logger.debug('Deleting Speed Job')
+                speed_job.meta['CrackQ State'] = 'Delete'
+                speed_job.save_meta()
+                if speed_job.get_status() != 'started':
+                    speed_job.delete()
             if job_id in cur_list:
-                job.meta['CrackQ State'] = 'Stop'
+                job.meta['CrackQ State'] = 'Delete'
                 job.save_meta()
-                ###***decrease this??
-                time.sleep(6)
+                del_thread = threading.Thread(target=del_job, args=(job,))
+                del_thread.start()
+                return {'msg': 'Deleted Job'}, 204
+            del_jobid(job_id)
             job.delete()
             started.cleanup()
-            ###***re-add this when delete job bug is fixed
-            #del_jobid(job_id)
-            return 'Deleting Job', 204
+            return {'msg': 'Deleted Job'}, 200
         except AttributeError as err:
             logger.error('Failed to delete job: {}'.format(err))
-            return 'Invalid Job ID', 404
+            return jsonify(ERR_INVAL_JID), 404
 
 
-class Options(Resource):
+class Options(MethodView):
     """
     Class for pulling option information, such as a list of available
     rules and wordlists
@@ -1031,19 +1072,18 @@ class Options(Resource):
     def __init__(self):
         self.crack_q = crackqueue.Queuer()
         self.q = self.crack_q.q_connect()
-        self.crack = run_hashcat.Crack()
         rconf = CRACK_CONF['redis']
         self.redis_con = Redis(rconf['host'], rconf['port'])
 
     @login_required
     def get(self):
         """
-        Method to get config information 
+        Method to get config information
 
 
         Returns
         ------
-        hc_dict: dictionary 
+        hc_dict: dictionary
             crackq config options for rules/wordlists
 
 
@@ -1053,23 +1093,31 @@ class Options(Resource):
         hc_maskfiles = [maskfile for maskfile in CRACK_CONF['masks']]
         hc_modes = dict(hash_modes.HModes.modes_dict())
         hc_att_modes = {
-                        '0': 'Straight',
-                        '1': 'Combination',
-                        '3': 'Brute-Force',
-                        '6': 'Hybrid Wordlist + Mask',
-                        '7': 'Hybrid Mask + Wordlist',
-                    }
-        hc_dict = {
-                    'Rules': hc_rules,
-                    'Wordlists': hc_words,
-                    'Mask Files': hc_maskfiles,
-                    'Hash Modes': hc_modes,
-                    'Attack Modes': hc_att_modes,
+            '0': 'Straight',
+            '1': 'Combination',
+            '3': 'Brute-Force',
+            '6': 'Hybrid Wordlist + Mask',
+            '7': 'Hybrid Mask + Wordlist',
+            }
+        if 'jobtimeout' in CRACK_CONF:
+            timeout_info = CRACK_CONF['jobtimeout']
+        else:
+            timeout_info = {
+                'Value': 1814400,
+                'Modify': False,
                 }
+        hc_dict = {
+            'Rules': hc_rules,
+            'Wordlists': hc_words,
+            'Mask Files': hc_maskfiles,
+            'Hash Modes': hc_modes,
+            'Attack Modes': hc_att_modes,
+            'timeout': timeout_info,
+            }
         return hc_dict, 200
 
 
-class Adder(Resource):
+class Adder(MethodView):
     """
     Separate class for adding jobs
 
@@ -1077,10 +1125,11 @@ class Adder(Resource):
     def __init__(self):
         self.crack_q = crackqueue.Queuer()
         self.q = self.crack_q.q_connect()
-        self.crack = run_hashcat.Crack()
         self.log_dir = CRACK_CONF['files']['log_dir']
         rconf = CRACK_CONF['redis']
         self.redis_con = Redis(rconf['host'], rconf['port'])
+        self.speed_q = Queue('speed_check', connection=self.redis_con,
+                             serializer=JSONSerializer)
 
     def mode_check(self, mode):
         """
@@ -1119,9 +1168,10 @@ class Adder(Resource):
             Restore number to be used with hashcat skip
             returns 0 on error
         """
-        logger.info('Checking for restore value')
+        logger.debug('Checking for restore value')
         if job_id.isalnum():
-            job_file = Path(log_dir).joinpath('{}.json'.format(job_id))
+            job_file = valid.val_filepath(path_string=self.log_dir,
+                                          file_string='{}.json'.format(job_id))
             logger.debug('Using session file: {}'.format(job_file))
             try:
                 with open(job_file) as fh_job_file:
@@ -1140,7 +1190,9 @@ class Adder(Resource):
             except IOError as err:
                 logger.warning('Restore file Error: {}'.format(err))
                 return False
-            except json.decoder.JSONDecodeError as err:
+            #except json.decoder.JSONDecodeError as err:
+            ###***make explicit
+            except Exception as err:
                 logger.warning('Restore file Error: {}'.format(err))
                 return False
         else:
@@ -1163,8 +1215,7 @@ class Adder(Resource):
         sess_id: bool
             True if session/job ID is valid and present
         """
-        ###*** add checking for restore value
-        logger.info('Checking for existing session')
+        logger.debug('Checking for existing session')
         log_dir = Path(log_dir)
         sess_id = False
         if job_id.isalnum():
@@ -1178,18 +1229,65 @@ class Adder(Resource):
                 logger.debug('Invalid session ID: {}'.format(err))
                 sess_id = False
             except Exception as err:
-                ###***fix/remove?
                 logger.warning('Invalid session: {}'.format(err))
                 sess_id = False
         else:
             logger.debug('Invalid session ID provided')
             sess_id = False
         if sess_id is not False:
-            logger.info('Existing session found')
+            logger.debug('Existing session found')
         return sess_id
 
+    def speed_check(self, q_args=None):
+        """
+        Method to run initial speed/show check in hashcat
+
+        This will get information related to estimated speed
+        for brain enablement, but also check for any quick wins
+        in the pot file before the job actually gets to the top
+        of the queue.
+
+        It takes the job ID queues a separate job in a separate
+        queue that will pause any current hashcat jobs and briefly
+        run the speed/show checks, then resumes the job.
+        ####***UPDATE THIS DOCUMENTATION
+
+        Arguments
+        ---------
+        job_id: uuid
+            Job ID to update
+
+        Returns
+        ------
+        ret: boolean
+            Success/Fail
+        """
+        logger.debug('Running speed check')
+        if q_args:
+            speed_args = {}
+            speedq_args = {}
+            speed_args['hash_file'] = q_args['kwargs']['hash_file']
+            speed_session = '{}_speed'.format(q_args['kwargs']['session'])
+            speed_args['speed_session'] = speed_session
+            speed_args['session'] = q_args['kwargs']['session']
+            speed_args['wordlist'] = q_args['kwargs']['wordlist']
+            speed_args['wordlist2'] = q_args['kwargs']['wordlist2']
+            speed_args['hash_mode'] = q_args['kwargs']['hash_mode']
+            speed_args['username'] = q_args['kwargs']['username']
+            speed_args['name'] = q_args['kwargs']['name']
+            speed_args['brain'] = q_args['kwargs']['brain']
+            speed_args['attack_mode'] = q_args['kwargs']['attack_mode']
+            speed_args['mask'] = '?a?a?a?a?a?a' if q_args['kwargs']['mask'] else None
+            speed_args['pot_path'] = q_args['kwargs']['pot_path']
+            speedq_args['kwargs'] = speed_args
+            speedq_args['job_id'] = speed_session
+            self.crack_q.q_add(self.speed_q, speedq_args, timeout=400)
+            logger.debug('Queuing speed check')
+            return True
+        return False
+
     @login_required
-    def post(self, job_id=None):
+    def post(self):
         """
         Method to post a new job to the queue
 
@@ -1204,12 +1302,12 @@ class Adder(Resource):
             HTTP status, 201  or 500
 
         """
-        marsh_schema = parse_json_schema().load(request.json)
-        if len(marsh_schema.errors) > 0:
-            logger.debug('Validation error: {}'.format(marsh_schema.errors))
-            return marsh_schema.errors, 500
-        else:
-            args = marsh_schema.data
+        try:
+            marsh_schema = parse_json_schema().load(request.json)
+            args = marsh_schema
+        except ValidationError as errors:
+            logger.debug('Validation error: {}'.format(errors))
+            return errors.messages, 500
         try:
             job_id = args['job_id'].hex
         except KeyError as err:
@@ -1224,49 +1322,60 @@ class Adder(Resource):
             if job_id.isalnum():
                 if self.session_check(self.log_dir, job_id):
                     logger.debug('Valid session found')
-                    started = rq.registry.StartedJobRegistry('default',
-                                                             connection=self.redis_con)
+                    started = rq.registry.StartedJobRegistry(queue=self.q)
                     cur_list = started.get_job_ids()
                     q_dict = self.crack_q.q_monitor(self.q)
                     if job_id in cur_list:
                         logger.error('Job is already running')
-                        return {'msg': 'Job is already running'}, 500
+                        return jsonify({'msg': 'Job is already running'}), 500
                     if job_id in q_dict['Queued Jobs'].keys():
                         logger.error('Job is already queued')
-                        return {'msg': 'Job is already queued'}, 500
-                    ###***SET THIS TO CHECK MATCHES IN A DICT RATHER THAN DIRECT
-                    ###***REVIEW ALL CONCATINATION
-                    ###***taking input here, review
-                    outfile = '{}{}.cracked'.format(self.log_dir, job_id)
-                    hash_file = '{}{}.hashes'.format(self.log_dir, job_id)
-                    pot_path = '{}crackq.pot'.format(self.log_dir)
+                        return jsonify({'msg': 'Job is already queued'}), 500
+                    outfile = str(valid.val_filepath(path_string=self.log_dir,
+                                                     file_string='{}.cracked'.format(job_id)))
+                    hash_file = str(valid.val_filepath(path_string=self.log_dir,
+                                                       file_string='{}.hashes'.format(job_id)))
+                    pot_path = str(valid.val_filepath(path_string=self.log_dir,
+                                                      file_string='crackq.pot'))
                     job_deets = self.get_restore(self.log_dir, job_id)
-                    job = self.q.fetch_job(job_id)
+                    job = self.q.fetch_job(job_id)  # lgtm
                     if not job_deets:
                         logger.debug('Job restor error. Never started')
-                        return {'msg': 'Error restoring job'}, 500
+                        return jsonify({'msg': 'Error restoring job'}), 500
                     elif not job_deets['restore']:
                         logger.debug('Job not previously started, restore = 0')
-                        job_deets['restore'] == 0
+                        job_deets['restore'] = 0
                     elif job_deets['restore'] == 0:
                         logger.debug('Job not previously started, restore = 0')
-                    if job_deets['wordlist'] in CRACK_CONF['wordlists']:
-                        wordlist = CRACK_CONF['wordlists'][job_deets['wordlist']]
-                    else:
-                        wordlist = None
-                    rules = check_rules(job_deets['rules'])
-                    if rules is False:
-                        return {'msg': 'Invalid rules selected'}, 500
+                    wordlist = None
+                    wordlist2 = None
+                    rules = None
+                    if 'wordlist' in job_deets:
+                        if job_deets['wordlist'] in CRACK_CONF['wordlists']:
+                            wordlist = CRACK_CONF['wordlists'][job_deets['wordlist']]
+                    if 'wordlist2' in job_deets:
+                        if job_deets['wordlist2']:
+                            if job_deets['wordlist2'] in CRACK_CONF['wordlists']:
+                                wordlist2 = CRACK_CONF['wordlists'][job_deets['wordlist2']]
+                    if 'rules' in job_deets:
+                        rules = check_rules(job_deets['rules'])
+                        if rules is False:
+                            return jsonify({'msg': 'Invalid rules selected'}), 500
                     mask_file = check_mask(job_deets['mask'])
                     # this is just set to use the first mask file in the list for now
                     mask = mask_file if mask_file else job_deets['mask']
+                    try:
+                        ###***make this (timeout - running time) for restored jobs??
+                        timeout = job_deets['timeout']
+                    except KeyError as err:
+                        logger.warning('No timeout info in job details, using default')
+                        timeout = 1814400
                     hc_args = {
-                        'crack': self.crack,
                         'hash_file': hash_file,
                         'session': job_id,
                         'wordlist': wordlist,
+                        'wordlist2': wordlist2,
                         'mask': mask,
-                        #'mask': job_deets['mask'] if 'mask' in job_deets else None,
                         'mask_file': True if mask_file else False,
                         'attack_mode': int(job_deets['attack_mode']),
                         'hash_mode': int(job_deets['hash_mode']),
@@ -1281,26 +1390,23 @@ class Adder(Resource):
                         'name': job_deets['name'] if 'name' in job_deets else None,
                         'pot_path': pot_path,
                         }
-                    #self.q.enqueue_job(job)
                     job = self.q.fetch_job(job_id)
                     job.meta['CrackQ State'] = 'Run/Restored'
                     job.save_meta()
                 else:
-                    return {'msg': 'Invalid Job ID'}, 500
+                    return jsonify(ERR_INVAL_JID), 500
             else:
-                return {'msg': 'Invalid Job ID'}, 500
+                return jsonify(ERR_INVAL_JID), 500
         else:
             logger.debug('Creating new session')
             job_id = uuid.uuid4().hex
             add_jobid(job_id)
-            ###***SET THIS TO CHECK MATCHES IN A DICT RATHER THAN DIRECT
-            ###***REVIEW ALL CONCATINATION
-            ###***taking input here, review
-            ###***use pathlib validation?
-            outfile = '{}{}.cracked'.format(self.log_dir, job_id)
-            hash_file = '{}{}.hashes'.format(self.log_dir, job_id)
-            pot_path = '{}crackq.pot'.format(self.log_dir)
-            ###***do attack mode check too
+            outfile = str(valid.val_filepath(path_string=self.log_dir,
+                                             file_string='{}.cracked'.format(job_id)))
+            hash_file = str(valid.val_filepath(path_string=self.log_dir,
+                                               file_string='{}.hashes'.format(job_id)))
+            pot_path = str(valid.val_filepath(path_string=self.log_dir,
+                                              file_string='crackq.pot'))
             try:
                 attack_mode = int(args['attack_mode'])
             except TypeError:
@@ -1309,17 +1415,18 @@ class Adder(Resource):
                 logger.debug('Writing hashes to file: {}'.format(hash_file))
                 with open(hash_file, 'w') as hash_fh:
                     for hash_l in args['hash_list']:
-                        ###***REVIEW THIS
                         hash_fh.write(hash_l.rstrip() + '\n')
             except KeyError as err:
                 logger.debug('No hash list provided: {}'.format(err))
-                return {'msg': 'No hashes provided'}, 500
+                return jsonify({'msg': 'No hashes provided'}), 500
+            except IOError as err:
+                logger.debug('Unable to write to hash file: {}'.format(err))
+                return jsonify({'msg': 'System error'}), 500
             try:
                 args['hash_mode']
                 check_m = self.mode_check(args['hash_mode'])
             except KeyError:
                 check_m = False
-
             logger.debug('Hash mode check: {}'.format(check_m))
             ###***change to if check_m
             if check_m is not False:
@@ -1328,15 +1435,22 @@ class Adder(Resource):
                 except TypeError as err:
                     logger.error('Incorrect type supplied for hash_mode:'
                                  '\n{}'.format(err))
-                    return {'msg': 'Invalid hash mode selected'}, 500
+                    return jsonify({'msg': 'Invalid hash mode selected'}), 500
             else:
-                return {'msg': 'Invalid hash mode selected'}, 500
-            ###***add checks??
+                return jsonify({'msg': 'Invalid hash mode selected'}), 500
             if attack_mode != 3:
                 if args['wordlist'] in CRACK_CONF['wordlists']:
                     wordlist = CRACK_CONF['wordlists'][args['wordlist']]
                 else:
-                    return {'msg': 'Invalid wordlist selected'}, 500
+                    return jsonify({'msg': 'Invalid wordlist selected'}), 500
+            if attack_mode == 1:
+                if 'wordlist2' in args:
+                    if args['wordlist2'] in CRACK_CONF['wordlists']:
+                        wordlist2 = CRACK_CONF['wordlists'][args['wordlist2']]
+                    else:
+                        return jsonify({'msg': 'Combinator mode requires 2 wordlists'}), 500
+            else:
+                wordlist2 = None
             try:
                 mask_file = check_mask(args['mask_file'])
             except KeyError:
@@ -1345,7 +1459,7 @@ class Adder(Resource):
                 mask = args['mask']
             except KeyError:
                 mask = None
-            # this is just set to use the first mask file in the list for now
+            ####***this is just set to use the first mask file in the list for now
             mask = mask_file[0] if mask_file else mask
             rules = check_rules(args['rules'])
             if rules is False:
@@ -1371,7 +1485,6 @@ class Adder(Resource):
                 logger.debug('Increment max value not provided')
                 increment_max = None
             try:
-                logger.debug(args)
                 if args['disable_brain']:
                     logger.debug('Brain disabled')
                     brain = False
@@ -1385,32 +1498,25 @@ class Adder(Resource):
             except KeyError as err:
                 logger.debug('Name value not provided')
                 name = None
-            """    
-            try:
-                marsh_schema = parse_json_schema().load({'name': job_id})
-                if len(marsh_schema.errors) > 0:
-                    logger.debug('Validation error: {}'.format(marsh_schema.errors))
-                    return marsh_schema.errors, 500
+            timeout = 1814400
+            if 'jobtimeout' in CRACK_CONF:
+                if not CRACK_CONF['jobtimeout']['Modify']:
+                    logger.debug('Timeout modification not permitted')
+                    timeout = CRACK_CONF['jobtimeout']['Value']
                 else:
-                    ###***check this
-                    #name = marsh_schema.data['name']
-                    name = args['name']
-            except KeyError as err:
-                logger.debug('Name value not provided')
-                name = None
-            """
+                    if 'timeout' in args:
+                        timeout = args['timeout']
             hc_args = {
-                'crack': self.crack,
                 'hash_file': hash_file,
                 'session': job_id,
                 'wordlist': wordlist if attack_mode != 3 else None,
+                'wordlist2': wordlist2 if attack_mode == 1 else None,
                 'mask': mask if attack_mode > 2 else None,
                 'mask_file': True if mask_file else False,
                 'attack_mode': attack_mode,
                 'hash_mode': mode,
                 'outfile': outfile,
                 'rules': rules,
-                #'#restore': restore if restore else None,
                 'username': username,
                 'increment': increment,
                 'increment_min': increment_min,
@@ -1418,37 +1524,59 @@ class Adder(Resource):
                 'brain': brain,
                 'name': name,
                 'pot_path': pot_path,
+                'restore': 0,
                 }
         q_args = {
-            'func': self.crack.hc_worker,
             'job_id': job_id,
             'kwargs': hc_args,
             }
         try:
             q = self.crack_q.q_connect()
-            self.crack_q.q_add(q, q_args)
-            logger.info('API Job {} added to queue'.format(job_id))
+            try:
+                if hc_args['restore'] > 0:
+                    job = self.q.fetch_job(job_id)
+                    if job.meta['brain_check']:
+                        logger.debug('Brain check previously complete')
+                    elif job.meta['brain_check'] is None:
+                        self.speed_check(q_args=q_args)
+                        time.sleep(3)
+                    else:
+                        logger.debug('Restored job, disabling speed check')
+                else:
+                    logger.debug('Job not a restore, queuing speed_check')
+                    self.speed_check(q_args=q_args)
+                    time.sleep(3)
+            ###***remove below now?
+            except KeyError as err:
+                logger.debug('Job not a restore, queuing speed_check')
+                self.speed_check(q_args=q_args)
+                time.sleep(3)
+            self.crack_q.q_add(q, q_args, timeout=timeout)
+            logger.debug('API Job {} added to queue'.format(job_id))
             logger.debug('Job Details: {}'.format(q_args))
             job = self.q.fetch_job(job_id)
             job.meta['email_count'] = 0
-            job.meta['notify'] = args['notify']
-            if email_check(current_user.email):
-                job.meta['email'] = str(current_user.email)
-                job.meta['last_seen'] = str(current_user.last_seen)
-            elif email_check(current_user.username):
-                job.meta['email'] = current_user.username
-                job.meta['last_seen'] = str(current_user.last_seen)
-            job.meta['CrackQ State'] = 'Run'
+            if 'notify' in args:
+                job.meta['notify'] = args['notify']
+            else:
+                job.meta['notify'] = False
+            if current_user.email:
+                if email_check(current_user.email):
+                    job.meta['email'] = str(current_user.email)
+                    job.meta['last_seen'] = str(current_user.last_seen)
+                elif email_check(current_user.username):
+                    job.meta['email'] = current_user.username
+                    job.meta['last_seen'] = str(current_user.last_seen)
+            job.meta['CrackQ State'] = 'Run/Restored'
             job.meta['Speed Array'] = []
             job.save_meta()
             return job_id, 202
         except KeyError as err:
             logger.warning('Key missing from meta data:\n{}'.format(err))
             return job_id, 202
-        ###***make this more specific?
-        except Exception as err:
-            logger.info('API post failed:\n{}'.format(err))
-            return job_id, 500
+        except TypeError as err:
+            logger.warning('Type error in job meta data:\n{}'.format(err))
+            return job_id, 202
 
 
 def reporter(cracked_path, report_path):
@@ -1464,17 +1592,8 @@ def reporter(cracked_path, report_path):
         fh_report.write(json.dumps(report_json))
     return True
 
-###***remove later if not used
-def output_html(data, code, headers=None):
-    """
-    This function allows flask-restful to return HTML
-    """
-    resp = make_response(data, code)
-    resp.headers.extend(headers or {})
-    return resp
 
-
-class Reports(Resource):
+class Reports(MethodView):
     """
     Class for creating and serving HTML password analysis reports
 
@@ -1490,9 +1609,7 @@ class Reports(Resource):
         self.report_dir = CRACK_CONF['reports']['dir']
         self.log_dir = CRACK_CONF['files']['log_dir']
         self.adder = Adder()
-        #self.representation = 'text/html'
 
-    #@api.representation('text/html')
     @login_required
     def get(self, job_id=None):
         """
@@ -1503,20 +1620,17 @@ class Reports(Resource):
         report: file
             HTML report file generated by Pypal
         """
-        marsh_schema = parse_json_schema().load(request.args)
-        if len(marsh_schema.errors) > 0:
-            logger.debug('Validation error: {}'.format(marsh_schema.errors))
-            return marsh_schema.errors, 500
-        else:
-            args = marsh_schema.data
+        try:
+            marsh_schema = parse_json_schema().load(request.args)
+            args = marsh_schema
+        except ValidationError as errors:
+            logger.debug('Validation error: {}'.format(errors))
+            return errors.messages, 500
         if 'job_id' not in args:
             logger.debug('Reports queue requested')
-            failed = rq.registry.FailedJobRegistry('reports',
-                                                   connection=self.redis_con)
-            comp = rq.registry.FinishedJobRegistry('reports',
-                                                   connection=self.redis_con)
-            started = rq.registry.StartedJobRegistry('reports',
-                                                     connection=self.redis_con)
+            failed = rq.registry.FailedJobRegistry(queue=self.report_q)
+            comp = rq.registry.FinishedJobRegistry(queue=self.report_q)
+            started = rq.registry.StartedJobRegistry(queue=self.report_q)
             reports_dict = {}
             reports_dict.update({j: 'Generated' for j in comp.get_job_ids()})
             reports_dict.update({j: 'Failed' for j in failed.get_job_ids()})
@@ -1530,43 +1644,33 @@ class Reports(Resource):
             if job_id.isalnum():
                 check_job = check_jobid(job_id)
                 if not check_job:
-                    return 401
+                    return abort(401)
                 if self.adder.session_check(self.log_dir, job_id):
                     logger.debug('Valid session found')
-                    ###***REVIEW ALL CONCATINATION
-                    ###***taking input here, review
-                    #outfile = '{}{}.cracked'.format(self.log_dir, job_id)
-                    #report_file = '{}_report.html'.format(self.log_dir, job_id)
-                    #job_deets = self.get_restore(self.log_dir, job_id)
-                    #job = self.q.fetch_job(job_id)
-                    report = '{}_report.html'.format(job_id)
-                    report_path = Path('{}{}.json'.format(self.report_dir,
-                                                              job_id))
-                    #crackq.app.static_folder = str(self.report_dir)
-                    #json_report = self.report_dir.joinpath('{}_report.json'.format(job_id))
+                    report_path = valid.val_filepath(path_string=self.report_dir,
+                                                     file_string='{}.json'.format(job_id))
                     try:
                         with report_path.open('r') as rep:
                             return json.loads(rep.read()), 200
                     except IOError as err:
                         logger.debug('Error reading report: {}'.format(err))
                         return {'msg': 'No report generated for'
-                                       'this job'}, 500
+                                       ' this job'}, 500
         else:
-            return {'msg': 'Invalid Job ID'}, 404
+            return jsonify(ERR_INVAL_JID), 404
 
     @login_required
     def post(self):
         """
         Method to trigger report generation
         """
-        ###***make this a decorator??
         logger.debug('User requesting report')
-        marsh_schema = parse_json_schema().load(request.json)
-        if len(marsh_schema.errors) > 0:
-            logger.debug('Validation error: {}'.format(marsh_schema.errors))
-            return marsh_schema.errors, 500
-        else:
-            args = marsh_schema.data
+        try:
+            marsh_schema = parse_json_schema().load(request.json)
+            args = marsh_schema
+        except ValidationError as errors:
+            logger.debug('Validation error: {}'.format(errors))
+            return errors.messages, 500
         try:
             job_id = args['job_id'].hex
         except KeyError as err:
@@ -1587,20 +1691,16 @@ class Reports(Resource):
                     return {'msg': 'Not Authorized'}, 401
                 if self.adder.session_check(self.log_dir, job_id):
                     logger.debug('Valid session found')
-                    ###***REVIEW ALL CONCATINATION
-                    ###***taking input here, review
-                    cracked_path = Path('{}{}.cracked'.format(self.log_dir,
-                                                              job_id))
-                    report_path = Path('{}{}.json'.format(self.report_dir,
-                                                              job_id))
-                    #hash_file = '{}{}.hashes'.format(self.log_dir, job_id)
-                    #job_deets = self.get_restore(self.log_dir, job_id)
+                    cracked_path = str(valid.val_filepath(path_string=self.log_dir,
+                                                          file_string='{}.cracked'.format(job_id)))
+                    report_path = str(valid.val_filepath(path_string=self.report_dir,
+                                                         file_string='{}.json'.format(job_id)))
                     job = self.q.fetch_job(job_id)
                     min_report = CRACK_CONF['misc']['min_report']
                     if job.meta['HC State']['Cracked Hashes'] < int(min_report):
                         return {'msg': 'Cracked password list too '
-                                                  'small for meaningful '
-                                                  'analysis'}, 500
+                                       'small for meaningful '
+                                       'analysis'}, 500
                     try:
                         logger.debug('Generating report: {}'
                                      .format(cracked_path))
@@ -1612,24 +1712,340 @@ class Reports(Resource):
                                                     job_id='{}_report'.format(job_id))
                         if rep:
                             return {'msg': 'Successfully queued '
-                                               'report generation'}, 202
+                                           'report generation'}, 202
                         else:
                             return {'msg': 'Error no report data '
-                                               'returned'}, 500
-                    except IOError as err:
+                                           'returned'}, 500
+                    except IOError:
                         logger.debug('No cracked passwords found for this job')
                         return {'msg': 'No report available for Job ID'}, 404
         else:
-            return {'msg': 'Invalid Job ID'}, 404
+            return jsonify(ERR_INVAL_JID), 404
 
 
-#app = Flask(__name__)
-#app = crackq.app
-#api = Api(app)
-#api.add_resource(Options, '/options')
-#api.add_resource(Queuing, '/queuing/<job_id>')
-#api.add_resource(Adder, '/add')
-#app = create_app()
+class Profile(MethodView):
+    """Flask User/profile management"""
 
-#if __name__ == '__main__':
-#    app.run(host='0.0.0.0', port=8080, debug=True)
+    @login_required
+    def get(self):
+        """
+        View user profile
+        """
+        result = {}
+        try:
+            result['user'] = current_user.username
+            result['admin'] = current_user.is_admin
+            result['email'] = current_user.email
+        except AttributeError:
+            abort(404)
+        return jsonify(result), 200
+
+    @login_required
+    def post(self):
+        """
+        Update current user profile
+
+        Arguments
+        ---------
+        password: string
+            Current Password
+        new_password: string
+            New Password
+        confirm_password: string
+            New Password
+        email: string
+            Email address
+
+        Returns
+        -------
+        result: JSON
+            message, HTTP code
+        """
+        try:
+            marsh_schema = parse_json_schema().load(request.json)
+            args = marsh_schema
+        except ValidationError as errors:
+            logger.debug('Validation error: {}'.format(errors))
+            return errors.messages, 500
+        logger.debug('Updating user details')
+        user = User.query.filter_by(id=current_user.id).first()
+        ret = []
+        if isinstance(user, User) and 'password' in args:
+            if args['password']:
+                if 'new_password' in args and 'confirm_password' in args:
+                    if args['confirm_password'] and args['new_password']:
+                        if args['new_password'] != args['confirm_password']:
+                            return {'msg': 'Passwords do not match'}, 400
+                        if bcrypt.check_password_hash(user.password, args['password']):
+                            pass_hash = bcrypt.generate_password_hash(args['new_password'])
+                            user.password = pass_hash.decode('utf-8')
+                            logger.debug('Updating password')
+                            ret.append({'msg': 'Password updated'})
+                            crackq.app.session_interface.regenerate(session)
+                        else:
+                            return {'msg': 'Invalid Password'}, 401
+                if 'email' in args:
+                    if args['email'] and email_check(args['email']):
+                        if bcrypt.check_password_hash(user.password, args['password']):
+                            user.email = args['email']
+                            logger.debug('Updating email')
+                            ret.append({'msg': 'Email updated'})
+                        else:
+                            return {'msg': 'Invalid Password'}, 401
+                    #else:
+                    #    return {'msg': 'Invalid Email'}, 500
+            if ret:
+                db.session.commit()
+                return jsonify(ret), 200
+        return {'msg': 'Invalid Request'}, 500
+
+
+class Admin(MethodView):
+    """Flask Admin and user management"""
+    @admin_required
+    @login_required
+    def get(self, user_id):
+        """
+        View list of users or details of a single user
+
+        Arguments
+        ---------
+        user_id: uuid/None
+            User's ID to view details (if None show all)
+        """
+        if user_id:
+            result = {}
+            try:
+                user = User.query.filter_by(id=user_id).first()
+                result['user_id'] = str(user.id)
+                result['user'] = user.username
+                result['admin'] = user.is_admin
+                result['email'] = user.email
+            except AttributeError:
+                abort(404)
+        else:
+            result = []
+            users = User.query.all()
+            for user in users:
+                entry = {}
+                entry['user_id'] = str(user.id)
+                entry['user'] = user.username
+                entry['admin'] = user.is_admin
+                entry['email'] = user.email
+                result.append(entry)
+        return jsonify(result), 200
+
+    @admin_required
+    @login_required
+    def post(self):
+        """
+        Creates a new user
+
+        Arguments
+        ---------
+        user: string
+            Username to create
+        password: string
+            Password
+        email: string
+            Email address
+
+        Returns
+        -------
+        result: tuple
+            message, HTTP code
+        """
+        try:
+            marsh_schema = parse_json_schema().load(request.json)
+            args = marsh_schema
+        except ValidationError as errors:
+            logger.debug('Validation error: {}'.format(errors))
+            return errors.messages, 500
+        args_needed = ['password', 'confirm_password', 'user']
+        if all(arg in args for arg in args_needed):
+            if args['password'] != args['confirm_password']:
+                return {'msg': 'Passwords do not match'}, 400
+            logger.debug('Creating User: {}'.format(args['user']))
+            pass_hash = bcrypt.generate_password_hash(args['password']).decode('utf-8')
+            email = args['email'] if args['email'] else None
+            create_user(username=args['user'],
+                        password=pass_hash, email=email)
+            return {'msg': 'User created'}, 200
+        return {'msg': 'Error'}, 500
+
+    @admin_required
+    @login_required
+    def delete(self, user_id):
+        """
+        Deletes a user account
+
+        Arguments
+        ---------
+        user: string
+            Username to make admin
+
+        Returns
+        -------
+        result: boolean
+            Function success or failure
+
+        """
+        if del_user(user_id):
+            return {'msg': 'User deleted'}, 200
+        abort(404)
+
+    @admin_required
+    @login_required
+    def put(self, user_id):
+        """
+        Toggle admin privs for selected user
+
+        Arguments
+        ---------
+        user_id: 1
+            User ID to make admin
+
+        Returns
+        -------
+        result: boolean
+            Function success or failure
+        """
+        user = User.query.filter_by(id=user_id).first()
+        if isinstance(user, User):
+            user.is_admin = not user.is_admin
+            db.session.commit()
+            return 'OK', 200
+        return 404
+
+    @admin_required
+    @login_required
+    def patch(self, user_id):
+        """
+        Update selected user profile
+
+        Arguments
+        ---------
+        new_password: string
+            New Password
+        confirm_password: string
+            New Password
+        email: string
+            Email address
+
+        Returns
+        -------
+        result: JSON
+            message, HTTP code
+        """
+        try:
+            marsh_schema = parse_json_schema().load(request.json)
+            args = marsh_schema
+        except ValidationError as errors:
+            logger.debug('Validation error: {}'.format(errors))
+            return errors.messages, 500
+        logger.debug('Updating user details')
+        user = User.query.filter_by(id=user_id).first()
+        if isinstance(user, User):
+            ret = []
+            if 'email' in args:
+                if email_check(args['email']):
+                    logger.debug('Adding email address: {}'.format(args['email']))
+                    user.email = args['email']
+                    ret.append({'msg': 'Email updated'})
+            if 'new_password' in args and 'confirm_password' in args:
+                if args['confirm_password'] and args['new_password']:
+                    if args['new_password'] != args['confirm_password']:
+                        return {'msg': 'Passwords do not match'}, 400
+                    pass_hash = bcrypt.generate_password_hash(args['new_password']).decode('utf-8')
+                    user.password = pass_hash
+                    ret.append({'msg': 'Password updated'})
+            if ret:
+                db.session.commit()
+                ###***logout any sessions belonging user here
+                return jsonify(ret), 200
+            return {'msg': 'Nothing to update'}, 200
+        return {'msg': 'Error'}, 500
+
+
+class Benchmark(MethodView):
+    """Run and display Hashcat Benchmarks"""
+
+    def __init__(self):
+        self.log_dir = CRACK_CONF['files']['log_dir']
+        self.bench_file = valid.val_filepath(path_string=self.log_dir,
+                                             file_string='sys_benchmark.json')
+        self.crack_q = crackqueue.Queuer()
+        self.q = self.crack_q.q_connect()
+
+    @login_required
+    def get(self):
+        """
+        View benchmark data
+        """
+        result = {}
+        try:
+            with open(self.bench_file, 'rb') as bench_fh:
+                result = json.loads(bench_fh.read())
+        except IOError as err:
+            logger.error('Unable to open benchmark file: {}'.format(err))
+            abort(404)
+        except Exception as err:
+            logger.error('Benchmark read erorr: {}'.format(err))
+        return jsonify(result), 200
+
+    @login_required
+    def post(self, benchmark_all=False):
+        """
+        Run benchmark
+
+        Arguments
+        ---------
+        benchmark_all: boolean
+            Run full benchmark (--benchmark-all)
+
+        Returns
+        -------
+        result: JSON
+            Message, HTTP code
+        """
+        try:
+            marsh_schema = parse_json_schema().load(request.json)
+            args = marsh_schema
+        except ValidationError as errors:
+            logger.debug('Validation error: {}'.format(errors))
+            return errors.messages, 500
+        logger.debug('Queuing benchmark job')
+        job_id = uuid.uuid4().hex
+        add_jobid(job_id)
+        q = self.crack_q.q_connect()
+        hc_args = {}
+        if 'benchmark_all' in args:
+            hc_args['benchmark_all'] = args['benchmark_all']
+        hc_args['benchmark'] = True
+        hc_args['name'] = 'Benchmark'
+        hc_args['session'] = job_id
+        try:
+            q_args = {
+                'job_id': job_id,
+                'kwargs': hc_args,
+                }
+            self.crack_q.q_add(q, q_args)
+            logger.debug('API Job {} added to queue'.format(job_id))
+            logger.debug('Job Details: {}'.format(q_args))
+            job = self.q.fetch_job(job_id)
+            job.meta['email_count'] = 0
+            job.meta['notify'] = True
+            if current_user.email:
+                if email_check(current_user.email):
+                    job.meta['email'] = str(current_user.email)
+                    job.meta['last_seen'] = str(current_user.last_seen)
+                elif email_check(current_user.username):
+                    job.meta['email'] = current_user.username
+                    job.meta['last_seen'] = str(current_user.last_seen)
+            job.meta['CrackQ State'] = 'Run/Restored'
+            job.meta['Speed Array'] = []
+            job.save_meta()
+            return job_id, 202
+        except Exception as err:
+            logger.error('Error running benchmark: {}'.format(err))
+        return {'msg': 'Invalid Request'}, 500
