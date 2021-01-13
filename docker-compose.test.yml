@@ -26,7 +26,11 @@ services:
             #- ./crackq:/opt/crackq/build/crackq/
         stdin_open: true
         user: crackq
-        tty: true        
+        tty: true     
+        environment:
+                PYTHONPATH: "/opt/crackq/build/"
+                MAIL_USERNAME: ${MAIL_USERNAME}
+                MAIL_PASSWORD: ${MAIL_PASSWORD}   
         command:
                 sh -c "pip3 install . --user && cd ./crackq
                 && python3 -c 'from crackq import hash_modes; hash_modes.HModes.update_modes()'

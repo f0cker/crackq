@@ -29,7 +29,7 @@ services:
         user: crackq
         tty: true        
         environment:
-                PYTHONPATH: "/opt/crackq/build/crackq/"
+                PYTHONPATH: "/opt/crackq/build/"
                 MAIL_USERNAME: ${MAIL_USERNAME}
                 MAIL_PASSWORD: ${MAIL_PASSWORD}
         command:
