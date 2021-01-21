@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v0.0.2
+------------
+- Bumped PySaml version
+- Fixed PYTHONPATH typo regression for ubuntu container
+
 v0.0.1
 ------------
 
