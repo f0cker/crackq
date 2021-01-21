@@ -11,7 +11,7 @@ Flask-Sessionstore==0.4.5
 Flask-SQLAlchemy==2.4.4
 SQLAlchemy-Utils==0.36.8
 flask-talisman==0.7.0
-pysaml2==6.3.1
+pysaml2==6.5.1
 flask-Login==0.5.0
 Flask-Cors==3.0.9
 Flask-SeaSurf==0.2.2
