@@ -8,6 +8,7 @@ pytest-cov==2.10.1
 flake8==3.8.4
 python-ldap==3.3.1
 Flask-Sessionstore==0.4.5
+SQLAlchemy==1.3.23
 Flask-SQLAlchemy==2.4.4
 SQLAlchemy-Utils==0.36.8
 flask-talisman==0.7.0
