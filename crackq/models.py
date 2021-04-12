@@ -18,10 +18,14 @@ from sqlalchemy_utils import UUIDType
 from crackq.db import db
 
 
+def gen_uuid():
+    return uuid.uuid4().hex
+
+
 class User(db.Model):
     """Flask-login User model for session management"""
     __tablename__ = 'user'
-    id = Column(UUIDType(binary=True), default=uuid.uuid4().hex, primary_key=True,
+    id = Column(UUIDType(binary=True), default=gen_uuid, primary_key=True,
                 index=True)
     __table_args__ = {'extend_existing': True}
     active = Column(Boolean())

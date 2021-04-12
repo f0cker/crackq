@@ -1,5 +1,13 @@
 Changelog
 =========
+v0.0.3
+------------
+- Updated JS libs
+- Cleanup JS libs
+- Fixed UUID bug (#27) in user addition for SQL auth (thanks @kernel-sanders)
+- Added additional characters allowed for account passwords and improved checks for add_admuser cli util (#26)
+- Added ubuntu nvidia container
+-
 
 v0.0.2
 ------------

@@ -98,7 +98,7 @@ class parse_json_schema(Schema):
                                         place=fields.Int(),
                                         job_id=fields.UUID()))
     hash_list = fields.List(fields.String(validate=StringContains(
-                            r'[^A-Za-z0-9\*\$\@\/\\\.\:\-\_\+\.]+\~')),
+                            r'[^A-Za-z0-9\*\$\@\/\\\.\:\-\_\+\.\+\~]')),
                             allow_none=True, error_messages=error_messages)
     wordlist = fields.Str(allow_none=True, validate=[StringContains(r'[\W]\-'),
                                                      Length(min=1, max=60)])
@@ -126,13 +126,13 @@ class parse_json_schema(Schema):
     restore = fields.Int(validate=Range(min=0, max=1000000000000))
     user = fields.Str(allow_none=False, validate=StringContains(r'[\W]'))
     password = fields.Str(allow_none=False,
-                          validate=StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/]'))
+                          validate=StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/\]\[\=]'))
     confirm_password = fields.Str(allow_none=True,
-                                  validate=[StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/]'),
-                                            Length(min=10, max=60)])
+                                  validate=[StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/\]\[\=]'),
+                                  Length(min=10, max=60)])
     new_password = fields.Str(allow_none=True,
-                              validate=[StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/]'),
-                                        Length(min=10, max=60)])
+                              validate=[StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/\]\[\=]'),
+                              Length(min=10, max=60)])
     email = fields.Str(allow_none=False,
                        validate=StringContains(r'[^\w\@\^\-\+\./]'))
     admin = fields.Bool(allow_none=True)
@@ -937,6 +937,9 @@ class Queuing(MethodView):
             logger.debug(marsh_schema['batch_job'])
             try:
                 adder = Adder()
+                if len(marsh_schema['batch_job']) < 1:
+                    logger.error('Reorder failed: Invalid request')
+                    return {'msg': 'Reorder failed - Invalid request'}, 500
                 for job in marsh_schema['batch_job']:
                     job_id = job['job_id']
                     if adder.session_check(self.log_dir, job_id):
