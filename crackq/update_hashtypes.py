@@ -3,8 +3,6 @@ script to update/create reference dictionary containing all hashcat hash modes
 """
 #!/usr/bin/env python
 import json
-#import sys
-from time import sleep
 from pyhashcat import Hashcat
 
 bench_dict = {}

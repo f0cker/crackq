@@ -7,7 +7,9 @@ v0.0.3
 - Fixed UUID bug (#27) in user addition for SQL auth (thanks @kernel-sanders)
 - Added additional characters allowed for account passwords and improved checks for add_admuser cli util (#26)
 - Added ubuntu nvidia container
--
+- Added new reporting metric (AD anaylis/overview)
+- Added Potfile++, which creates a system wordlist from the potfile an allows an option to queue an additional job using that list
+- 
 
 v0.0.2
 ------------

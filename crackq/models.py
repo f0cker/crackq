@@ -5,7 +5,7 @@ import uuid
 
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import create_engine, Column, ForeignKey
+from sqlalchemy import create_engine, Column
 from sqlalchemy.types import (
     Boolean,
     DateTime,

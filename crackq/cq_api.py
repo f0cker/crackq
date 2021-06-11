@@ -1,6 +1,6 @@
 """Main Flask code handling REST API"""
+import base64
 import json
-import nltk
 import os
 import re
 import rq
@@ -112,6 +112,7 @@ class parse_json_schema(Schema):
     notify = fields.Bool(allow_none=True)
     increment = fields.Bool(allow_none=True)
     disable_brain = fields.Bool(allow_none=True)
+    potcheck = fields.Bool(allow_none=True)
     increment_min = fields.Int(allow_none=True, validate=Range(min=0, max=20))
     increment_max = fields.Int(allow_none=True, validate=Range(min=0, max=20))
     mask = fields.Str(allow_none=True,
@@ -138,6 +139,12 @@ class parse_json_schema(Schema):
     admin = fields.Bool(allow_none=True)
     benchmark_all = fields.Bool(allow_none=True)
     timeout = fields.Int(validate=Range(min=1, max=28800000), allow_none=True)
+    policy_check = fields.Bool(allow_none=True)
+    complexity_length = fields.Int(validate=Range(min=1, max=48),
+                                   allow_none=True)
+    admin_list = fields.List(fields.String(validate=StringContains(
+                            r'[^A-Za-z0-9\*\$\@\/\.\-\_\+]')),
+                            allow_none=True, error_messages=error_messages)
 
 
 def get_jobdetails(job_details):
@@ -963,7 +970,6 @@ class Queuing(MethodView):
                     self.q.enqueue_job(j)
                     j.meta['CrackQ State'] = 'Run/Restored'
                     j.save_meta()
-
                 return {'msg': 'Queue order updated'}, 200
             except Exception as err:
                 ###***fix to specific exception types
@@ -1284,7 +1290,7 @@ class Adder(MethodView):
             speed_args['pot_path'] = q_args['kwargs']['pot_path']
             speedq_args['kwargs'] = speed_args
             speedq_args['job_id'] = speed_session
-            self.crack_q.q_add(self.speed_q, speedq_args, timeout=400)
+            self.crack_q.q_add(self.speed_q, speedq_args, timeout=600)
             logger.debug('Queuing speed check')
             return True
         return False
@@ -1501,6 +1507,11 @@ class Adder(MethodView):
             except KeyError as err:
                 logger.debug('Name value not provided')
                 name = None
+            try:
+                potcheck = args['potcheck']
+            except KeyError as err:
+                logger.debug('Potcheck value not provided')
+                potcheck = False
             timeout = 1814400
             if 'jobtimeout' in CRACK_CONF:
                 if not CRACK_CONF['jobtimeout']['Modify']:
@@ -1528,7 +1539,8 @@ class Adder(MethodView):
                 'name': name,
                 'pot_path': pot_path,
                 'restore': 0,
-                }
+                'potcheck': potcheck
+            }
         q_args = {
             'job_id': job_id,
             'kwargs': hc_args,
@@ -1582,15 +1594,28 @@ class Adder(MethodView):
             return job_id, 202
 
 
-def reporter(cracked_path, report_path):
+def reporter(cracked_path, report_path, hash_path, donut_path,
+             complexity_length=8, policy_check=False, admin_list=None):
     """
     Simple method to call pypal and save report (html & json)
     """
-    nltk.download('wordnet')
+    hash_path = '{}hashes'.format(cracked_path[:-7])
     report = pypal.Report(cracked_path=cracked_path,
+                          hash_path=hash_path,
                           lang='EN',
                           lists='/opt/crackq/build/pypal/src/lists/')
+    if policy_check:
+        policy = {
+                'length': complexity_length,
+                }
+    else:
+        policy = None
+    stats = report.get_stats(match=admin_list, policy=policy)
+    donut = pypal.DonutGenerator(stats)
+    donut = donut.gen_donut()
+    donut.savefig(donut_path, bbox_inches='tight', dpi=500)
     report_json = report.report_gen()
+
     with open(report_path, 'w') as fh_report:
         fh_report.write(json.dumps(report_json))
     return True
@@ -1652,13 +1677,24 @@ class Reports(MethodView):
                     logger.debug('Valid session found')
                     report_path = valid.val_filepath(path_string=self.report_dir,
                                                      file_string='{}.json'.format(job_id))
+                    donut_path = valid.val_filepath(path_string=self.report_dir,
+                                                    file_string='{}.png'.format(job_id))
                     try:
                         with report_path.open('r') as rep:
-                            return json.loads(rep.read()), 200
+                            report = json.loads(rep.read())
+                        with donut_path.open('rb') as fh_donut:
+                            donut_b64 = base64.b64encode(fh_donut.read()).decode('utf-8')
+                            donut = 'data:image/png;base64,{}'.format(donut_b64)
+                            report['donut'] = donut
+                        logger.debug(report)
+                        return jsonify(report), 200
                     except IOError as err:
                         logger.debug('Error reading report: {}'.format(err))
                         return {'msg': 'No report generated for'
                                        ' this job'}, 500
+                    except Exception as err:
+                        logger.debug('Error reading report: {}'.format(err))
+                        return {'msg': 'Error reading report'}, 500
         else:
             return jsonify(ERR_INVAL_JID), 404
 
@@ -1698,6 +1734,10 @@ class Reports(MethodView):
                                                           file_string='{}.cracked'.format(job_id)))
                     report_path = str(valid.val_filepath(path_string=self.report_dir,
                                                          file_string='{}.json'.format(job_id)))
+                    hash_path = str(valid.val_filepath(path_string=self.log_dir,
+                                                         file_string='{}.hashes'.format(job_id)))
+                    donut_path = str(valid.val_filepath(path_string=self.report_dir,
+                                                         file_string='{}.png'.format(job_id)))
                     job = self.q.fetch_job(job_id)
                     min_report = CRACK_CONF['misc']['min_report']
                     if job.meta['HC State']['Cracked Hashes'] < int(min_report):
@@ -1707,12 +1747,18 @@ class Reports(MethodView):
                     try:
                         logger.debug('Generating report: {}'
                                      .format(cracked_path))
-                        rep = self.report_q.enqueue(reporter,
-                                                    cracked_path,
-                                                    report_path,
-                                                    job_timeout=10080,
-                                                    result_ttl=604800,
-                                                    job_id='{}_report'.format(job_id))
+                        kwargs = {
+                                'complexity_length': int(args['complexity_length']),
+                                'admin_list': args['admin_list'],
+                                'policy_check': args['policy_check'],
+                                }
+                        rep = self.report_q.enqueue_call(func=reporter,
+                                                         job_id='{}_report'.format(job_id),
+                                                         kwargs=kwargs, args=[cracked_path,
+                                                                              report_path,
+                                                                              hash_path,
+                                                                              donut_path],
+                                                         timeout=10080, result_ttl=604800)
                         if rep:
                             return {'msg': 'Successfully queued '
                                            'report generation'}, 202
@@ -1722,6 +1768,9 @@ class Reports(MethodView):
                     except IOError:
                         logger.debug('No cracked passwords found for this job')
                         return {'msg': 'No report available for Job ID'}, 404
+                    except Exception as err:
+                        logger.error('Error queuing report: {}'.format(err))
+                        return {'msg': 'Error queuing report'}, 500
         else:
             return jsonify(ERR_INVAL_JID), 404
 
