@@ -4,6 +4,8 @@
 groupadd -g 1111 -r crackq && useradd -u 1111 -r -g crackq crackq
 mkdir /home/crackq && chown crackq:crackq /home/crackq
 
+#sudo -u crackq 
+
 # Run pip install
 python3 -m pip install --upgrade pip
 python3 -m pip install -r ./requirements.txt
@@ -28,19 +30,20 @@ python3 -m pip install circus
 python3 -m pip install gunicorn
 
 # Install modified RQ version while waiting for merge
-git clone https://github.com/f0cker/rq.git
-cd ./rq
-python3 -m pip install .
-cd ../
+#git clone https://github.com/f0cker/rq.git
+#cd ./rq
+#python3 -m pip install .
+#cd ../
 
 #Download and compile pyhashcat & Hashcat
 git clone https://github.com/f0cker/pyhashcat.git
 cd ./pyhashcat/pyhashcat
 
-#move to static version when hashcat v6 is released
-#wget https://github.com/hashcat/hashcat/archive/v5.1.0.tar.gz
-#tar xvfz v5.1.0.tar.gz && mv hashcat-5.1.0 hashcat
-git clone https://github.com/hashcat/hashcat.git
+#install stable hashcat
+wget https://github.com/hashcat/hashcat/archive/refs/tags/v6.2.1.tar.gz
+tar xvfz v*.tar.gz && mv hashcat-* hashcat
+#or install latest hashcat from git
+#git clone https://github.com/hashcat/hashcat.git
 cd hashcat/
 make uninstall
 make clean

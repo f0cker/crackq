@@ -5,7 +5,7 @@ import uuid
 
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import create_engine, Column, ForeignKey
+from sqlalchemy import create_engine, Column
 from sqlalchemy.types import (
     Boolean,
     DateTime,
@@ -18,10 +18,14 @@ from sqlalchemy_utils import UUIDType
 from crackq.db import db
 
 
+def gen_uuid():
+    return uuid.uuid4().hex
+
+
 class User(db.Model):
     """Flask-login User model for session management"""
     __tablename__ = 'user'
-    id = Column(UUIDType(binary=True), default=uuid.uuid4().hex, primary_key=True,
+    id = Column(UUIDType(binary=True), default=gen_uuid, primary_key=True,
                 index=True)
     __table_args__ = {'extend_existing': True}
     active = Column(Boolean())
@@ -35,6 +39,7 @@ class User(db.Model):
     login_count = Column(Integer)
     confirmed_at = Column(DateTime())
     job_ids = Column(JSON, unique=True)
+    task_ids = Column(JSON, unique=True)
     is_admin = Column(Boolean())
     password = Column(Unicode(100))
 
@@ -59,8 +64,28 @@ class User(db.Model):
         ret = {
             'user': self.username,
             'job_ids': self.job_ids,
+            'task_ids': self.job_ids,
             'email': self.email,
             'last_seen':  self.last_seen,
             'password': self.password
             }
         return json.dumps(ret)
+
+
+class Templates(db.Model):
+    """Template job array list"""
+    __tablename__ = 'templates'
+    id = Column(UUIDType(binary=True), default=gen_uuid, primary_key=True,
+                index=True)
+    __table_args__ = {'extend_existing': True}
+    name = Column(String(255))
+
+
+class Tasks(db.Model):
+    """Tasks job array list"""
+    __tablename__ = 'tasks'
+    id = Column(UUIDType(binary=True), default=gen_uuid, primary_key=True,
+                index=True)
+    __table_args__ = {'extend_existing': True}
+    name = Column(String(255))
+    job_ids = Column(JSON, unique=True)

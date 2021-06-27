@@ -2,7 +2,7 @@
 from crackq import cq_api, crackqueue, run_hashcat
 from crackq.conf import hc_conf
 from crackq.db import db
-from crackq.models import User
+from crackq.models import User, Templates
 from flask import Flask
 from flask_cors import CORS
 from flask_login import (
@@ -17,6 +17,7 @@ from flask_migrate import Migrate
 from flask_session import Session
 from flask_seasurf import SeaSurf
 
+import nltk
 
 CRACK_CONF = hc_conf()
 
@@ -28,7 +29,7 @@ def create_app():
     #CORS(app, resources={r'/*': {'origins': 'http://localhost:8081',
     #                             'supports_credentials': True},
     #                    })
-    #app.config['DEBUG'] = True
+    app.config['DEBUG'] = False
     app.config['JSON_SORT_KEYS'] = False
     app.config['SESSION_TYPE'] = aconf['SESSION_TYPE']
     app.config['SQLALCHEMY_DATABASE_URI'] = aconf['SQLALCHEMY_DATABASE_URI']
@@ -54,6 +55,8 @@ def create_app():
     queuing_view = cq_api.Queuing.as_view('queuing')
     add_view = cq_api.Adder.as_view('adder')
     report_view = cq_api.Reports.as_view('reports')
+    tasks_view = cq_api.TasksView.as_view('tasks')
+    templates_view = cq_api.TemplatesView.as_view('templates')
     app.add_url_rule('/api/admin/', defaults={'user_id': None},
                      view_func=admin_view, methods=['POST', 'GET'])
     app.add_url_rule('/api/admin/<uuid:user_id>',
@@ -80,6 +83,12 @@ def create_app():
                      view_func=add_view, methods=['POST'])
     app.add_url_rule('/api/reports',
                      view_func=report_view, methods=['GET', 'POST'])
+    app.add_url_rule('/api/tasks/templates', defaults={'temp_id': None},
+                     view_func=templates_view, methods=['GET', 'PUT'])
+    app.add_url_rule('/api/tasks/templates/<uuid:temp_id>',
+                     view_func=templates_view, methods=['DELETE'])
+    app.add_url_rule('/api/tasks',
+                     view_func=tasks_view, methods=['GET', 'POST'])
     login_manager.init_app(app)
     session = Session(app)
     session.init_app(app)
@@ -90,7 +99,7 @@ def create_app():
 
 login_manager = LoginManager()
 login_manager.session_protection = "strong"
-
+nltk.download("wordnet")
 
 @login_manager.user_loader
 def load_user(user_id):

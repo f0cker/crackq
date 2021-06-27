@@ -7,7 +7,6 @@ from crackq.logger import logger
 from flask import url_for
 from saml2 import BINDING_HTTP_POST
 from saml2 import BINDING_HTTP_REDIRECT
-from saml2 import entity
 from saml2.client import Saml2Client
 from saml2.config import Config as Saml2Config
 

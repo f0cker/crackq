@@ -1,6 +1,6 @@
 """Main Flask code handling REST API"""
+import base64
 import json
-import nltk
 import os
 import re
 import rq
@@ -12,10 +12,11 @@ import uuid
 import crackq
 from crackq.db import db
 from crackq.logger import logger
-from crackq.models import User
+from crackq.models import User, Templates, Tasks
 from crackq import crackqueue, hash_modes, auth
 from crackq.validator import FileValidation as valid
 from crackq.conf import hc_conf
+from crackq.run_hashcat import write_template
 from datetime import datetime
 from flask import (
     abort,
@@ -76,7 +77,57 @@ class StringContains(validate.Regexp):
         return value
 
 
-class parse_json_schema(Schema):
+class batch_schema(Schema):
+    """
+    Child schema for parse_json_schema to handle nested dict fields
+    """
+    job_id = fields.UUID()
+    place = fields.Int()
+
+
+class job_schema(Schema):
+    """
+    Child schema for parse_json_schema to handle jobs nested dict fields
+    """
+    error_messages = {
+        "name": "Invalid input characters",
+        "username": "Invalid input characters",
+        }
+    job_id = fields.UUID(allow_none=None)
+    task_id = fields.UUID(allow_none=None)
+    hash_list = fields.List(fields.String(validate=StringContains(
+                            r'[^A-Za-z0-9\*\$\@\/\\\.\:\-\_\+\.\+\~]')),
+                            allow_none=False, error_messages=error_messages)
+    wordlist = fields.Str(allow_none=True, validate=[StringContains(r'[^A-Za-z0-9\_\-]'),
+                                                     Length(min=1, max=60)])
+    wordlist2 = fields.Str(allow_none=True, validate=[StringContains(r'[^A-Za-z0-9\_\-]'),
+                                                      Length(min=1, max=60)])
+    attack_mode = fields.Int(allow_none=True, validate=Range(min=0, max=9))
+    rules = fields.List(fields.String(validate=[StringContains(r'[^A-Za-z0-9\_\-]'),
+                                                Length(min=1, max=60)]),
+                        allow_none=True)
+    username = fields.Bool(allow_none=True)
+    notify = fields.Bool(allow_none=True)
+    increment = fields.Bool(allow_none=True)
+    disable_brain = fields.Bool(allow_none=True)
+    potcheck = fields.Bool(allow_none=True)
+    increment_min = fields.Int(allow_none=True, validate=Range(min=0, max=20))
+    increment_max = fields.Int(allow_none=True, validate=Range(min=0, max=20))
+    mask = fields.Str(allow_none=True,
+                      validate=StringContains(r'[^aldsu\?0-9a-zA-Z]'))
+    mask_file = fields.List(fields.String(validate=[StringContains(r'[^A-Za-z0-9\_\-]'),
+                                                    Length(min=1, max=60)]),
+                            allow_none=True)
+    name = fields.Str(allow_none=True,
+                      validate=StringContains(r'[^A-Za-z0-9\_\-\ ]'),
+                      error_messages=error_messages)
+    hash_mode = fields.Int(allow_none=False, validate=Range(min=0, max=65535))
+    restore = fields.Int(validate=Range(min=0, max=1000000000000))
+    benchmark_all = fields.Bool(allow_none=True)
+    timeout = fields.Int(validate=Range(min=1, max=28800000), allow_none=True)
+
+
+class parse_json_schema(job_schema):
     """
     Class to create the schema for parsing received JSON arguments
 
@@ -93,52 +144,27 @@ class parse_json_schema(Schema):
         "name": "Invalid input characters",
         "username": "Invalid input characters",
         }
-    job_id = fields.UUID(allow_none=False)
-    batch_job = fields.List(fields.Dict(keys=fields.Str(),
-                                        place=fields.Int(),
-                                        job_id=fields.UUID()))
-    hash_list = fields.List(fields.String(validate=StringContains(
-                            r'[^A-Za-z0-9\*\$\@\/\\\.\:\-\_\+\.]+\~')),
-                            allow_none=True, error_messages=error_messages)
-    wordlist = fields.Str(allow_none=True, validate=[StringContains(r'[\W]\-'),
-                                                     Length(min=1, max=60)])
-    wordlist2 = fields.Str(allow_none=True, validate=[StringContains(r'[\W]\-'),
-                                                      Length(min=1, max=60)])
-    attack_mode = fields.Int(allow_none=True, validate=Range(min=0, max=9))
-    rules = fields.List(fields.String(validate=[StringContains(r'[\W]\-'),
-                                                Length(min=1, max=60)]),
-                        allow_none=True)
-    username = fields.Bool(allow_none=True)
-    notify = fields.Bool(allow_none=True)
-    increment = fields.Bool(allow_none=True)
-    disable_brain = fields.Bool(allow_none=True)
-    increment_min = fields.Int(allow_none=True, validate=Range(min=0, max=20))
-    increment_max = fields.Int(allow_none=True, validate=Range(min=0, max=20))
-    mask = fields.Str(allow_none=True,
-                      validate=StringContains(r'[^aldsu\?0-9a-zA-Z]'))
-    mask_file = fields.List(fields.String(validate=[StringContains(r'[\W]\-'),
-                                                    Length(min=1, max=60)]),
-                            allow_none=True)
-    name = fields.Str(allow_none=True,
-                      validate=StringContains(r'[\W]'),
-                      error_messages=error_messages)
-    hash_mode = fields.Int(allow_none=False, validate=Range(min=0, max=65535))
-    restore = fields.Int(validate=Range(min=0, max=1000000000000))
-    user = fields.Str(allow_none=False, validate=StringContains(r'[\W]'))
+    user = fields.Str(allow_none=False, validate=StringContains(r'[^A-Za-z0-9\_\-]'))
     password = fields.Str(allow_none=False,
-                          validate=StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/]'))
+                          validate=StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/\]\[\=]'))
     confirm_password = fields.Str(allow_none=True,
-                                  validate=[StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/]'),
+                                  validate=[StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/\]\[\=]'),
                                             Length(min=10, max=60)])
     new_password = fields.Str(allow_none=True,
-                              validate=[StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/]'),
-                                        Length(min=10, max=60)])
+                              validate=[StringContains(r'[^\w\!\@\#\$\%\^\&\*\(\)\-\+\.\,\\\/\]\[\=]'),
+                              Length(min=10, max=60)])
     email = fields.Str(allow_none=False,
                        validate=StringContains(r'[^\w\@\^\-\+\./]'))
     admin = fields.Bool(allow_none=True)
-    benchmark_all = fields.Bool(allow_none=True)
-    timeout = fields.Int(validate=Range(min=1, max=28800000), allow_none=True)
-
+    policy_check = fields.Bool(allow_none=True)
+    complexity_length = fields.Int(validate=Range(min=1, max=48),
+                                   allow_none=True)
+    admin_list = fields.List(fields.String(validate=StringContains(
+                             r'[^A-Za-z0-9\*\$\@\/\.\-\_\+]')),
+                             allow_none=True, error_messages=error_messages)
+    batch_job = fields.List(fields.Nested(batch_schema))
+    jobs = fields.List(fields.Nested(job_schema))
+    fields.Nested(job_schema)
 
 def get_jobdetails(job_details):
     """
@@ -726,6 +752,7 @@ class Queuing(MethodView):
                     job = self.q.fetch_job(job_id)
                 else:
                     job = None
+            ###***remove below?
             else:
                 job = self.q.fetch_job(job_id)
             if job:
@@ -937,6 +964,9 @@ class Queuing(MethodView):
             logger.debug(marsh_schema['batch_job'])
             try:
                 adder = Adder()
+                if len(marsh_schema['batch_job']) < 1:
+                    logger.error('Reorder failed: Invalid request')
+                    return {'msg': 'Reorder failed - Invalid request'}, 500
                 for job in marsh_schema['batch_job']:
                     job_id = job['job_id']
                     if adder.session_check(self.log_dir, job_id):
@@ -960,7 +990,6 @@ class Queuing(MethodView):
                     self.q.enqueue_job(j)
                     j.meta['CrackQ State'] = 'Run/Restored'
                     j.save_meta()
-
                 return {'msg': 'Queue order updated'}, 200
             except Exception as err:
                 ###***fix to specific exception types
@@ -992,7 +1021,6 @@ class Queuing(MethodView):
         try:
             logger.debug('Stopping job: {:s}'.format(job_id))
             job = self.q.fetch_job(job_id)
-
             started = rq.registry.StartedJobRegistry(queue=self.q)
             cur_list = started.get_job_ids()
             comp = rq.registry.FinishedJobRegistry(queue=self.q)
@@ -1178,12 +1206,10 @@ class Adder(MethodView):
                     try:
                         status_json = json.loads(fh_job_file.read())
                         logger.debug('Restoring job details: {}'.format(status_json))
-                        #restore = status_json['Restore Point']
                         return status_json
                     except IOError as err:
                         logger.warning('Invalid job ID: {}'.format(err))
                         return False
-
                     except TypeError as err:
                         logger.warning('Invalid job ID: {}'.format(err))
                         return False
@@ -1201,7 +1227,7 @@ class Adder(MethodView):
 
     def session_check(self, log_dir, job_id):
         """
-        Check for existing session and  return the ID if present
+        Check for existing session and return the ID if present
         else False
 
         Arguments
@@ -1220,7 +1246,6 @@ class Adder(MethodView):
         sess_id = False
         if job_id.isalnum():
             try:
-                #files = [f for f in Path.iterdir(log_dir)]
                 for f in Path.iterdir(log_dir):
                     if job_id in str(f):
                         sess_id = True
@@ -1281,43 +1306,17 @@ class Adder(MethodView):
             speed_args['pot_path'] = q_args['kwargs']['pot_path']
             speedq_args['kwargs'] = speed_args
             speedq_args['job_id'] = speed_session
-            self.crack_q.q_add(self.speed_q, speedq_args, timeout=400)
+            self.crack_q.q_add(self.speed_q, speedq_args, timeout=600)
             logger.debug('Queuing speed check')
             return True
         return False
 
-    @login_required
-    def post(self):
+    def queue_job(self, args, job_id=None):
         """
-        Method to post a new job to the queue
-
-        job_id: str
-            hex representation of uuid job ID
-
-        Returns
-        ------
-        boolean
-            True/False success failure
-        HTTP_status: int
-            HTTP status, 201  or 500
-
+        Method to check sanity of job arguments and add
+        job to redis queue
         """
-        try:
-            marsh_schema = parse_json_schema().load(request.json)
-            args = marsh_schema
-        except ValidationError as errors:
-            logger.debug('Validation error: {}'.format(errors))
-            return errors.messages, 500
-        try:
-            job_id = args['job_id'].hex
-        except KeyError as err:
-            logger.debug('No job ID provided')
-            job_id = None
-        except AttributeError as err:
-            logger.debug('No job ID provided')
-            job_id = None
         # Check for existing session info
-        ###***make this a method
         if job_id:
             if job_id.isalnum():
                 if self.session_check(self.log_dir, job_id):
@@ -1498,6 +1497,11 @@ class Adder(MethodView):
             except KeyError as err:
                 logger.debug('Name value not provided')
                 name = None
+            try:
+                potcheck = args['potcheck']
+            except KeyError as err:
+                logger.debug('Potcheck value not provided')
+                potcheck = False
             timeout = 1814400
             if 'jobtimeout' in CRACK_CONF:
                 if not CRACK_CONF['jobtimeout']['Modify']:
@@ -1525,7 +1529,8 @@ class Adder(MethodView):
                 'name': name,
                 'pot_path': pot_path,
                 'restore': 0,
-                }
+                'potcheck': potcheck
+            }
         q_args = {
             'job_id': job_id,
             'kwargs': hc_args,
@@ -1555,6 +1560,8 @@ class Adder(MethodView):
             logger.debug('API Job {} added to queue'.format(job_id))
             logger.debug('Job Details: {}'.format(q_args))
             job = self.q.fetch_job(job_id)
+            if 'task_id' in args:
+                job.meta['task_id'] = args['task_id']
             job.meta['email_count'] = 0
             if 'notify' in args:
                 job.meta['notify'] = args['notify']
@@ -1578,16 +1585,62 @@ class Adder(MethodView):
             logger.warning('Type error in job meta data:\n{}'.format(err))
             return job_id, 202
 
+    @login_required
+    def post(self):
+        """
+        Method to post a new job to the queue
 
-def reporter(cracked_path, report_path):
+        job_id: str
+            hex representation of uuid job ID
+
+        Returns
+        ------
+        boolean
+            True/False success failure
+        HTTP_status: int
+            HTTP status, 201  or 500
+
+        """
+        try:
+            marsh_schema = parse_json_schema().load(request.json)
+            args = marsh_schema
+        except ValidationError as errors:
+            logger.debug('Validation error: {}'.format(errors))
+            return errors.messages, 500
+        try:
+            job_id = args['job_id'].hex
+        except KeyError:
+            logger.debug('No job ID provided')
+            job_id = None
+        except AttributeError:
+            logger.debug('No job ID provided')
+            job_id = None
+        enqueue_result = self.queue_job(args, job_id=job_id)
+        return enqueue_result
+
+
+def reporter(cracked_path, report_path, donut_path,
+             complexity_length=8, policy_check=False, admin_list=None):
     """
     Simple method to call pypal and save report (html & json)
     """
-    nltk.download('wordnet')
+    hash_path = '{}hashes'.format(cracked_path[:-7])
     report = pypal.Report(cracked_path=cracked_path,
+                          hash_path=hash_path,
                           lang='EN',
                           lists='/opt/crackq/build/pypal/src/lists/')
+    if policy_check:
+        policy = {
+                'length': complexity_length,
+                }
+    else:
+        policy = None
+    stats = report.get_stats(match=admin_list, policy=policy)
+    donut = pypal.DonutGenerator(stats)
+    donut = donut.gen_donut()
+    donut.savefig(donut_path, bbox_inches='tight', dpi=500)
     report_json = report.report_gen()
+
     with open(report_path, 'w') as fh_report:
         fh_report.write(json.dumps(report_json))
     return True
@@ -1649,13 +1702,24 @@ class Reports(MethodView):
                     logger.debug('Valid session found')
                     report_path = valid.val_filepath(path_string=self.report_dir,
                                                      file_string='{}.json'.format(job_id))
+                    donut_path = valid.val_filepath(path_string=self.report_dir,
+                                                    file_string='{}.png'.format(job_id))
                     try:
                         with report_path.open('r') as rep:
-                            return json.loads(rep.read()), 200
+                            report = json.loads(rep.read())
+                        with donut_path.open('rb') as fh_donut:
+                            donut_b64 = base64.b64encode(fh_donut.read()).decode('utf-8')
+                            donut = 'data:image/png;base64,{}'.format(donut_b64)
+                            report['donut'] = donut
+                        logger.debug(report)
+                        return jsonify(report), 200
                     except IOError as err:
                         logger.debug('Error reading report: {}'.format(err))
                         return {'msg': 'No report generated for'
                                        ' this job'}, 500
+                    except Exception as err:
+                        logger.debug('Error reading report: {}'.format(err))
+                        return {'msg': 'Error reading report'}, 500
         else:
             return jsonify(ERR_INVAL_JID), 404
 
@@ -1695,6 +1759,10 @@ class Reports(MethodView):
                                                           file_string='{}.cracked'.format(job_id)))
                     report_path = str(valid.val_filepath(path_string=self.report_dir,
                                                          file_string='{}.json'.format(job_id)))
+                    hash_path = str(valid.val_filepath(path_string=self.log_dir,
+                                                         file_string='{}.hashes'.format(job_id)))
+                    donut_path = str(valid.val_filepath(path_string=self.report_dir,
+                                                         file_string='{}.png'.format(job_id)))
                     job = self.q.fetch_job(job_id)
                     min_report = CRACK_CONF['misc']['min_report']
                     if job.meta['HC State']['Cracked Hashes'] < int(min_report):
@@ -1704,12 +1772,18 @@ class Reports(MethodView):
                     try:
                         logger.debug('Generating report: {}'
                                      .format(cracked_path))
-                        rep = self.report_q.enqueue(reporter,
-                                                    cracked_path,
-                                                    report_path,
-                                                    job_timeout=10080,
-                                                    result_ttl=604800,
-                                                    job_id='{}_report'.format(job_id))
+                        kwargs = {
+                                'complexity_length': int(args['complexity_length']),
+                                'admin_list': args['admin_list'],
+                                'policy_check': args['policy_check'],
+                                }
+                        rep = self.report_q.enqueue_call(func=reporter,
+                                                         job_id='{}_report'.format(job_id),
+                                                         kwargs=kwargs, args=[cracked_path,
+                                                                              report_path,
+                                                                              hash_path,
+                                                                              donut_path],
+                                                         timeout=10080, result_ttl=604800)
                         if rep:
                             return {'msg': 'Successfully queued '
                                            'report generation'}, 202
@@ -1719,8 +1793,304 @@ class Reports(MethodView):
                     except IOError:
                         logger.debug('No cracked passwords found for this job')
                         return {'msg': 'No report available for Job ID'}, 404
+                    except Exception as err:
+                        logger.error('Error queuing report: {}'.format(err))
+                        return {'msg': 'Error queuing report'}, 500
         else:
             return jsonify(ERR_INVAL_JID), 404
+
+
+class TemplatesView(MethodView):
+    """Manages tasks creation and queuing"""
+
+    def __init__(self):
+        self.log_dir = CRACK_CONF['files']['log_dir']
+
+    @login_required
+    def get(self, temp_id):
+        """
+        List all currently registered job templates
+        """
+        result = []
+        if temp_id:
+            try:
+                template = Templates.query.filter_by(id=temp_id).first()
+                temp_file = valid.val_filepath(path_string='{}templates/'.format(self.log_dir),
+                                               file_string='{}.json'.format(template.idi.hex))
+                with temp_file.open('r') as fh_temp:
+                    template = json.loads(fh_temp.read())
+                    result.append(template)
+            except AttributeError:
+                abort(404)
+            except Exception as err:
+                logger.debug('Error getting job template details: {}'.format(err))
+                return {'msg': 'API error fetching template details'}, 500
+        else:
+            try:
+                for template in Templates.query.all():
+                    temp_file = valid.val_filepath(path_string='{}templates/'.format(self.log_dir),
+                                                   file_string='{}.json'.format(template.id.hex))
+                    with temp_file.open('r') as fh_temp:
+                        temp = json.loads(fh_temp.read())
+                        temp_dict = {
+                            'Name': template.name,
+                            'ID': template.id,
+                            'Details': temp
+                            }
+                        result.append(temp_dict)
+            except AttributeError:
+                abort(404)
+            except Exception as err:
+                logger.debug('Error getting job templates list: {}'.format(err))
+                return {'msg': 'API error fetching template list'}, 500
+        return jsonify(result), 200
+
+    @login_required
+    def put(self, temp_id):
+        """
+        Register a job template
+        """
+        try:
+            marsh_schema = parse_json_schema().load(request.json)
+            args = marsh_schema
+        except ValidationError as errors:
+            logger.debug('Validation error: {}'.format(errors))
+            return errors.messages, 500
+        result = {}
+        try:
+            args_needed = ['job_id', 'name']
+            if all(arg in args for arg in args_needed):
+                if not args['job_id']:
+                    return {'msg': 'API error invalid job_id'}, 500
+                template = Templates(name=args['name'])
+                if not template:
+                    return {'msg': 'API error generating template id'}, 500
+                db.session.add(template)
+                db.session.commit()
+                result['template_id'] = template.id.hex
+                temp_file = str(valid.val_filepath(path_string='{}templates/'.format(self.log_dir),
+                                                   file_string='{}.json'.format(template.id.hex)))
+                job_file = valid.val_filepath(path_string=self.log_dir,
+                                              file_string='{}.json'.format(args['job_id'].hex))
+                save_keys = ['attack_mode',
+                             'increment',
+                             'increment_max',
+                             'increment_min',
+                             'mask',
+                             'rules',
+                             'wordlist',
+                             'wordlist2',
+                             'timeout',
+                             'stats']
+                template_dict = {}
+                with job_file.open('r') as fh_job_file:
+                    job_dict = json.loads(fh_job_file.read())
+                    job_keys = job_dict.keys()
+                    for key in save_keys:
+                        # temporary handling of stats field until that functionarlity is used
+                        if key == 'stats':
+                            template_dict[key] = []
+                        elif key in job_keys:
+                            template_dict[key] = job_dict[key]
+                        else:
+                            template_dict[key] = None
+                    write_res = write_template(template_dict, temp_file)
+                if not write_res:
+                    db.session.delete(template)
+                    db.session.commit()
+                    return {'msg': 'API error creating template'}, 500
+            else:
+                return {'msg': 'API error valid job_id and name required'}, 500
+        except AttributeError as err:
+            logger.error('Error creating template: {}'.format(err))
+            abort(404)
+        except FileNotFoundError as err:
+            logger.debug('Error creating template: {}'.format(err))
+            return {'msg': 'API error creating template'}, 500
+        except Exception as err:
+            logger.debug('Error creating job templates list: {}'.format(err))
+            return {'msg': 'API error creating template'}, 500
+        return jsonify(result), 200
+
+    @login_required
+    def delete(self, temp_id):
+        """
+        Delete templates
+
+        Arguments
+        --------
+        temp_id: uuid/None
+            Template ID to delete or None to delete all
+        """
+        if temp_id:
+            try:
+                template = Templates.query.filter_by(id=temp_id).first()
+                if not template:
+                    logger.debug('No such template found')
+                    abort(404)
+                logger.debug('Deleting template: {}'.format(template.id.hex))
+                temp_file = valid.val_filepath(path_string='{}templates/'.format(self.log_dir),
+                                               file_string='{}.json'.format(template.id.hex))
+                temp_file.unlink()
+                db.session.delete(template)
+                db.session.commit()
+            except AttributeError as err:
+                logger.debug('Error deleting template file: {}'.format(err))
+                abort(404)
+            except FileNotFoundError as err:
+                logger.debug('Error deleting template file: {}'.format(err))
+                return {'msg': 'API error deleting template file'}, 500
+            except Exception as err:
+                logger.debug('Error getting job template details: {}'.format(err))
+                return {'msg': 'API error deleting template'}, 500
+        else:
+            for template in Templates.query.all():
+                db.session.delete(template)
+                db.session.commit()
+                temp_file.unlink()
+        return jsonify({'msg': 'Template deleted'}), 200
+
+
+class TasksView(MethodView):
+    """Manages tasks creation and queuing"""
+
+    def __init__(self):
+        self.log_dir = CRACK_CONF['files']['log_dir']
+        self.crack_q = crackqueue.Queuer()
+        self.q = self.crack_q.q_connect()
+        rconf = CRACK_CONF['redis']
+        self.redis_con = Redis(rconf['host'], rconf['port'])
+        self.speed_q = Queue('speed_check', connection=self.redis_con,
+                             serializer=JSONSerializer)
+        self.adder = Adder()
+
+    def add_taskid(self, task_id):
+        """Add task_id to task_ids column in user table"""
+        user = User.query.filter_by(username=current_user.username).first()
+        if user.task_ids:
+            logger.debug('Current registered task_ids: {}'.format(user.task_ids))
+            tasks = json.loads(user.task_ids)
+        else:
+            logger.debug('No task_ids registered with current user')
+            tasks = None
+        logger.debug('Registering new task_id to current user: {}'.format(task_id))
+        if isinstance(tasks, list):
+            if task_id not in tasks:
+                tasks.append(task_id)
+            else:
+                logger.warning('task_id already registered to user: {}'.format(task_id))
+        else:
+            tasks = [task_id]
+        user.task_ids = json.dumps(tasks)
+        db.session.commit()
+        logger.debug('user.task_ids: {}'.format(user.task_ids))
+
+    def del_taskid(self, task_id):
+        """Delete task_id from task_ids column in user table"""
+        with crackq.app.app_context():
+            for user in User.query.all():
+                if user.task_ids and task_id in user.task_ids:
+                    tasks = json.loads(user.task_ids)
+                    logger.debug('Registered tasks: {}'.format(tasks))
+                    if isinstance(tasks, list):
+                        logger.debug('Unregistering task_id: {}'.format(task_id))
+                        if task_id in tasks:
+                            tasks.remove(task_id)
+                            user.task_ids = json.dumps(tasks)
+                            db.session.commit()
+                            logger.debug('user.task_ids: {}'.format((user.task_ids)))
+                            return True
+                    else:
+                        logger.error('Error removing task_id')
+                else:
+                    logger.debug('Task ID not registered with user')
+            return False
+
+    @login_required
+    def get(self):
+        """
+        List all tasks registered to user
+        """
+        result = []
+        try:
+            user = User.query.filter_by(username=current_user.username).first()
+            if user.task_ids:
+                logger.debug('Current registered task_ids: {}'.format(user.task_ids))
+                tasks = json.loads(user.task_ids)
+            else:
+                logger.debug('No task_ids registered with current user')
+                tasks = None
+            if tasks:
+                for task_id in tasks:
+                    task_dict = {}
+                    try:
+                        task = Tasks.query.filter_by(id=task_id).first()
+                        task_dict['task_id'] = task_id
+                        task_dict['name'] = task.name
+                        job_list = []
+                        for job_id in json.loads(task.job_ids):
+                            job_deets = {}
+                            if session:
+                                if check_jobid(job_id):
+                                    job = self.q.fetch_job(job_id)
+                                else:
+                                    job = None
+                            if job:
+                                job_deets = get_jobdetails(job.description)
+                                job_deets['job_id'] = job_id
+                                job_list.append(job_deets)
+                        task_dict['jobs'] = job_list
+                        result.append(task_dict)
+                    except AttributeError as err:
+                        logger.debug('Task does not exist: {}'.format(err))
+        except AttributeError as err:
+            logger.debug('Error getting task list: {}'.format(err))
+            abort(404)
+        except Exception as err:
+            logger.debug('Error getting task list: {}'.format(err))
+            return {'msg': 'API error fetching task list'}, 500
+        return jsonify(result), 200
+
+    @login_required
+    def post(self):
+        """
+        Create a new task
+        """
+        try:
+            marsh_schema = parse_json_schema().load(request.json)
+            args = marsh_schema
+        except ValidationError as errors:
+            logger.debug('Validation error: {}'.format(errors))
+            return errors.messages, 500
+        result = {}
+        try:
+            args_needed = ['jobs', 'name']
+            if all(arg in args for arg in args_needed):
+                if len(args['jobs']) < 1:
+                    return {'msg': 'API error jobs list required'}, 500
+                result_jobs = []
+                result['jobs'] = result_jobs
+                for job in args['jobs']:
+                    job_res = self.adder.queue_job(job)
+                    result_jobs.append(job_res[0])
+                task = Tasks(name=args['name'],
+                             job_ids=json.dumps(result_jobs))
+                if not task:
+                    return {'msg': 'API error generating taskid'}, 500
+                db.session.add(task)
+                db.session.commit()
+                task_id = task.id.hex
+                result['task_id'] = task_id
+                self.add_taskid(task_id)
+            else:
+                result = {'msg': 'API error jobs list required'}, 500
+        except AttributeError as err:
+            logger.error('Error queuing task: {}'.format(err))
+            abort(404)
+        except Exception as err:
+            logger.debug('Error queuing task: {}'.format(err))
+            return {'msg': 'API error queuing'}, 500
+        return jsonify(result), 202
 
 
 class Profile(MethodView):

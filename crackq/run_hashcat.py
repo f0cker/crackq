@@ -47,7 +47,7 @@ def del_check(job):
     return False
 
 
-def write_template(template_dict, job_id):
+def write_template(template_dict, temp_file):
     """
     Write a CrackQ json state file
 
@@ -58,20 +58,19 @@ def write_template(template_dict, job_id):
     ---------
     template_dict: dict
         JSON job details in dict format
-    job_id: uuid
-        ID to store the file under
+    temp_file: Path object
+        File path location to store the file
 
     Returns
     """
     logger.debug('Writing template/status file')
-    log_dir = CRACK_CONF['files']['log_dir']
-    temp_file = valid.val_filepath(path_string=log_dir,
-                                   file_string='{}.json'.format(job_id))
     try:
         with open(temp_file, 'x') as fh_temp:
             fh_temp.write(json.dumps(template_dict))
+        return True
     except FileExistsError as err:
         logger.debug('Status/Template file already exists {}'.format(err))
+        return False
 
 def send_email(mail_server, port, src, dest, sub, tls):
     """
@@ -334,6 +333,7 @@ def cracked_callback(sender):
         logger.debug('No job yet')
     write_result(sender)
 
+
 def bench_callback(sender):
     """
     Callback function to create benchmark dictionary
@@ -569,6 +569,77 @@ def write_result(sender):
             logger.debug('Status update failure: {}'.format(err))
 
 
+def pot_check(outfile):
+    """
+    Simple check if crackq potfile wordlist has been updated today
+
+    Arguments
+    ---------
+    outfile: string
+        location of wordlist file
+
+    Returns
+    -------
+    ret: boolean
+        If file has been updated in the past 24 hours return true else false
+    """
+    logger.debug('Checking pot wordlist is up-to-date')
+    try:
+        file_stat = int(outfile.stat().st_mtime)
+        edit_time = int(time.time()) - file_stat
+        ret = True if edit_time < 86400 else False
+    except (IOError, FileNotFoundError) as err:
+        logger.debug('Pot wordlist files not found, creating new file: {}'.format(err))
+        with outfile.open('w+'):
+            pass
+        ret = False
+    except Exception as err:
+        logger.debug('Pot wordlist file update error: {}'.format(err))
+        ret = False
+    print('RETURNING: {}'.format(ret))
+    return ret
+
+
+def potter(potfile, outfile):
+    """
+    Extract cracked passwords from potfile to generate wordlist
+
+    Arguments
+    ---------
+    potfile: string
+        location of potfile
+    outfile: string
+        location of wordlist file
+
+    Returns
+    -------
+    ret: boolean
+        True if successfully updated
+
+    """
+    logger.debug('Updating pot wordlist')
+    try:
+        with open(potfile, 'r') as fh_pot:
+            with open(outfile, 'w+') as fh_out:
+                for cracked in fh_pot:
+                    if ':' in cracked:
+                        split_list = cracked.split(':')
+                        if len(split_list[0]) > 1:
+                            passwd = split_list[-1]
+                        else:
+                            passwd = cracked
+                    else:
+                        passwd = cracked
+                    fh_out.write(passwd)
+    except (IOError, FileNotFoundError) as err:
+        logger.debug('Pot wordlist files not found: {}'.format(err))
+        return False
+    except Exception as err:
+        logger.debug('Pot wordlist update error: {}'.format(err))
+        return False
+    return True
+
+
 def brain_check(speed, salts):
     """
     Method to decide whether or not to enable the brain
@@ -610,7 +681,8 @@ def hc_worker(crack=None, hash_file=None, session=None,
               username=False, pot_path=None, restore=None,
               brain=True, mask_file=False, increment=False,
               increment_min=None, increment_max=None, speed=True,
-              benchmark=False, benchmark_all=False, wordlist2=None):
+              benchmark=False, benchmark_all=False, wordlist2=None,
+              potcheck=None):
     """
     Method to load a rq worker to take jobs from redis queue for execution
 
@@ -630,6 +702,14 @@ def hc_worker(crack=None, hash_file=None, session=None,
     if attack_mode:
         if not isinstance(attack_mode, int):
             attack_mode = None
+    # first run with potfile wordlist if option is enabled
+    if potcheck:
+        try:
+            pot_job(hash_file=hash_file, session=session, hash_mode=hash_mode,
+                    attack_mode=attack_mode, rules=None,
+                    pot_path=pot_path, username=username)
+        except Exception as err:
+            logger.error('Error running potcheck: {}'.format(err))
     #job = redis_q.fetch_job(session)
     hcat = runner(hash_file=hash_file, mask=mask,
                   session=session, wordlist=wordlist,
@@ -678,7 +758,7 @@ def hc_worker(crack=None, hash_file=None, session=None,
                 logger.debug('Hashcat Abort status returned')
                 event_log = hcat.hashcat_status_get_log()
                 raise ValueError('Aborted: {}'.format(event_log))
-            elif main_counter > 2000 and hc_state != 'Running' and mask_file == False:
+            elif main_counter > 3000 and hc_state != 'Running' and mask_file == False:
                 logger.debug('Reseting job, seems to be hung')
                 raise ValueError('Error: Hashcat hung - Initialize timeout')
             else:
@@ -720,9 +800,9 @@ def hc_worker(crack=None, hash_file=None, session=None,
                         pause_counter = 0
                         logger.debug('Pausing job: {}'.format(hcat.session))
                         logger.debug('PAUSE loop begin')
-                        while pause_counter < 400:
+                        while pause_counter < 600:
                             if hcat.status_get_status_string() == 'Paused':
-                                logger.info('Job Paused: {}'.format(hcat.session))
+                                logger.debug('Job Paused: {}'.format(hcat.session))
                                 break
                             elif del_check(job):
                                 break
@@ -759,7 +839,64 @@ def hc_worker(crack=None, hash_file=None, session=None,
         logger.error('MAIN loop closed: {}'.format(err))
 
 
-def show_speed(crack=None, hash_file=None, session=None,
+def pot_job(hash_file=None, session=None, hash_mode=None,
+            attack_mode=None, rules=None,
+            pot_path=None, username=False):
+    """
+    Method to  queue job to run hashcat with the system potfile wordlist
+    i.e. when potfile++ is enabled
+
+    Arguments
+    ---------
+    crack: object
+        Hashcat execution python object for rq to execute
+    hash_file: string
+        File containing hashes to feed to hashcat
+    session: Hashcat session to use
+    wordlist: Wordlist to feed Hashcat
+
+    Returns
+    -------
+    """
+    # check potfile wordlist is up-to-date
+    pot_wordlist = valid.val_filepath(path_string=log_dir,
+                                      file_string='pot_wordlist.txt')
+    if not pot_check(pot_wordlist):
+        potter(pot_path, pot_wordlist)
+    outfile = valid.val_filepath(path_string=log_dir,
+                                 file_string='{}.cracked'.format(session))
+    # run hashcat with potfile wordlist
+    hcat = runner(hash_file=hash_file,
+                  session=session, wordlist=str(pot_wordlist),
+                  outfile=str(outfile), attack_mode=0,
+                  hash_mode=hash_mode,
+                  username=username, pot_path=pot_path,
+                  show=False, brain=False)
+    hcat.event_connect(callback=finished_callback,
+                       signal="EVENT_CRACKER_FINISHED")
+    hcat.event_connect(callback=any_callback,
+                       signal="ANY")
+    counter = 0
+    while counter < 600:
+        if hcat is None or isinstance(hcat, str):
+            return hcat
+        hc_state = hcat.status_get_status_string()
+        logger.debug('POT WORDLIST loop')
+        if hc_state == 'Exhausted':
+            break
+        elif hc_state == 'Aborted':
+            event_log = hcat.hashcat_status_get_log()
+            raise ValueError(event_log)
+        time.sleep(1)
+        counter += 1
+    else:
+        return False
+    logger.debug('POT WORDLIST loop complete, quitting hashcat')
+    hcat.hashcat_session_quit()
+    hcat.reset()
+    return True
+
+def show_speed(hash_file=None, session=None,
                wordlist=None, hash_mode=1000, speed_session=None,
                attack_mode=None, mask=None, rules=None,
                pot_path=None, brain=False, username=False,
@@ -801,15 +938,6 @@ def show_speed(crack=None, hash_file=None, session=None,
     if attack_mode:
         if not isinstance(attack_mode, int):
             attack_mode = None
-    # run --show first
-    # clear contents of previous cracked passwords file before running show
-    outfile = valid.val_filepath(path_string=log_dir,
-                                 file_string='{}.cracked'.format(speed_session[:-6]))
-    try:
-        with open(outfile, 'w') as fh_outfile:
-            fh_outfile.truncate(0)
-    except FileNotFoundError:
-        logger.debug('No cracked file to clear')
     # create initial json state, run show check and create file
     job_dict = {}
     job_dict['hash_mode'] = hash_mode
@@ -836,7 +964,19 @@ def show_speed(crack=None, hash_file=None, session=None,
     job_dict['restore'] = 0
     job_dict['Cracked Hashes'] = 0
     job_dict['Total Hashes'] = 0
-    write_template(job_dict, speed_session[:-6])
+    status_file = valid.val_filepath(path_string=log_dir,
+                                     file_string='{}.json'.format(speed_session[:-6]))
+    write_template(job_dict, status_file)
+    outfile = valid.val_filepath(path_string=log_dir,
+                                 file_string='{}.cracked'.format(speed_session[:-6]))
+    # clear contents of previous cracked passwords file before running show
+    try:
+        with open(outfile, 'w') as fh_outfile:
+            fh_outfile.truncate(0)
+    except FileNotFoundError:
+        logger.debug('No cracked file to clear')
+
+    # run --show check
     hcat = runner(hash_file=hash_file, mask=mask,
                   session=speed_session, wordlist=wordlist,
                   outfile=str(outfile), attack_mode=attack_mode,
@@ -936,7 +1076,6 @@ def show_speed(crack=None, hash_file=None, session=None,
         hcat.status_reset()
         hcat.hashcat_session_quit()
         hcat.reset()
-        #job = redis_q.fetch_job(session)
         if len(cur_list) > 0:
             cur_job = redis_q.fetch_job(cur_list[0])
         else:
