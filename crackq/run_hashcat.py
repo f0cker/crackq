@@ -15,7 +15,6 @@ from crackq.validator import FileValidation as valid
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 from time import sleep
-from pathlib import Path
 from pyhashcat import Hashcat
 from redis import Redis
 from rq import use_connection, Queue

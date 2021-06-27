@@ -1618,7 +1618,8 @@ class Adder(MethodView):
         enqueue_result = self.queue_job(args, job_id=job_id)
         return enqueue_result
 
-def reporter(cracked_path, report_path, hash_path, donut_path,
+
+def reporter(cracked_path, report_path, donut_path,
              complexity_length=8, policy_check=False, admin_list=None):
     """
     Simple method to call pypal and save report (html & json)
