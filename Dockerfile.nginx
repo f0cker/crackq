@@ -1,4 +1,4 @@
-FROM nginx:1.18
+FROM nginx:1.20.1
 
 RUN apt-get update && apt-get install fail2ban -y && update-rc.d fail2ban enable
 RUN rm /var/log/nginx/access.log && rm /var/log/nginx/error.log

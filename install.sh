@@ -27,6 +27,7 @@ if [ ! -d /var/crackq/files/masks ]
                 mkdir /var/crackq/logs/
                 mkdir /var/crackq/logs/reports/
                 mkdir /var/crackq/logs/nginx/
+		mkdir /var/crackq/logs/templates/
                 mkdir /var/crackq/files/masks/
                 mkdir /var/crackq/files/nginx/
                 mkdir /var/crackq/files/nginx/conf.d/

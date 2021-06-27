@@ -17,7 +17,7 @@ python3 -m pip install .
 cd ../
 
 #Install pypal and pre-download nltk wordnet
-git clone https://github.com/f0cker/pypal.git --branch dev
+git clone https://github.com/f0cker/pypal.git
 cd ./pypal
 python3 -m pip install .
 cd ../

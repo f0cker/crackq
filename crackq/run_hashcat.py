@@ -48,7 +48,7 @@ def del_check(job):
     return False
 
 
-def write_template(template_dict, job_id):
+def write_template(template_dict, temp_file):
     """
     Write a CrackQ json state file
 
@@ -59,20 +59,19 @@ def write_template(template_dict, job_id):
     ---------
     template_dict: dict
         JSON job details in dict format
-    job_id: uuid
-        ID to store the file under
+    temp_file: Path object
+        File path location to store the file
 
     Returns
     """
     logger.debug('Writing template/status file')
-    log_dir = CRACK_CONF['files']['log_dir']
-    temp_file = valid.val_filepath(path_string=log_dir,
-                                   file_string='{}.json'.format(job_id))
     try:
         with open(temp_file, 'x') as fh_temp:
             fh_temp.write(json.dumps(template_dict))
+        return True
     except FileExistsError as err:
         logger.debug('Status/Template file already exists {}'.format(err))
+        return False
 
 def send_email(mail_server, port, src, dest, sub, tls):
     """
@@ -760,7 +759,7 @@ def hc_worker(crack=None, hash_file=None, session=None,
                 logger.debug('Hashcat Abort status returned')
                 event_log = hcat.hashcat_status_get_log()
                 raise ValueError('Aborted: {}'.format(event_log))
-            elif main_counter > 2700 and hc_state != 'Running' and mask_file == False:
+            elif main_counter > 3000 and hc_state != 'Running' and mask_file == False:
                 logger.debug('Reseting job, seems to be hung')
                 raise ValueError('Error: Hashcat hung - Initialize timeout')
             else:
@@ -966,7 +965,9 @@ def show_speed(hash_file=None, session=None,
     job_dict['restore'] = 0
     job_dict['Cracked Hashes'] = 0
     job_dict['Total Hashes'] = 0
-    write_template(job_dict, speed_session[:-6])
+    status_file = valid.val_filepath(path_string=log_dir,
+                                     file_string='{}.json'.format(speed_session[:-6]))
+    write_template(job_dict, status_file)
     outfile = valid.val_filepath(path_string=log_dir,
                                  file_string='{}.cracked'.format(speed_session[:-6]))
     # clear contents of previous cracked passwords file before running show

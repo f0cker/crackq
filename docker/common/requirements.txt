@@ -1,5 +1,5 @@
 configparser==5.0.1
-Flask==1.1.2
+Flask==1.1.4
 redis==3.5.3
 rq==1.8.1
 marshmallow==3.9.1

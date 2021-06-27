@@ -1,14 +1,20 @@
 Changelog
 =========
-v0.0.3
+v0.1.0
 ------------
+- Added new features Templates & Tasks, create template jobs to create group of preset jobs
+- Pinned hashcat version
 - Updated JS libs
 - Cleanup JS libs
+- Updated flask
 - Fixed UUID bug (#27) in user addition for SQL auth (thanks @kernel-sanders)
 - Added additional characters allowed for account passwords and improved checks for add_admuser cli util (#26)
 - Added ubuntu nvidia container
 - Added new reporting metric (AD anaylis/overview)
-- Added Potfile++, which creates a system wordlist from the potfile an allows an option to queue an additional job using that list
+- Added Potfile++, which creates a system wordlist from the potfile an provides an option to run this prior to the created job using that wordlist
+- Updated RQ (moved back to latest release now PR is merged)
+- Updated nginx container
+- Updated Flask to latest 1.x
 - 
 
 v0.0.2
