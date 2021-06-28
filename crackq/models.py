@@ -3,9 +3,7 @@
 import json
 import uuid
 
-from datetime import datetime
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import create_engine, Column
+from sqlalchemy import Column
 from sqlalchemy.types import (
     Boolean,
     DateTime,
@@ -19,6 +17,7 @@ from crackq.db import db
 
 
 def gen_uuid():
+    """Generate UUID"""
     return uuid.uuid4().hex
 
 

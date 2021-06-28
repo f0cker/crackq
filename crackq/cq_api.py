@@ -1828,16 +1828,19 @@ class TemplatesView(MethodView):
         else:
             try:
                 for template in Templates.query.all():
-                    temp_file = valid.val_filepath(path_string='{}templates/'.format(self.log_dir),
-                                                   file_string='{}.json'.format(template.id.hex))
-                    with temp_file.open('r') as fh_temp:
-                        temp = json.loads(fh_temp.read())
-                        temp_dict = {
-                            'Name': template.name,
-                            'ID': template.id,
-                            'Details': temp
-                            }
-                        result.append(temp_dict)
+                    try:
+                        temp_file = valid.val_filepath(path_string='{}templates/'.format(self.log_dir),
+                                                       file_string='{}.json'.format(template.id.hex))
+                        with temp_file.open('r') as fh_temp:
+                            temp = json.loads(fh_temp.read())
+                            temp_dict = {
+                                'Name': template.name,
+                                'ID': template.id,
+                                'Details': temp
+                                }
+                            result.append(temp_dict)
+                    except FileNotFoundError as err:
+                        logger.debug('Error getting job template: {}'.format(err))
             except AttributeError:
                 abort(404)
             except Exception as err:
@@ -1941,14 +1944,23 @@ class TemplatesView(MethodView):
                 logger.debug('Error deleting template file: {}'.format(err))
                 return {'msg': 'API error deleting template file'}, 500
             except Exception as err:
-                logger.debug('Error getting job template details: {}'.format(err))
+                logger.debug('Error deleting job template: {}'.format(err))
                 return {'msg': 'API error deleting template'}, 500
         else:
             for template in Templates.query.all():
-                db.session.delete(template)
-                db.session.commit()
-                temp_file.unlink()
-        return jsonify({'msg': 'Template deleted'}), 200
+                try:
+                    logger.debug('Deleting template: {}'.format(template.id.hex))
+                    temp_file = valid.val_filepath(path_string='{}templates/'.format(self.log_dir),
+                                                   file_string='{}.json'.format(template.id.hex))
+                    db.session.delete(template)
+                    db.session.commit()
+                    temp_file.unlink()
+                except FileNotFoundError as err:
+                    logger.debug('Error deleting template file: {}'.format(err))
+                except Exception as err:
+                    logger.debug('Error deleting job templates: {}'.format(err))
+                    return {'msg': 'API error deleting template'}, 500
+            return jsonify({'msg': 'Templates deleted'}), 200
 
 
 class TasksView(MethodView):

@@ -17,7 +17,7 @@ from email.mime.text import MIMEText
 from time import sleep
 from pyhashcat import Hashcat
 from redis import Redis
-from rq import use_connection, Queue
+from rq import Queue
 from rq.serializers import JSONSerializer
 
 # set perms
@@ -591,7 +591,7 @@ def pot_check(outfile):
     except (IOError, FileNotFoundError) as err:
         logger.debug('Pot wordlist files not found, creating new file: {}'.format(err))
         with outfile.open('w+'):
-            pass
+            logger.debug('Do nothing')
         ret = False
     except Exception as err:
         logger.debug('Pot wordlist file update error: {}'.format(err))

@@ -84,7 +84,7 @@ def create_app():
     app.add_url_rule('/api/reports',
                      view_func=report_view, methods=['GET', 'POST'])
     app.add_url_rule('/api/tasks/templates', defaults={'temp_id': None},
-                     view_func=templates_view, methods=['GET', 'PUT'])
+                     view_func=templates_view, methods=['GET', 'PUT', 'DELETE'])
     app.add_url_rule('/api/tasks/templates/<uuid:temp_id>',
                      view_func=templates_view, methods=['DELETE'])
     app.add_url_rule('/api/tasks',
@@ -100,6 +100,7 @@ def create_app():
 login_manager = LoginManager()
 login_manager.session_protection = "strong"
 nltk.download("wordnet")
+
 
 @login_manager.user_loader
 def load_user(user_id):
