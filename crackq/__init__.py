@@ -93,7 +93,7 @@ def create_app():
     session = Session(app)
     session.init_app(app)
     migrate = Migrate()
-    migrate.init_app(app, db, compare_type=True)
+    migrate.init_app(app, db, compare_type=True, render_as_batch=True)
     session.app.session_interface.db.create_all()
     return app
 

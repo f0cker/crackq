@@ -20,7 +20,7 @@ if [ ! -d ./build ]
 	then
 		mkdir ./build
     fi
-if [ ! -d /var/crackq/files/masks ]
+if [ ! -d /var/crackq/files/templates ]
 	then
                 mkdir /var/crackq/
                 mkdir /var/crackq/files/
