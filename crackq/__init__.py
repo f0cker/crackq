@@ -89,6 +89,8 @@ def create_app():
                      view_func=templates_view, methods=['DELETE'])
     app.add_url_rule('/api/tasks',
                      view_func=tasks_view, methods=['GET', 'POST'])
+    app.add_url_rule('/api/tasks/<uuid:task_id>',
+                     view_func=tasks_view, methods=['DELETE'])
     login_manager.init_app(app)
     session = Session(app)
     session.init_app(app)

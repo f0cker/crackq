@@ -47,31 +47,6 @@ def del_check(job):
     return False
 
 
-def write_template(template_dict, temp_file):
-    """
-    Write a CrackQ json state file
-
-    This could be a job template or a current
-    job state file.
-
-    Arguments
-    ---------
-    template_dict: dict
-        JSON job details in dict format
-    temp_file: Path object
-        File path location to store the file
-
-    Returns
-    """
-    logger.debug('Writing template/status file')
-    try:
-        with open(temp_file, 'x') as fh_temp:
-            fh_temp.write(json.dumps(template_dict))
-        return True
-    except FileExistsError as err:
-        logger.debug('Status/Template file already exists {}'.format(err))
-        return False
-
 def send_email(mail_server, port, src, dest, sub, tls):
     """
     Simple email notification
@@ -966,7 +941,7 @@ def show_speed(hash_file=None, session=None,
     job_dict['Total Hashes'] = 0
     status_file = valid.val_filepath(path_string=log_dir,
                                      file_string='{}.json'.format(speed_session[:-6]))
-    write_template(job_dict, status_file)
+    cq_api.write_template(job_dict, status_file)
     outfile = valid.val_filepath(path_string=log_dir,
                                  file_string='{}.cracked'.format(speed_session[:-6]))
     # clear contents of previous cracked passwords file before running show
@@ -1029,9 +1004,10 @@ def show_speed(hash_file=None, session=None,
         while counter < 180:
             if hcat is None or isinstance(hcat, str):
                 return hcat
-            if 'CrackQ State' in speed_job.meta:
-                if del_check(speed_job):
-                    return hcat
+            if speed_job.meta:
+                if 'CrackQ State' in speed_job.meta:
+                    if del_check(speed_job):
+                        return hcat
             hc_state = hcat.status_get_status_string()
             if hc_state:
                 speed_job = speed_q.fetch_job(hcat.session)
