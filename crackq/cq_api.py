@@ -748,7 +748,8 @@ class Queuing(MethodView):
                         started.remove(job)
                         try:
                             if job.meta['Requeue Count'] <= int(self.req_max):
-                                failed.requeue(j)
+                                ###***disable requeuing failed jobs until issue #1486 is fixed in rq
+                                # failed.requeue(j)
                                 job.meta['Requeue Count'] += 1
                                 job.save_meta()
                         except KeyError:
@@ -1659,17 +1660,22 @@ def reporter(cracked_path, hash_path, report_path, donut_path,
                 }
     else:
         policy = None
-    print(policy)
-    stats = report.get_stats(match=admin_list, policy=policy)
-    donut = pypal.DonutGenerator(stats)
-    donut = donut.gen_donut()
-    donut.savefig(donut_path, bbox_inches='tight', dpi=500)
-    #report_json['ad_stats'] = [stats]
-    report_json = report.report_gen()
+    try:
+        stats = report.get_stats(match=admin_list, policy=policy)
+        donut = pypal.DonutGenerator(stats)
+        donut = donut.gen_donut()
+        donut.savefig(donut_path, bbox_inches='tight', dpi=500)
+        donut_json = {'ad_stats': stats}
+    except KeyError as err:
+        logger.warning('Error generating AD analysis, missing --username: {}'.format(err))
+        donut_json = {'ad_stats': None}
+    rep_json = report.report_gen()
+    report_json = dict(rep_json, **donut_json)
     with open(report_path, 'w') as fh_report:
         fh_report.write(json.dumps(report_json))
     return True
- 
+
+
 class Reports(MethodView):
     """
     Class for creating and serving HTML password analysis reports
@@ -1789,19 +1795,22 @@ class Reports(MethodView):
                                                          file_string='{}.png'.format(job_id)))
                     job = self.q.fetch_job(job_id)
                     min_report = CRACK_CONF['misc']['min_report']
-                    if job.meta['HC State']['Cracked Hashes'] < int(min_report):
-                        return {'msg': 'Cracked password list too '
-                                       'small for meaningful '
-                                       'analysis'}, 500
+                    if 'HC State' in job.meta:
+                        if job.meta['HC State']['Cracked Hashes'] < int(min_report):
+                            return {'msg': 'Cracked password list too '
+                                           'small for meaningful '
+                                           'analysis'}, 500
+                    else:
+                        return {'msg': 'Job never initilized, '
+                                'try using a complete job to '
+                                'generate the report'}, 500
                     try:
                         logger.debug('Generating report: {}'
                                      .format(cracked_path))
-                        print('POLICY***')
-                        print(args['policy_check'])
                         kwargs = {
-                                'complexity_length': int(args['complexity_length']),
-                                'admin_list': args['admin_list'],
-                                'policy_check': args['policy_check'],
+                                'complexity_length': args['complexity_length'] if 'complexity_length' in args.keys() else None,
+                                'admin_list': args['admin_list'] if 'admin_list' in args.keys() else None,
+                                'policy_check': args['policy_check'] if 'policy_check' in args.keys() else None,
                                 }
                         rep = self.report_q.enqueue_call(func=reporter,
                                                          job_id='{}_report'.format(job_id),

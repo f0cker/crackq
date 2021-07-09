@@ -571,7 +571,6 @@ def pot_check(outfile):
     except Exception as err:
         logger.debug('Pot wordlist file update error: {}'.format(err))
         ret = False
-    print('RETURNING: {}'.format(ret))
     return ret
 
 
