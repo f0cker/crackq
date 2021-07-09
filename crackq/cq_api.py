@@ -16,7 +16,6 @@ from crackq.models import User, Templates, Tasks
 from crackq import crackqueue, hash_modes, auth
 from crackq.validator import FileValidation as valid
 from crackq.conf import hc_conf
-from crackq.run_hashcat import write_template
 from datetime import datetime
 from flask import (
     abort,
@@ -427,7 +426,7 @@ def del_user(user_id):
 
     Arguments
     ---------
-    user_id: int
+    user_id: uuid
         User ID number for the user to delete
 
     Returns
@@ -476,6 +475,32 @@ def del_job(job):
     logger.debug('Thread: deleting job')
     job.delete()
     del_jobid(job.id)
+
+
+def write_template(template_dict, temp_file):
+    """
+    Write a CrackQ json state file
+
+    This could be a job template or a current
+    job state file.
+
+    Arguments
+    ---------
+    template_dict: dict
+        JSON job details in dict format
+    temp_file: Path object
+        File path location to store the file
+
+    Returns
+    """
+    logger.debug('Writing template/status file')
+    try:
+        with open(temp_file, 'x') as fh_temp:
+            fh_temp.write(json.dumps(template_dict))
+        return True
+    except FileExistsError as err:
+        logger.debug('Status/Template file already exists {}'.format(err))
+        return False
 
 
 @login_manager.user_loader
@@ -723,7 +748,8 @@ class Queuing(MethodView):
                         started.remove(job)
                         try:
                             if job.meta['Requeue Count'] <= int(self.req_max):
-                                failed.requeue(j)
+                                ###***disable requeuing failed jobs until issue #1486 is fixed in rq
+                                # failed.requeue(j)
                                 job.meta['Requeue Count'] += 1
                                 job.save_meta()
                         except KeyError:
@@ -1302,7 +1328,7 @@ class Adder(MethodView):
             speed_args['name'] = q_args['kwargs']['name']
             speed_args['brain'] = q_args['kwargs']['brain']
             speed_args['attack_mode'] = q_args['kwargs']['attack_mode']
-            speed_args['mask'] = '?a?a?a?a?a?a' if q_args['kwargs']['mask'] else None
+            speed_args['mask'] = '?a?a?a?a?a?a'#\ if q_args['kwargs']['mask'] else None
             speed_args['pot_path'] = q_args['kwargs']['pot_path']
             speedq_args['kwargs'] = speed_args
             speedq_args['job_id'] = speed_session
@@ -1619,12 +1645,11 @@ class Adder(MethodView):
         return enqueue_result
 
 
-def reporter(cracked_path, report_path, donut_path,
-             complexity_length=8, policy_check=False, admin_list=None):
+def reporter(cracked_path, hash_path, report_path, donut_path,
+             complexity_length=None, policy_check=False, admin_list=None):
     """
     Simple method to call pypal and save report (html & json)
     """
-    hash_path = '{}hashes'.format(cracked_path[:-7])
     report = pypal.Report(cracked_path=cracked_path,
                           hash_path=hash_path,
                           lang='EN',
@@ -1635,12 +1660,17 @@ def reporter(cracked_path, report_path, donut_path,
                 }
     else:
         policy = None
-    stats = report.get_stats(match=admin_list, policy=policy)
-    donut = pypal.DonutGenerator(stats)
-    donut = donut.gen_donut()
-    donut.savefig(donut_path, bbox_inches='tight', dpi=500)
-    report_json = report.report_gen()
-
+    try:
+        stats = report.get_stats(match=admin_list, policy=policy)
+        donut = pypal.DonutGenerator(stats)
+        donut = donut.gen_donut()
+        donut.savefig(donut_path, bbox_inches='tight', dpi=500)
+        donut_json = {'ad_stats': stats}
+    except KeyError as err:
+        logger.warning('Error generating AD analysis, missing --username: {}'.format(err))
+        donut_json = {'ad_stats': None}
+    rep_json = report.report_gen()
+    report_json = dict(rep_json, **donut_json)
     with open(report_path, 'w') as fh_report:
         fh_report.write(json.dumps(report_json))
     return True
@@ -1757,32 +1787,38 @@ class Reports(MethodView):
                     logger.debug('Valid session found')
                     cracked_path = str(valid.val_filepath(path_string=self.log_dir,
                                                           file_string='{}.cracked'.format(job_id)))
-                    report_path = str(valid.val_filepath(path_string=self.report_dir,
-                                                         file_string='{}.json'.format(job_id)))
                     hash_path = str(valid.val_filepath(path_string=self.log_dir,
                                                          file_string='{}.hashes'.format(job_id)))
+                    report_path = str(valid.val_filepath(path_string=self.report_dir,
+                                                         file_string='{}.json'.format(job_id)))
                     donut_path = str(valid.val_filepath(path_string=self.report_dir,
                                                          file_string='{}.png'.format(job_id)))
                     job = self.q.fetch_job(job_id)
                     min_report = CRACK_CONF['misc']['min_report']
-                    if job.meta['HC State']['Cracked Hashes'] < int(min_report):
-                        return {'msg': 'Cracked password list too '
-                                       'small for meaningful '
-                                       'analysis'}, 500
+                    if 'HC State' in job.meta:
+                        if job.meta['HC State']['Cracked Hashes'] < int(min_report):
+                            return {'msg': 'Cracked password list too '
+                                           'small for meaningful '
+                                           'analysis'}, 500
+                    else:
+                        return {'msg': 'Job never initilized, '
+                                'try using a complete job to '
+                                'generate the report'}, 500
                     try:
                         logger.debug('Generating report: {}'
                                      .format(cracked_path))
                         kwargs = {
-                                'complexity_length': int(args['complexity_length']),
-                                'admin_list': args['admin_list'],
-                                'policy_check': args['policy_check'],
+                                'complexity_length': args['complexity_length'] if 'complexity_length' in args.keys() else None,
+                                'admin_list': args['admin_list'] if 'admin_list' in args.keys() else None,
+                                'policy_check': args['policy_check'] if 'policy_check' in args.keys() else None,
                                 }
                         rep = self.report_q.enqueue_call(func=reporter,
                                                          job_id='{}_report'.format(job_id),
-                                                         kwargs=kwargs, args=[cracked_path,
-                                                                              report_path,
-                                                                              hash_path,
-                                                                              donut_path],
+                                                         args=[cracked_path,
+                                                               hash_path,
+                                                               report_path,
+                                                               donut_path],
+                                                         kwargs=kwargs,
                                                          timeout=10080, result_ttl=604800)
                         if rep:
                             return {'msg': 'Successfully queued '
@@ -1816,7 +1852,7 @@ class TemplatesView(MethodView):
             try:
                 template = Templates.query.filter_by(id=temp_id).first()
                 temp_file = valid.val_filepath(path_string='{}templates/'.format(self.log_dir),
-                                               file_string='{}.json'.format(template.idi.hex))
+                                               file_string='{}.json'.format(template.id.hex))
                 with temp_file.open('r') as fh_temp:
                     template = json.loads(fh_temp.read())
                     result.append(template)
@@ -1828,16 +1864,19 @@ class TemplatesView(MethodView):
         else:
             try:
                 for template in Templates.query.all():
-                    temp_file = valid.val_filepath(path_string='{}templates/'.format(self.log_dir),
-                                                   file_string='{}.json'.format(template.id.hex))
-                    with temp_file.open('r') as fh_temp:
-                        temp = json.loads(fh_temp.read())
-                        temp_dict = {
-                            'Name': template.name,
-                            'ID': template.id,
-                            'Details': temp
-                            }
-                        result.append(temp_dict)
+                    try:
+                        temp_file = valid.val_filepath(path_string='{}templates/'.format(self.log_dir),
+                                                       file_string='{}.json'.format(template.id.hex))
+                        with temp_file.open('r') as fh_temp:
+                            temp = json.loads(fh_temp.read())
+                            temp_dict = {
+                                'Name': template.name,
+                                'ID': template.id,
+                                'Details': temp
+                                }
+                            result.append(temp_dict)
+                    except FileNotFoundError as err:
+                        logger.debug('Error getting job template: {}'.format(err))
             except AttributeError:
                 abort(404)
             except Exception as err:
@@ -1934,6 +1973,7 @@ class TemplatesView(MethodView):
                 temp_file.unlink()
                 db.session.delete(template)
                 db.session.commit()
+                return jsonify({'msg': 'Template deleted'}), 200
             except AttributeError as err:
                 logger.debug('Error deleting template file: {}'.format(err))
                 abort(404)
@@ -1941,14 +1981,23 @@ class TemplatesView(MethodView):
                 logger.debug('Error deleting template file: {}'.format(err))
                 return {'msg': 'API error deleting template file'}, 500
             except Exception as err:
-                logger.debug('Error getting job template details: {}'.format(err))
+                logger.debug('Error deleting job template: {}'.format(err))
                 return {'msg': 'API error deleting template'}, 500
         else:
             for template in Templates.query.all():
-                db.session.delete(template)
-                db.session.commit()
-                temp_file.unlink()
-        return jsonify({'msg': 'Template deleted'}), 200
+                try:
+                    logger.debug('Deleting template: {}'.format(template.id.hex))
+                    temp_file = valid.val_filepath(path_string='{}templates/'.format(self.log_dir),
+                                                   file_string='{}.json'.format(template.id.hex))
+                    db.session.delete(template)
+                    db.session.commit()
+                    temp_file.unlink()
+                except FileNotFoundError as err:
+                    logger.debug('Error deleting template file: {}'.format(err))
+                except Exception as err:
+                    logger.debug('Error deleting job templates: {}'.format(err))
+                    return {'msg': 'API error deleting template'}, 500
+            return jsonify({'msg': 'Templates deleted'}), 200
 
 
 class TasksView(MethodView):
@@ -1966,44 +2015,64 @@ class TasksView(MethodView):
 
     def add_taskid(self, task_id):
         """Add task_id to task_ids column in user table"""
-        user = User.query.filter_by(username=current_user.username).first()
-        if user.task_ids:
-            logger.debug('Current registered task_ids: {}'.format(user.task_ids))
-            tasks = json.loads(user.task_ids)
-        else:
-            logger.debug('No task_ids registered with current user')
-            tasks = None
-        logger.debug('Registering new task_id to current user: {}'.format(task_id))
-        if isinstance(tasks, list):
-            if task_id not in tasks:
-                tasks.append(task_id)
+        try:
+            result = False
+            user = User.query.filter_by(username=current_user.username).first()
+            if user.task_ids:
+                logger.debug('Current registered task_ids: {}'.format(user.task_ids))
+                tasks = json.loads(user.task_ids)
             else:
-                logger.warning('task_id already registered to user: {}'.format(task_id))
-        else:
-            tasks = [task_id]
-        user.task_ids = json.dumps(tasks)
-        db.session.commit()
-        logger.debug('user.task_ids: {}'.format(user.task_ids))
+                logger.debug('No task_ids registered with current user')
+                tasks = None
+            logger.debug('Registering new task_id to current user: {}'.format(task_id))
+            if isinstance(tasks, list):
+                if task_id not in tasks:
+                    tasks.append(task_id)
+                    result = True
+                else:
+                    logger.warning('task_id already registered to user: {}'.format(task_id))
+            else:
+                tasks = [task_id]
+                result = True
+            user.task_ids = json.dumps(tasks)
+            db.session.commit()
+            logger.debug('user.task_ids: {}'.format(user.task_ids))
+            return result
+        except AttributeError:
+            return False
+        except Exception as err:
+            logger.debug('Error adding Task: {}'.format(err))
+            return False
 
     def del_taskid(self, task_id):
         """Delete task_id from task_ids column in user table"""
-        with crackq.app.app_context():
-            for user in User.query.all():
-                if user.task_ids and task_id in user.task_ids:
-                    tasks = json.loads(user.task_ids)
-                    logger.debug('Registered tasks: {}'.format(tasks))
-                    if isinstance(tasks, list):
-                        logger.debug('Unregistering task_id: {}'.format(task_id))
-                        if task_id in tasks:
-                            tasks.remove(task_id)
-                            user.task_ids = json.dumps(tasks)
-                            db.session.commit()
-                            logger.debug('user.task_ids: {}'.format((user.task_ids)))
-                            return True
+        try:
+            with crackq.app.app_context():
+                for user in User.query.all():
+                    if user.task_ids and task_id in user.task_ids:
+                        tasks = json.loads(user.task_ids)
+                        logger.debug('Registered tasks: {}'.format(tasks))
+                        if isinstance(tasks, list):
+                            logger.debug('Unregistering task_id: {}'.format(task_id))
+                            if task_id in tasks:
+                                tasks.remove(task_id)
+                                user.task_ids = json.dumps(tasks)
+                                db.session.commit()
+                                logger.debug('user.task_ids: {}'.format((user.task_ids)))
+                                return True
+                        else:
+                            logger.error('Error removing task_id')
                     else:
-                        logger.error('Error removing task_id')
-                else:
-                    logger.debug('Task ID not registered with user')
+                        logger.debug('Task ID not registered with user')
+                return False
+        except AttributeError:
+            return False
+        except exc.UnmappedInstanceError:
+            return False
+        except exc.SQLError:
+            return False
+        except Exception as err:
+            logger.debug('Error deleting Task: {}'.format(err))
             return False
 
     @login_required
@@ -2025,7 +2094,7 @@ class TasksView(MethodView):
                     task_dict = {}
                     try:
                         task = Tasks.query.filter_by(id=task_id).first()
-                        task_dict['task_id'] = task_id
+                        task_dict['task_id'] = uuid.UUID(task_id)
                         task_dict['name'] = task.name
                         job_list = []
                         for job_id in json.loads(task.job_ids):
@@ -2091,6 +2160,28 @@ class TasksView(MethodView):
             logger.debug('Error queuing task: {}'.format(err))
             return {'msg': 'API error queuing'}, 500
         return jsonify(result), 202
+
+    @login_required
+    def delete(self, task_id):
+        """
+        Delete selcted Task ID
+        """
+        result = False
+        try:
+            result = self.del_taskid(task_id.hex)
+        except AttributeError as err:
+            logger.debug('API error deleting Task: {}'.format(err))
+            abort(404)
+        except TypeError as err:
+            logger.debug('API error deleting Task: {}'.format(err))
+            return {'msg': 'API error deleting task'}, 500
+        except Exception as err:
+            logger.debug('API error deleting Task: {}'.format(err))
+            return {'msg': 'API error deleting task'}, 500
+        if result:
+            return jsonify({'msg': 'Task deleted'}), 200
+        else:
+            return {'msg': 'API error deleting task'}, 404
 
 
 class Profile(MethodView):

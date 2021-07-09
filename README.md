@@ -28,7 +28,7 @@ Feature List
 
 * REST API
 * Remote Python client or JS GUI
-* Cracked passwords analysis and reporting
+* Cracked passwords analysis and reporting, including AD dump analysis
 * Uses Hashcat API directly via libhashcat, no shell commands
 * Easy installation using docker containers
 * SQL, LDAP or SAML2 Authentication
@@ -43,6 +43,8 @@ Feature List
 * Markov stats pre-configured
 * Sample mask files included
 * Hashcat benchmark visualisations
+* Templates & Tasks allow you to save preset cracking techniques to create grouped jobs
+* Potfile++ - a wordlist automatically updated from the potfile daily can be optionally used with each job
 
 
 Requirements

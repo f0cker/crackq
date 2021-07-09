@@ -7,7 +7,7 @@ from crackq.conf import hc_conf
 from crackq.logger import logger
 from pathlib import Path
 from redis import Redis
-from rq import use_connection, Queue
+from rq import Queue
 from rq.registry import StartedJobRegistry
 from rq.serializers import JSONSerializer
 

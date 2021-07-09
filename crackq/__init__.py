@@ -84,22 +84,25 @@ def create_app():
     app.add_url_rule('/api/reports',
                      view_func=report_view, methods=['GET', 'POST'])
     app.add_url_rule('/api/tasks/templates', defaults={'temp_id': None},
-                     view_func=templates_view, methods=['GET', 'PUT'])
+                     view_func=templates_view, methods=['GET', 'PUT', 'DELETE'])
     app.add_url_rule('/api/tasks/templates/<uuid:temp_id>',
                      view_func=templates_view, methods=['DELETE'])
     app.add_url_rule('/api/tasks',
                      view_func=tasks_view, methods=['GET', 'POST'])
+    app.add_url_rule('/api/tasks/<uuid:task_id>',
+                     view_func=tasks_view, methods=['DELETE'])
     login_manager.init_app(app)
     session = Session(app)
     session.init_app(app)
     migrate = Migrate()
-    migrate.init_app(app, db, compare_type=True)
+    migrate.init_app(app, db, compare_type=True, render_as_batch=True)
     session.app.session_interface.db.create_all()
     return app
 
 login_manager = LoginManager()
 login_manager.session_protection = "strong"
 nltk.download("wordnet")
+
 
 @login_manager.user_loader
 def load_user(user_id):

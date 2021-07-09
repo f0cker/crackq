@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
     name='crackq',
@@ -12,4 +12,4 @@ setup(
         ]
         },
       )
-#packages=find_packages())
+# packages=find_packages())

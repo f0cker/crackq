@@ -3,6 +3,7 @@ import rq
 import sys
 
 from rq import use_connection, Queue
+from rq.serializers import JSONSerializer
 from redis import Redis
 
 if len(sys.argv) < 2:
@@ -10,10 +11,11 @@ if len(sys.argv) < 2:
     exit(1)
 
 redis_con = Redis('redis', 6379)
-redis_q = Queue(sys.argv[1], connection=redis_con)
+redis_q = Queue(sys.argv[1], connection=redis_con,
+                serializer=JSONSerializer)
 
 base = rq.registry.BaseRegistry(sys.argv[1],
-                                         connection=redis_con)
+                                connection=redis_con, serializer=JSONSerializer)
 started = rq.registry.StartedJobRegistry(sys.argv[1],
                                          connection=redis_con)
 failed = rq.registry.FailedJobRegistry(sys.argv[1],
