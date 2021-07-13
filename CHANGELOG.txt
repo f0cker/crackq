@@ -15,7 +15,7 @@ v0.1.0
 - Updated RQ (moved back to latest release now PR is merged)
 - Updated nginx container
 - Updated Flask to latest 1.x
-- 
+- Improved report styling
 
 v0.0.2
 ------------
