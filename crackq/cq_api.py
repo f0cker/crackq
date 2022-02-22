@@ -95,7 +95,7 @@ class job_schema(Schema):
     job_id = fields.UUID(allow_none=None)
     task_id = fields.UUID(allow_none=None)
     hash_list = fields.List(fields.String(validate=StringContains(
-                            r'[^A-Za-z0-9\*\$\@\/\\\.\:\-\_\+\.\+\~]')),
+                            r'[^A-Za-z0-9\*\$\@\/\\\.\:\-\_\+\.\+\~\#]')),
                             allow_none=False, error_messages=error_messages)
     wordlist = fields.Str(allow_none=True, validate=[StringContains(r'[^A-Za-z0-9\_\-]'),
                                                      Length(min=1, max=60)])
