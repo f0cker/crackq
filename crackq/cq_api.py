@@ -11,11 +11,13 @@ import uuid
 
 import crackq
 from crackq.db import db
+from crackq import db
 from crackq.logger import logger
 from crackq.models import User, Templates, Tasks
 from crackq import crackqueue, hash_modes, auth
 from crackq.validator import FileValidation as valid
 from crackq.conf import hc_conf
+from crackq import app
 from datetime import datetime
 from flask import (
     abort,
@@ -50,9 +52,11 @@ from sqlalchemy.orm import exc
 os.umask(0o077)
 
 # Setup Flask App
+print(dir(crackq))
+print(dir(app))
 login_manager = LoginManager()
-app = Flask(__name__)
-csrf = SeaSurf()
+#csrf = SeaSurf()
+csrf = crackq.csrf
 bcrypt = Bcrypt(app)
 CRACK_CONF = hc_conf()
 
@@ -386,7 +390,10 @@ def admin_required(func):
         try:
             logger.debug('User authenticating {}'.format(current_user.username))
             if current_user.is_admin:
-                return func(*args, **kwargs)
+                print(args)
+                print(kwargs)
+                #return func(*args, **kwargs)
+                return func(*args)
         except AttributeError as err:
             logger.debug(err)
             logger.debug('Anonymous user cant be admin')

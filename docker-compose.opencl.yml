@@ -6,6 +6,7 @@ services:
         image: "redis:latest"
         container_name: "redis"
         hostname: "redis"
+        restart: always
         networks:
             - crackq_net
         ports:
@@ -33,6 +34,7 @@ services:
                 MAIL_USERNAME: ${MAIL_USERNAME}
                 MAIL_PASSWORD: ${MAIL_PASSWORD}
         command:
+                #sh -c "/bin/bash"
                 sh -c "pip3 install . --user && cd ./crackq
                 && python3 -c 'from crackq import hash_modes; hash_modes.HModes.update_modes()'
                 && /usr/local/bin/circusd /opt/crackq/build/circus.ini"
