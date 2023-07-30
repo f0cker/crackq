@@ -11,13 +11,14 @@ python3 -m pip install --upgrade pip
 python3 -m pip install -r ./requirements.txt
 
 #Install modified flask-sessions
-git clone https://github.com/f0cker/flask-session.git
+#temporarily using session_fixation branch for dev/updates
+git clone https://github.com/f0cker/flask-session.git -b session_fixation
 cd ./flask-session
 python3 -m pip install .
 cd ../
 
 #Install pypal and pre-download nltk wordnet
-git clone https://github.com/f0cker/pypal.git
+git clone https://github.com/f0cker/pypal.git --branch dev
 cd ./pypal
 python3 -m pip install .
 cd ../

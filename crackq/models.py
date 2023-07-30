@@ -13,7 +13,7 @@ from sqlalchemy.types import (
     Unicode,
     )
 from sqlalchemy_utils import UUIDType
-from crackq.db import db
+from crackq import db
 
 
 def gen_uuid():

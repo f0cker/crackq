@@ -11,11 +11,13 @@ import uuid
 
 import crackq
 from crackq.db import db
+from crackq import db
 from crackq.logger import logger
 from crackq.models import User, Templates, Tasks
 from crackq import crackqueue, hash_modes, auth
 from crackq.validator import FileValidation as valid
 from crackq.conf import hc_conf
+from crackq import app
 from datetime import datetime
 from flask import (
     abort,
@@ -51,8 +53,7 @@ os.umask(0o077)
 
 # Setup Flask App
 login_manager = LoginManager()
-app = Flask(__name__)
-csrf = SeaSurf()
+csrf = crackq.csrf
 bcrypt = Bcrypt(app)
 CRACK_CONF = hc_conf()
 
@@ -386,7 +387,7 @@ def admin_required(func):
         try:
             logger.debug('User authenticating {}'.format(current_user.username))
             if current_user.is_admin:
-                return func(*args, **kwargs)
+                return func(args, **kwargs)
         except AttributeError as err:
             logger.debug(err)
             logger.debug('Anonymous user cant be admin')
@@ -994,14 +995,11 @@ class Queuing(MethodView):
                     logger.error('Reorder failed: Invalid request')
                     return {'msg': 'Reorder failed - Invalid request'}, 500
                 for job in marsh_schema['batch_job']:
-                    job_id = job['job_id']
-                    if adder.session_check(self.log_dir, job_id):
-                        logger.debug('Valid session found')
-                        started = rq.registry.StartedJobRegistry(queue=self.q)
-                        cur_list = started.get_job_ids()
-                        if job_id in cur_list:
-                            logger.error('Job is already running')
-                            return {'msg': 'Job is already running'}, 500
+                    started = rq.registry.StartedJobRegistry(queue=self.q)
+                    cur_list = started.get_job_ids()
+                    if job_id in cur_list:
+                        logger.error('Job is already running')
+                        return {'msg': 'Job is already running'}, 500
                 marsh_schema['batch_job'].sort(key=itemgetter('place'))
                 for job in self.q.jobs:
                     job.set_status('finished')
@@ -1011,7 +1009,7 @@ class Queuing(MethodView):
                 for job in marsh_schema['batch_job']:
                     Queue.dequeue_any(self.q, None, connection=self.redis_con,
                                       serializer=JSONSerializer)
-                    j = self.q.fetch_job(job['job_id'])
+                    j = self.q.fetch_job(job['job_id'].hex)
                     ###***check this covers case when job is in requeued state
                     self.q.enqueue_job(j)
                     j.meta['CrackQ State'] = 'Run/Restored'
@@ -1111,7 +1109,7 @@ class Queuing(MethodView):
             del_jobid(job_id)
             job.delete()
             started.cleanup()
-            return {'msg': 'Deleted Job'}, 200
+            return jsonify({'msg': 'Deleted Job'}), 200
         except AttributeError as err:
             logger.error('Failed to delete job: {}'.format(err))
             return jsonify(ERR_INVAL_JID), 404
@@ -1270,10 +1268,11 @@ class Adder(MethodView):
         logger.debug('Checking for existing session')
         log_dir = Path(log_dir)
         sess_id = False
-        if job_id.isalnum():
+        if job_id.isalnum() or isinstance(job_id, uuid):
+        #if job_id.isalnum():
             try:
                 for f in Path.iterdir(log_dir):
-                    if job_id in str(f):
+                    if str(job_id) in str(f):
                         sess_id = True
                         break
             except ValueError as err:
@@ -2298,7 +2297,7 @@ class Admin(MethodView):
 
     @admin_required
     @login_required
-    def post(self):
+    def post(self, user_id):
         """
         Creates a new user
 
