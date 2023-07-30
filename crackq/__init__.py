@@ -35,6 +35,7 @@ app.config['SESSION_SQLALCHEMY'] = db
 
 def create_app(app):
     """Create and configure an instance of the Flask application."""
+    # uncomment below 3 lines when testing from npm/gui dev env
     #CORS(app, resources={r'/*': {'origins': 'http://localhost:8081',
     #                             'supports_credentials': True},
     #                    })
@@ -88,6 +89,7 @@ def create_app(app):
     migrate = Migrate()
     with app.app_context():
         session = Session(app)
+        # comment out below line when testing from npm/gui dev env 
         csrf.init_app(app)
         migrate.init_app(app, db, compare_type=True, render_as_batch=True)
         db.init_app(app)
