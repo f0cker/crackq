@@ -1,4 +1,4 @@
-configparser==5.0.1
+configparser==6.0.0
 Flask==2.3.2
 redis==4.0.0
 rq==1.14
@@ -6,7 +6,7 @@ marshmallow==3.9.1
 pytest==6.1.2
 pytest-cov==2.10.1
 flake8==3.8.4
-python-ldap==3.3.1
+python-ldap==3.4.2
 Flask-Sessionstore==0.4.5
 Flask-SQLAlchemy==3.0.5
 SQLAlchemy-Utils==0.41.1

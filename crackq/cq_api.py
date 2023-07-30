@@ -1109,7 +1109,7 @@ class Queuing(MethodView):
             del_jobid(job_id)
             job.delete()
             started.cleanup()
-            return {'msg': 'Deleted Job'}, 200
+            return jsonify({'msg': 'Deleted Job'}), 200
         except AttributeError as err:
             logger.error('Failed to delete job: {}'.format(err))
             return jsonify(ERR_INVAL_JID), 404
