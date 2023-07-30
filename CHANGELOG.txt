@@ -1,5 +1,9 @@
 Changelog
 =========
+v0.1.1
+------------
+- Updated python libs, docker image
+
 v0.1.0
 ------------
 - Added new features Templates & Tasks, create template jobs to create group of preset jobs
