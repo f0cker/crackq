@@ -11,8 +11,7 @@ python3 -m pip install --upgrade pip
 python3 -m pip install -r ./requirements.txt
 
 #Install modified flask-sessions
-#temporarily using session_fixation branch for dev/updates
-git clone https://github.com/f0cker/flask-session.git -b session_fixation
+git clone https://github.com/f0cker/flask-session.git
 cd ./flask-session
 python3 -m pip install .
 cd ../
