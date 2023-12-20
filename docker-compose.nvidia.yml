@@ -20,9 +20,9 @@ services:
                 resources:
                         reservations:
                                 devices:
-                                        -driver: nvidia
-                                        capabilities: [gpu]
-                                        count: all
+                                        - driver: nvidia
+                                          capabilities: [gpu]
+                                          count: all
         ports:
             - "127.0.0.1:8080:8080"
         depends_on:
