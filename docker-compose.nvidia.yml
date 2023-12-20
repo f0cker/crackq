@@ -16,6 +16,13 @@ services:
             context: ./build
             dockerfile: Dockerfile
         image: "nvidia-ubuntu"
+        deploy:
+                resources:
+                        reservations:
+                                devices:
+                                        -driver: nvidia
+                                        capabilities: [gpu]
+                                        count: all
         ports:
             - "127.0.0.1:8080:8080"
         depends_on:
@@ -28,7 +35,6 @@ services:
             - /var/crackq/:/var/crackq
             - ./crackq:/opt/crackq/build/crackq/
         stdin_open: true
-        runtime: nvidia
         user: crackq
         tty: true
         environment:
