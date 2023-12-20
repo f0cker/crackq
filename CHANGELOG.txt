@@ -1,5 +1,10 @@
 Changelog
 =========
+v0.1.2
+------------
+- Fixed issues #40/#41, updated nvidia docker config and flask-login
+- Updated Wiki install guide
+
 v0.1.1
 ------------
 - Updated python libs, docker image
