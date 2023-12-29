@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.2.0-runtime-ubuntu20.04
+FROM nvidia/cuda:12.3.1-devel-ubuntu20.04
 
 ENV TZ=Europe/London
 ENV DEBIAN_FRONTEND noninteractive
@@ -12,13 +12,13 @@ ENV PYTHONPATH=$DOCKYARD:/opt/crackq/build/crackq
 # Update & install packages for installing hashcat
 RUN apt-get update && \
     apt-get install -y wget p7zip gcc g++ make build-essential git libcurl4-openssl-dev libssl-dev zlib1g-dev python3.8 \
-    python3.8-dev python3-pip libldap2-dev libsasl2-dev libssl-dev xmlsec1 libxmlsec1-openssl
-
+    python3.8-dev python3-pip libldap2-dev libsasl2-dev libssl-dev xmlsec1 libxmlsec1-openssl \
+    && apt-get clean
 # Copy the code to the build dir
-COPY . $DOCKYARD
+COPY . "$DOCKYARD"
 # Run install script to setup hashcat/pyhashcat
-WORKDIR $DOCKYARD
-RUN $DOCKYARD/setup.sh
+WORKDIR "$DOCKYARD"
+RUN "$DOCKYARD"/setup.sh
 
 EXPOSE 6379
 EXPOSE 8081
@@ -27,7 +27,7 @@ EXPOSE 8080
 ENV LANG "C.UTF-8"
 ENV LC_ALL "C.UTF-8"
 
-RUN chown -R 1111:1111 $DOCKYARD/
+RUN chown -R 1111:1111 "$DOCKYARD"/
 USER crackq
-WORKDIR $DOCKYARD/
+WORKDIR "$DOCKYARD"/
 CMD ["/usr/local/bin/circusd", "/opt/crackq/build/circus.ini"]
