@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.3.1-devel-ubuntu20.04
+FROM nvidia/cuda:12.2.2-devel-ubuntu20.04
 
 ENV TZ=Europe/London
 ENV DEBIAN_FRONTEND noninteractive
