@@ -132,6 +132,10 @@ def runner(hash_file=None, hash_mode=1000,
     hc.quiet = False
     hc.optimized_kernel_enable = True
     hc.workload_profile = 4
+    if CRACK_CONF['misc']['hwmon_temp_abort']:
+        hc.hwmon_temp_abort = CRACK_CONF['misc']['hwmon_temp_abort']
+    else:
+        hc.hwmon_temp_abort = 90
     if username is True:
         hc.username = True
     if increment is True:
