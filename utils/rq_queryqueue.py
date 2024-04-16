@@ -2,7 +2,7 @@ import datetime
 import rq
 import sys
 
-from rq import use_connection, Queue
+from rq import Queue
 from rq.serializers import JSONSerializer
 from redis import Redis
 
@@ -10,7 +10,7 @@ if len(sys.argv) < 2:
     print('Usage: ./{} <queue-name>')
     exit(1)
 
-redis_con = Redis('redis', 6379)
+redis_con = Redis('localhost', 6379)
 redis_q = Queue(sys.argv[1], connection=redis_con,
                 serializer=JSONSerializer)
 

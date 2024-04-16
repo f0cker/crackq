@@ -1182,6 +1182,10 @@ class Adder(MethodView):
         self.redis_con = Redis(rconf['host'], rconf['port'])
         self.speed_q = Queue('speed_check', connection=self.redis_con,
                              serializer=JSONSerializer)
+        if 'disable_brain' in CRACK_CONF['misc']:
+            self.brain_disabled = CRACK_CONF['misc']['disable_brain']
+        else:
+            self.brain_disabled = False
 
     def mode_check(self, mode):
         """
@@ -1327,7 +1331,7 @@ class Adder(MethodView):
             speed_args['name'] = q_args['kwargs']['name']
             speed_args['brain'] = q_args['kwargs']['brain']
             speed_args['attack_mode'] = q_args['kwargs']['attack_mode']
-            speed_args['mask'] = '?a?a?a?a?a?a'#\ if q_args['kwargs']['mask'] else None
+            speed_args['mask'] = '?a?a?a?a?a?a'# if q_args['kwargs']['mask'] else None
             speed_args['pot_path'] = q_args['kwargs']['pot_path']
             speedq_args['kwargs'] = speed_args
             speedq_args['job_id'] = speed_session
@@ -1564,23 +1568,27 @@ class Adder(MethodView):
             q = self.crack_q.q_connect()
             try:
                 if hc_args['restore'] > 0:
-                    job = self.q.fetch_job(job_id)
-                    if job.meta['brain_check']:
-                        logger.debug('Brain check previously complete')
-                    elif job.meta['brain_check'] is None:
+                    #check if brain disabled in config
+                    if not self.brain_disabled:
+                        job = self.q.fetch_job(job_id)
+                        if job.meta['brain_check']:
+                            logger.debug('Brain check previously complete')
+                        elif job.meta['brain_check'] is None:
+                            self.speed_check(q_args=q_args)
+                            time.sleep(3)
+                        else:
+                            logger.debug('Restored job, disabling speed check')
+                else:
+                    if not self.brain_disabled:
+                        logger.debug('Job not a restore, queuing speed_check')
                         self.speed_check(q_args=q_args)
                         time.sleep(3)
-                    else:
-                        logger.debug('Restored job, disabling speed check')
-                else:
+            ###***remove below now?
+            except KeyError as err:
+                if not self.brain_disabled:
                     logger.debug('Job not a restore, queuing speed_check')
                     self.speed_check(q_args=q_args)
                     time.sleep(3)
-            ###***remove below now?
-            except KeyError as err:
-                logger.debug('Job not a restore, queuing speed_check')
-                self.speed_check(q_args=q_args)
-                time.sleep(3)
             self.crack_q.q_add(q, q_args, timeout=timeout)
             logger.debug('API Job {} added to queue'.format(job_id))
             logger.debug('Job Details: {}'.format(q_args))
@@ -2010,7 +2018,7 @@ class TasksView(MethodView):
         self.redis_con = Redis(rconf['host'], rconf['port'])
         self.speed_q = Queue('speed_check', connection=self.redis_con,
                              serializer=JSONSerializer)
-        self.adder = Adder()
+        self.adder = Adder() 
 
     def add_taskid(self, task_id):
         """Add task_id to task_ids column in user table"""

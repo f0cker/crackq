@@ -5,7 +5,7 @@ import time
 
 from crackq.logger import logger
 from redis import Redis
-from rq import use_connection, Queue
+from rq import Queue
 from rq.registry import StartedJobRegistry
 
 

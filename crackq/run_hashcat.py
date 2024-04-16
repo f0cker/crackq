@@ -31,6 +31,10 @@ redis_con = Redis(rconf['host'], rconf['port'])
 redis_q = Queue('default', connection=redis_con, serializer=JSONSerializer)
 speed_q = Queue('speed_check', connection=redis_con,
                 serializer=JSONSerializer)
+if 'disable_brain' in CRACK_CONF['misc']:
+    brain_disabled = CRACK_CONF['misc']['disable_brain']
+else:
+    brain_disabled = False
 
 
 def del_check(job):
@@ -132,9 +136,9 @@ def runner(hash_file=None, hash_mode=1000,
     hc.quiet = False
     hc.optimized_kernel_enable = True
     hc.workload_profile = 4
-    if CRACK_CONF['misc']['hwmon_temp_abort']:
+    try:
         hc.hwmon_temp_abort = CRACK_CONF['misc']['hwmon_temp_abort']
-    else:
+    except KeyError:
         hc.hwmon_temp_abort = 90
     if username is True:
         hc.username = True
@@ -162,79 +166,80 @@ def runner(hash_file=None, hash_mode=1000,
         hc.speed_only = True
         hc.hashcat_session_execute()
         return hc
-    if brain:
-        speed_session = '{}_speed'.format(session)
-        job = redis_q.fetch_job(session)
-        if 'brain_check' in job.meta:
-            logger.debug('Restored job already has brain check state')
-            speed_job = None
-            if job.meta['brain_check'] is True:
-                hc.brain_client = brain
-                hc.brain_client_features = 3
-                ###***replace with random string
-                hc.brain_password = '425dafbb8e87fe18'
+    if not brain_disabled:
+        if brain:
+            speed_session = '{}_speed'.format(session)
+            job = redis_q.fetch_job(session)
+            if 'brain_check' in job.meta:
+                logger.debug('Restored job already has brain check state')
                 speed_job = None
+                if job.meta['brain_check'] is True:
+                    hc.brain_client = brain
+                    hc.brain_client_features = 3
+                    ###***replace with random string
+                    hc.brain_password = '425dafbb8e87fe18'
+                    speed_job = None
+                else:
+                    speed_job = speed_q.fetch_job(speed_session)
             else:
                 speed_job = speed_q.fetch_job(speed_session)
-        else:
-            speed_job = speed_q.fetch_job(speed_session)
-        wait_count = 0
-        if speed_job:
-            while len(speed_job.meta) < 1 and wait_count < 410:
-                logger.debug('RUNNER loop')
-                logger.debug('Speed meta not populated, waiting...')
-                if job:
-                    if del_check(job):
-                        return hc
-                if 'failed' in speed_job.get_status():
-                    crack_q = crackqueue.Queuer()
-                    err_msg = crack_q.error_parser(speed_job)
-                    logger.error('Speed check failed: {}'.format(err_msg))
-                    if job:
-                        job.meta['brain_check'] = None
-                        job.save_meta()
-                    raise ValueError('Aborted, speed check failed: {}'.format(err_msg))
-                elif 'finished' in speed_job.get_status():
-                    logger.debug('Breaking runner loop speed check job has finished')
+            wait_count = 0
+            if speed_job:
+                while len(speed_job.meta) < 1 and wait_count < 410:
+                    logger.debug('RUNNER loop')
+                    logger.debug('Speed meta not populated, waiting...')
                     if job:
                         if del_check(job):
                             return hc
-                elif 'CrackQ State' in speed_job.meta:
-                    if del_check(speed_job):
-                        return hc
-                time.sleep(5)
-                wait_count += 5
-                speed_job = speed_q.fetch_job(speed_session)
-            logger.debug('RUNNER loop finished')
-            if 'Mode Info' in speed_job.meta:
-                mode_info = speed_job.meta['Mode Info']
-                salts = mode_info[-1]
-                speed = int(mode_info[-2])
-                brain = brain_check(speed, salts)
-                hc.brain_client = brain
-                hc.brain_client_features = 3
-                ###***replace with random string
-                hc.brain_password = '425dafbb8e87fe18'
-                if brain is True:
+                    if 'failed' in speed_job.get_status():
+                        crack_q = crackqueue.Queuer()
+                        err_msg = crack_q.error_parser(speed_job)
+                        logger.error('Speed check failed: {}'.format(err_msg))
+                        if job:
+                            job.meta['brain_check'] = None
+                            job.save_meta()
+                        raise ValueError('Aborted, speed check failed: {}'.format(err_msg))
+                    elif 'finished' in speed_job.get_status():
+                        logger.debug('Breaking runner loop speed check job has finished')
+                        if job:
+                            if del_check(job):
+                                return hc
+                    elif 'CrackQ State' in speed_job.meta:
+                        if del_check(speed_job):
+                            return hc
+                    time.sleep(5)
+                    wait_count += 5
+                    speed_job = speed_q.fetch_job(speed_session)
+                logger.debug('RUNNER loop finished')
+                if 'Mode Info' in speed_job.meta:
+                    mode_info = speed_job.meta['Mode Info']
+                    salts = mode_info[-1]
+                    speed = int(mode_info[-2])
+                    brain = brain_check(speed, salts)
+                    hc.brain_client = brain
+                    hc.brain_client_features = 3
+                    ###***replace with random string
+                    hc.brain_password = '425dafbb8e87fe18'
+                    if brain is True:
+                        if job:
+                            job.meta['brain_check'] = True
+                            job.save_meta()
+                    if brain is False:
+                        if job:
+                            job.meta['brain_check'] = False
+                            job.save_meta()
+                else:
+                    logger.error('Speed check error, disabling brain')
                     if job:
-                        job.meta['brain_check'] = True
-                        job.save_meta()
-                if brain is False:
-                    if job:
-                        job.meta['brain_check'] = False
-                        job.save_meta()
+                        job.meta['brain_check'] = None
+                        if not del_check(job):
+                            job.meta['CrackQ State'] = 'Run/Restored'
+                            job.save_meta()
             else:
-                logger.error('Speed check error, disabling brain')
-                if job:
-                    job.meta['brain_check'] = None
-                    if not del_check(job):
-                        job.meta['CrackQ State'] = 'Run/Restored'
-                        job.save_meta()
-        else:
-            logger.error('No speed job to check')
-            if job and not del_check(job):
-                job.meta['CrackQ State'] = 'Run/Restored'
-                job.save_meta()
+                logger.error('No speed job to check')
+                if job and not del_check(job):
+                    job.meta['CrackQ State'] = 'Run/Restored'
+                    job.save_meta()
     markov_file = str(valid.val_filepath(path_string=file_dir,
                                          file_string='crackq.hcstat'))
     hc.markov_hcstat2 = markov_file
@@ -520,7 +525,7 @@ def write_result(sender):
     logger.debug('Updating job metadata')
     if not sender.benchmark:
         try:
-            with open(result_file, 'r+') as result_fh:
+            with open(result_file, 'w+') as result_fh:
                 job = redis_q.fetch_job(session)
                 if job and isinstance(hcat_status, dict):
                     job.meta['HC State'] = hcat_status
@@ -533,7 +538,8 @@ def write_result(sender):
                         job_details['brain_check'] = job.meta['brain_check']
                 else:
                     result = result_fh.read()
-                    job_details = json.loads(result.strip())
+                    if result:
+                        job_details = json.loads(result.strip())
                 job_details['Cracked Hashes'] = sender.status_get_digests_done()
                 job_details['Total Hashes'] = sender.status_get_digests_cnt()
                 job_details['timeout'] = job.timeout
@@ -689,6 +695,52 @@ def hc_worker(crack=None, hash_file=None, session=None,
         except Exception as err:
             logger.error('Error running potcheck: {}'.format(err))
     #job = redis_q.fetch_job(session)
+    if not benchmark:
+        # clear contents of previous cracked passwords file before running show
+        job = redis_q.fetch_job(session)
+        #outfile = valid.val_filepath(path_string=log_dir,
+        #                             file_string='{}.cracked'.format(session))
+        try:
+            with open(outfile, 'w') as fh_outfile:
+                fh_outfile.truncate(0)
+        except FileNotFoundError:
+            logger.debug('No cracked file to clear')
+
+        # run hashcat with --show
+        hcat = runner(hash_file=hash_file, mask=mask,
+                      session=session, wordlist=wordlist,
+                      outfile=str(outfile), attack_mode=attack_mode,
+                      hash_mode=hash_mode, wordlist2=wordlist2,
+                      username=username, pot_path=pot_path,
+                      show=True, brain=False)
+        hcat.event_connect(callback=cracked_callback,
+                           signal="EVENT_POTFILE_HASH_SHOW")
+        hcat.event_connect(callback=any_callback,
+                           signal="ANY")
+        counter = 0
+        while counter < 100:
+            if hcat is None or isinstance(hcat, str):
+                return hcat
+            hc_state = hcat.status_get_status_string()
+            logger.debug('SHOW loop')
+            if job:
+                if 'CrackQ State' in job.meta:
+                    if del_check(job):
+                        break
+            if hc_state == 'Running':
+                break
+            if hc_state == 'Paused':
+                break
+            elif hc_state == 'Aborted':
+                event_log = hcat.hashcat_status_get_log()
+                raise ValueError(event_log)
+            time.sleep(1)
+            counter += 1
+        logger.debug('SHOW loop complete, quitting hashcat')
+        hcat.hashcat_session_quit()
+        hcat.reset()
+
+    # run real hashcat job
     hcat = runner(hash_file=hash_file, mask=mask,
                   session=session, wordlist=wordlist,
                   outfile=outfile, attack_mode=attack_mode,

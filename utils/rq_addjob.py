@@ -2,7 +2,7 @@ import datetime
 import rq
 import sys
 
-from rq import use_connection, Queue
+from rq import Queue
 from redis import Redis
 
 if len(sys.argv) < 2:

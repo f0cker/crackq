@@ -1,7 +1,7 @@
 import rq
 import sys
 
-from rq import use_connection, Queue
+from rq import Queue
 from redis import Redis
 
 redis_con = Redis('redis', 6379)

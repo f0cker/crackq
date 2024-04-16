@@ -1,7 +1,7 @@
 configparser==6.0.0
 Flask==2.3.2
 redis==4.0.0
-rq==1.14
+rq==1.16.1
 marshmallow==3.9.1
 pytest==6.1.2
 pytest-cov==2.10.1
