@@ -137,7 +137,7 @@ def runner(hash_file=None, hash_mode=1000,
     hc.optimized_kernel_enable = True
     hc.workload_profile = 4
     try:
-        hc.hwmon_temp_abort = CRACK_CONF['misc']['hwmon_temp_abort']
+        hc.hwmon_temp_abort = int(CRACK_CONF['misc']['hwmon_temp_abort'])
     except KeyError:
         hc.hwmon_temp_abort = 90
     if username is True:
