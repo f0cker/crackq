@@ -8,8 +8,24 @@ assignees: ''
 ---
 
 **Prerequisites**
+Include all version information for Docker/Compose, Nvidia runtime, Nvidia driver, OS & CrackQ.
+
+Check the Troubleshooting page:
+https://github.com/f0cker/crackq/wiki/Troubleshooting
+
 Enable debugging:
 sudo docker exec -it crackq /bin/sed -i 's/INFO/DEBUG/g' /opt/crackq/build/crackq/log_config.ini
+
+If using GPUs, check they are successfully passed through to the Docker cotnainers:
+```
+sudo docker run -it nvidia-ubuntu nvidia-smi
+sudo docker run -it nvidia-ubuntu clinfo
+sudo docker run -it nvidia-ubuntu pyhashcat/hashcat/hashcat -b -m 1000
+```
+
+Disable the brain functionality in the config (verison 0.1.3+):
+```disable_brain: True```
+
 
 **Describe the bug**
 A clear and concise description of what the bug is.
