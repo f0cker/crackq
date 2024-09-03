@@ -13,7 +13,7 @@ SQLAlchemy-Utils==0.41.1
 flask-talisman==0.7.0
 pysaml2==7.3.1
 Flask-Login==0.6.3
-Flask-Cors==3.0.9
+Flask-Cors==5.0.0
 Flask-SeaSurf==1.1.1
 Flask-Migrate==3.0.1
 bcrypt==3.2.0
