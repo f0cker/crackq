@@ -34,6 +34,7 @@ if [ ! -d /var/crackq/files/templates ]
                 mkdir /var/crackq/files/saml/
                 mkdir /var/crackq/files/rules/
                 mkdir /var/crackq/files/masks/
+                mkdir /var/crackq/files/wordlists/
     fi
 
 cp ./cfg/nginx.conf /var/crackq/files/nginx/
@@ -41,11 +42,38 @@ cp ./cfg/crackq_nginx.conf /var/crackq/files/nginx/conf.d/
 cp ./cfg/crackq.hcstat /var/crackq/files/crackq.hcstat
 cp ./masks/* /var/crackq/files/masks/
 cp -r ./rules/ /var/crackq/files/
-if [ ! -f /var/crackq/files/rockyou.txt.gz ]
+if [ ! -f /var/crackq/files/wordlists/rockyou.txt.gz ]
 	then
 		wget https://github.com/praetorian-inc/Hob0Rules/raw/master/wordlists/rockyou.txt.gz
-		mv rockyou.txt.gz /var/crackq/files/
+		mv rockyou.txt.gz /var/crackq/files/wordlists/
 	fi
+
+echo "" >>  ./cfg/crackq.conf
+echo "[wordlists]" >> ./cfg/crackq.conf
+for file in /var/crackq/files/wordlists/*; do
+  if [ -f "$file" ]; then
+    echo "$(basename "$file"): $file"
+  fi
+done >> ./cfg/crackq.conf
+echo "" >> ./cfg/crackq.conf
+
+echo "[rules]" >> ./cfg/crackq.conf
+for file in /var/crackq/files/rules/*; do
+  if [ -f "$file" ]; then
+    echo "$(basename "$file"): $file"
+  fi
+done >> ./cfg/crackq.conf
+
+echo "" >> ./cfg/crackq.conf
+
+echo "[masks]" >> ./cfg/crackq.conf
+for file in /var/crackq/files/masks/*; do
+  if [ -f "$file" ]; then
+    echo "$(basename "$file"): $file"
+  fi
+done >> ./cfg/crackq.conf
+
+
 # check if running tests
 if [ $TESTS ]
 	then
